@@ -4,8 +4,14 @@ import { parsePolishAmount } from './parsePolishAmount.ts';
 import { getMonthFromDate } from './getMonthFromDate.ts';
 import { formatPolishNumber } from './formatPolishNumber.ts';
 import { processCSV } from './processCSV.ts';
+import { classifyTransaction } from './classifyTransaction.ts';
 import * as fs from 'fs';
 import * as path from 'path';
+
+test('classifyTransaction - returns others for any row', () => {
+  assert.strictEqual(classifyTransaction({}), 'others');
+  assert.strictEqual(classifyTransaction({ description: 'some description' }), 'others');
+});
 
 test('parsePolishAmount - positive amount', () => {
   assert.strictEqual(parsePolishAmount('1 234,56 PLN'), 1234.56);

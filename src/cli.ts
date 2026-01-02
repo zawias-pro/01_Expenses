@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { processCSV } from './processCSV.ts';
 import { outputSummary } from './outputSummary.ts';
+import { saveResults } from './saveResults.ts';
 
 const main = async (): Promise<void> => {
   const csvPath = process.argv[2];
@@ -23,6 +24,8 @@ const main = async (): Promise<void> => {
   try {
     const summaries = await processCSV(absolutePath);
     outputSummary(summaries);
+    saveResults(summaries);
+    console.log('\nResults saved to result/ directory');
   } catch (error) {
     console.error('Error processing CSV:', error);
     process.exit(1);
