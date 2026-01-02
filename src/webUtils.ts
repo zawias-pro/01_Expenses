@@ -19,6 +19,22 @@ interface MonthlySummary {
   categories: Record<string, number>;
 }
 
+const parseRules = (content: string): Record<string, string> => {
+  const rules: Record<string, string> = {}
+  const lines = content.split('\n')
+  for (const line of lines) {
+    const parts = line.split(';')
+    if (parts.length >= 2) {
+      const keyword = parts[0].trim()
+      const category = parts[1].trim()
+      if (keyword && category) {
+        rules[keyword] = category
+      }
+    }
+  }
+  return rules
+}
+
 const parseCSVLine = (line: string): Transaction | null => {
   // Simple CSV parser for the specific format: 
   // 2025-12-12;"Description";"Account";"Category";-5 000,00 PLN;;
@@ -55,7 +71,7 @@ const processTransactions = (transactions: Transaction[], rules: Record<string, 
     try {
       const month = getMonthFromDate(t.date)
       const amount = parsePolishAmount(t.amount)
-      const category = t.category || classifyDescription(t.description, rules)
+      const category = classifyDescription(t.description, rules)
 
       if (!monthlyData[month]) {
         monthlyData[month] = { expenses: 0, income: 0, categories: {} }
@@ -85,5 +101,5 @@ const processTransactions = (transactions: Transaction[], rules: Record<string, 
     .sort((a, b) => a.month - b.month)
 }
 
-export { parseCSVLine, classifyDescription, processTransactions }
+export { parseCSVLine, classifyDescription, processTransactions, parseRules }
 export type { Transaction, MonthlySummary }

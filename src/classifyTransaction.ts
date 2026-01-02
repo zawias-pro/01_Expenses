@@ -7,7 +7,7 @@ import type { TransactionRow } from './processCSV.ts'
  */
 const loadRules = (): Map<string, string> => {
   const rules = new Map<string, string>()
-  const rulesPath = path.resolve('rules.csv')
+  const rulesPath = path.resolve('src/rules.csv')
 
   if (!fs.existsSync(rulesPath)) {
     return rules
