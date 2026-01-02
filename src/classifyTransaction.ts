@@ -1,46 +1,46 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import type { TransactionRow } from './processCSV.ts';
+import * as fs from 'fs'
+import * as path from 'path'
+import type { TransactionRow } from './processCSV.ts'
 
 /**
  * Loads classification rules from rules.csv
  */
 const loadRules = (): Map<string, string> => {
-  const rules = new Map<string, string>();
-  const rulesPath = path.resolve('rules.csv');
+  const rules = new Map<string, string>()
+  const rulesPath = path.resolve('rules.csv')
 
   if (!fs.existsSync(rulesPath)) {
-    return rules;
+    return rules
   }
 
-  const content = fs.readFileSync(rulesPath, 'utf-8');
-  const lines = content.split('\n');
+  const content = fs.readFileSync(rulesPath, 'utf-8')
+  const lines = content.split('\n')
 
   for (const line of lines) {
-    const [keyword, category] = line.split(';');
+    const [keyword, category] = line.split(';')
     if (keyword && category) {
-      rules.set(keyword.trim().toLowerCase(), category.trim());
+      rules.set(keyword.trim().toLowerCase(), category.trim())
     }
   }
 
-  return rules;
-};
+  return rules
+}
 
-const rules = loadRules();
+const rules = loadRules()
 
 /**
  * Classifies a transaction row into a category based on description.
  */
 const classifyTransaction = (row: Partial<TransactionRow>): string => {
-  const description = (row.description || '').toLowerCase();
+  const description = (row.description || '').toLowerCase()
 
   for (const [keyword, category] of rules.entries()) {
     if (description.includes(keyword)) {
-      return category;
+      return category
     }
   }
 
-  return 'others';
-};
+  return 'others'
+}
 
-export { classifyTransaction };
+export { classifyTransaction }

@@ -8,7 +8,7 @@ const INITIAL_CSV = `2025-12-12;"JAN ADAM KOWALSKI, CZYNSZ NAJMU                
 2025-11-18;"ALA MAKOTA, PLATNOSC                                                                         PRZELEW ZEWNĘTRZNY WYCHODZĄCY                                                     73829917394502917062843947  ";"MojBank 1234 ... 5678";"Bez kategorii";-450,00 PLN;;
 2025-10-11;"Revolut**1234*  ZAKUP PRZY UŻYCIU KARTY - INTERNET                                                  transakcja nierozliczona";"MojBank 1234 ... 5678";"Opłaty i odsetki";-1500,00 PLN;;
 2025-09-18;"ANNA NOWAK, PLATNOSC ZA SIERPIEN                                                                         PRZELEW ZEWNĘTRZNY WYCHODZĄCY                                                     37102029640000650201218148  ";"MojBank 1234 ... 5678";"Bez kategorii";-350,00 PLN;;
-2025-09-14;"PRZELEW  TEST                    00-000 MIASTO                        PRZELEW WEWNĘTRZNY PRZYCHODZĄCY                                                   73628298163829405836289922  ";"MojBank 1234 ... 5678";"Przelew własny";2 241,61 PLN;;`;
+2025-09-14;"PRZELEW  TEST                    00-000 MIASTO                        PRZELEW WEWNĘTRZNY PRZYCHODZĄCY                                                   73628298163829405836289922  ";"MojBank 1234 ... 5678";"Przelew własny";2 241,61 PLN;;`
 
 const RULES: Record<string, string> = {
   'walmart': 'grocery',
@@ -16,26 +16,26 @@ const RULES: Record<string, string> = {
   'transfer': 'transfers',
   'Czynsz': 'housing',
   'Revolut': 'finance'
-};
+}
 
 const getInitialData = () => {
-  const lines = INITIAL_CSV.split('\n').filter(l => l.trim());
-  return lines.map(parseCSVLine).filter((t): t is Transaction => t !== null);
-};
+  const lines = INITIAL_CSV.split('\n').filter(l => l.trim())
+  return lines.map(parseCSVLine).filter((t): t is Transaction => t !== null)
+}
 
 function App() {
-  const [transactions, setTransactions] = useState<Transaction[]>(getInitialData);
-  const [summaries, setSummaries] = useState<MonthlySummary[] | null>(null);
+  const [transactions, setTransactions] = useState<Transaction[]>(getInitialData)
+  const [summaries, setSummaries] = useState<MonthlySummary[] | null>(null)
 
   const handleUpdate = (id: string, field: keyof Transaction, value: string | boolean) => {
-    setTransactions(prev => prev.map(t => t.id === id ? { ...t, [field]: value } : t));
-  };
+    setTransactions(prev => prev.map(t => t.id === id ? { ...t, [field]: value } : t))
+  }
 
   const handleProcess = () => {
-    const activeTransactions = transactions.filter(t => !t.excluded);
-    const result = processTransactions(activeTransactions, RULES);
-    setSummaries(result);
-  };
+    const activeTransactions = transactions.filter(t => !t.excluded)
+    const result = processTransactions(activeTransactions, RULES)
+    setSummaries(result)
+  }
 
   return (
     <div className="container">
@@ -100,4 +100,4 @@ function App() {
   )
 }
 
-export default App
+export { App }

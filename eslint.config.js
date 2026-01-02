@@ -5,7 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
-export default defineConfig([
+const config = defineConfig([
   globalIgnores(['.yarn']),
   {
     files: ['**/*.{ts,tsx}'],
@@ -19,5 +19,21 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'ExportNamedDeclaration[declaration!=null]',
+          message: 'Inline exports are not allowed. Use a single export block at the end of the file instead.',
+        },
+        {
+          selector: 'ExportDefaultDeclaration',
+          message: 'Default exports are not allowed. Use named exports instead.',
+        },
+      ],
+      'semi': ['error', 'never'],
+    },
   },
 ])
+
+export { config as default }

@@ -1,8 +1,8 @@
-import * as fs from 'fs';
-import csv from 'csv-parser';
-import { getMonthFromDate } from './getMonthFromDate.ts';
-import { parsePolishAmount } from './parsePolishAmount.ts';
-import { classifyTransaction } from './classifyTransaction.ts';
+import * as fs from 'fs'
+import csv from 'csv-parser'
+import { getMonthFromDate } from './getMonthFromDate.ts'
+import { parsePolishAmount } from './parsePolishAmount.ts'
+import { classifyTransaction } from './classifyTransaction.ts'
 
 interface TransactionRow {
   date: string;
@@ -26,7 +26,7 @@ const processCSV = async (csvPath: string): Promise<MonthlySummary[]> => {
   const monthlyData: Map<
     number,
     { expenses: number; income: number; categories: Map<string, number> }
-  > = new Map();
+  > = new Map()
 
   return new Promise((resolve, reject) => {
     fs.createReadStream(csvPath)
@@ -38,49 +38,49 @@ const processCSV = async (csvPath: string): Promise<MonthlySummary[]> => {
       )
       .on('data', (data: TransactionRow) => {
         try {
-          const month = getMonthFromDate(data.date);
-          const amount = parsePolishAmount(data.amount);
-          const category = classifyTransaction(data);
+          const month = getMonthFromDate(data.date)
+          const amount = parsePolishAmount(data.amount)
+          const category = classifyTransaction(data)
 
           if (!monthlyData.has(month)) {
-            monthlyData.set(month, { expenses: 0, income: 0, categories: new Map() });
+            monthlyData.set(month, { expenses: 0, income: 0, categories: new Map() })
           }
 
-          const monthData = monthlyData.get(month)!;
+          const monthData = monthlyData.get(month)!
 
           if (amount < 0) {
-            const absAmount = Math.abs(amount);
-            monthData.expenses += absAmount;
+            const absAmount = Math.abs(amount)
+            monthData.expenses += absAmount
 
-            const currentCatTotal = monthData.categories.get(category) || 0;
-            monthData.categories.set(category, currentCatTotal + absAmount);
+            const currentCatTotal = monthData.categories.get(category) || 0
+            monthData.categories.set(category, currentCatTotal + absAmount)
           } else {
-            monthData.income += amount;
+            monthData.income += amount
           }
         } catch (error) {
-          console.warn('Skipping invalid row:', data, error);
+          console.warn('Skipping invalid row:', data, error)
         }
       })
       .on('end', () => {
-        const summaries: MonthlySummary[] = [];
-        const sortedMonths = Array.from(monthlyData.keys()).sort((a, b) => a - b);
+        const summaries: MonthlySummary[] = []
+        const sortedMonths = Array.from(monthlyData.keys()).sort((a, b) => a - b)
 
         for (const month of sortedMonths) {
-          const data = monthlyData.get(month)!;
+          const data = monthlyData.get(month)!
           summaries.push({
             month,
             totalExpenses: data.expenses,
             totalIncome: data.income,
             balance: data.income - data.expenses,
             categories: data.categories,
-          });
+          })
         }
 
-        resolve(summaries);
+        resolve(summaries)
       })
-      .on('error', reject);
-  });
-};
+      .on('error', reject)
+  })
+}
 
-export { processCSV };
-export type { MonthlySummary, TransactionRow };
+export { processCSV }
+export type { MonthlySummary, TransactionRow }

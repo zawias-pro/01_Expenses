@@ -1,7 +1,7 @@
-import { getMonthFromDate } from './getMonthFromDate';
-import { parsePolishAmount } from './parsePolishAmount';
+import { getMonthFromDate } from './getMonthFromDate'
+import { parsePolishAmount } from './parsePolishAmount'
 
-export interface Transaction {
+interface Transaction {
   id: string;
   date: string;
   description: string;
@@ -11,7 +11,7 @@ export interface Transaction {
   excluded: boolean;
 }
 
-export interface MonthlySummary {
+interface MonthlySummary {
   month: number;
   totalExpenses: number;
   totalIncome: number;
@@ -19,13 +19,13 @@ export interface MonthlySummary {
   categories: Record<string, number>;
 }
 
-export const parseCSVLine = (line: string): Transaction | null => {
+const parseCSVLine = (line: string): Transaction | null => {
   // Simple CSV parser for the specific format: 
   // 2025-12-12;"Description";"Account";"Category";-5 000,00 PLN;;
-  const parts = line.split(';');
-  if (parts.length < 5) return null;
+  const parts = line.split(';')
+  if (parts.length < 5) return null
 
-  const clean = (s: string) => s.replace(/^"|"$/g, '').trim();
+  const clean = (s: string) => s.replace(/^"|"$/g, '').trim()
 
   return {
     id: Math.random().toString(36).substr(2, 9),
@@ -35,44 +35,44 @@ export const parseCSVLine = (line: string): Transaction | null => {
     category: clean(parts[3]),
     amount: clean(parts[4]),
     excluded: false,
-  };
-};
+  }
+}
 
-export const classifyDescription = (description: string, rules: Record<string, string>): string => {
-  const desc = description.toLowerCase();
+const classifyDescription = (description: string, rules: Record<string, string>): string => {
+  const desc = description.toLowerCase()
   for (const [keyword, category] of Object.entries(rules)) {
     if (desc.includes(keyword.toLowerCase())) {
-      return category;
+      return category
     }
   }
-  return 'others';
-};
+  return 'others'
+}
 
-export const processTransactions = (transactions: Transaction[], rules: Record<string, string>): MonthlySummary[] => {
-  const monthlyData: Record<number, { expenses: number; income: number; categories: Record<string, number> }> = {};
+const processTransactions = (transactions: Transaction[], rules: Record<string, string>): MonthlySummary[] => {
+  const monthlyData: Record<number, { expenses: number; income: number; categories: Record<string, number> }> = {}
 
   transactions.forEach(t => {
     try {
-      const month = getMonthFromDate(t.date);
-      const amount = parsePolishAmount(t.amount);
-      const category = t.category || classifyDescription(t.description, rules);
+      const month = getMonthFromDate(t.date)
+      const amount = parsePolishAmount(t.amount)
+      const category = t.category || classifyDescription(t.description, rules)
 
       if (!monthlyData[month]) {
-        monthlyData[month] = { expenses: 0, income: 0, categories: {} };
+        monthlyData[month] = { expenses: 0, income: 0, categories: {} }
       }
 
-      const data = monthlyData[month];
+      const data = monthlyData[month]
       if (amount < 0) {
-        const absAmount = Math.abs(amount);
-        data.expenses += absAmount;
-        data.categories[category] = (data.categories[category] || 0) + absAmount;
+        const absAmount = Math.abs(amount)
+        data.expenses += absAmount
+        data.categories[category] = (data.categories[category] || 0) + absAmount
       } else {
-        data.income += amount;
+        data.income += amount
       }
     } catch (e) {
-      console.warn('Skipping invalid transaction', t, e);
+      console.warn('Skipping invalid transaction', t, e)
     }
-  });
+  })
 
   return Object.entries(monthlyData)
     .map(([month, data]) => ({
@@ -82,5 +82,8 @@ export const processTransactions = (transactions: Transaction[], rules: Record<s
       balance: data.income - data.expenses,
       categories: data.categories,
     }))
-    .sort((a, b) => a.month - b.month);
-};
+    .sort((a, b) => a.month - b.month)
+}
+
+export { parseCSVLine, classifyDescription, processTransactions }
+export type { Transaction, MonthlySummary }
