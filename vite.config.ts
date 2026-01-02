@@ -6,4 +6,4 @@ const config = defineConfig({
   plugins: [react()],
 })
 
-export { config as default }
+export default config

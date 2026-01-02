@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 const config = defineConfig([
-  globalIgnores(['.yarn']),
+  globalIgnores(['.yarn', '*.config.{js,ts}']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -36,4 +36,4 @@ const config = defineConfig([
   },
 ])
 
-export { config as default }
+export default config
