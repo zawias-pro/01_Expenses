@@ -25,12 +25,21 @@ test('parsePolishAmount - edge cases', () => {
   assert.strictEqual(parsePolishAmount('100 PLN'), 100.0);
 });
 
+test('parsePolishAmount - invalid amount throws', () => {
+  assert.throws(() => parsePolishAmount('invalid'), /Invalid amount: invalid/);
+  assert.throws(() => parsePolishAmount('abc PLN'), /Invalid amount: abc PLN/);
+});
+
 test('getMonthFromDate - extracts month correctly', () => {
   assert.strictEqual(getMonthFromDate('2025-12-12'), 12);
   assert.strictEqual(getMonthFromDate('2025-11-18'), 11);
   assert.strictEqual(getMonthFromDate('2025-10-11'), 10);
   assert.strictEqual(getMonthFromDate('2025-09-14'), 9);
   assert.strictEqual(getMonthFromDate('2025-01-01'), 1);
+});
+
+test('getMonthFromDate - invalid date throws', () => {
+  assert.throws(() => getMonthFromDate('invalid-date'), /Invalid date: invalid-date/);
 });
 
 test('formatPolishNumber - formats correctly', () => {
