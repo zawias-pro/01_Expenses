@@ -2,14 +2,16 @@
   "type": "module",
   "packageManager": "yarn@4.12.0",
   "scripts": {
-    "parse": "node src/index.ts examples/1.csv",
-    "test": "node --test src/index.test.ts"
+    "parse": "node --loader ts-node/esm src/cli.ts examples/1.csv",
+    "test": "node --test src/index.test.ts",
+    "format": "prettier --write \"src/**/*.{ts,js,json,md}\""
   },
   "dependencies": {
     "csv-parser": "^3.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "prettier": "^2.8.0",
     "ts-node": "^10.9.0",
     "typescript": "^5.0.0"
   }

@@ -9,20 +9,20 @@ import * as path from 'path';
 
 test('parsePolishAmount - positive amount', () => {
   assert.strictEqual(parsePolishAmount('1 234,56 PLN'), 1234.56);
-  assert.strictEqual(parsePolishAmount('5000,00 PLN'), 5000.00);
+  assert.strictEqual(parsePolishAmount('5000,00 PLN'), 5000.0);
   assert.strictEqual(parsePolishAmount('2 241,61 PLN'), 2241.61);
 });
 
 test('parsePolishAmount - negative amount', () => {
-  assert.strictEqual(parsePolishAmount('-5 000,00 PLN'), -5000.00);
-  assert.strictEqual(parsePolishAmount('-450,00 PLN'), -450.00);
-  assert.strictEqual(parsePolishAmount('-1500,00 PLN'), -1500.00);
+  assert.strictEqual(parsePolishAmount('-5 000,00 PLN'), -5000.0);
+  assert.strictEqual(parsePolishAmount('-450,00 PLN'), -450.0);
+  assert.strictEqual(parsePolishAmount('-1500,00 PLN'), -1500.0);
 });
 
 test('parsePolishAmount - edge cases', () => {
-  assert.strictEqual(parsePolishAmount('0,00 PLN'), 0.00);
-  assert.strictEqual(parsePolishAmount('-0,00 PLN'), -0.00);
-  assert.strictEqual(parsePolishAmount('100 PLN'), 100.00);
+  assert.strictEqual(parsePolishAmount('0,00 PLN'), 0.0);
+  assert.strictEqual(parsePolishAmount('-0,00 PLN'), -0.0);
+  assert.strictEqual(parsePolishAmount('100 PLN'), 100.0);
 });
 
 test('getMonthFromDate - extracts month correctly', () => {
@@ -63,17 +63,19 @@ test('processCSV - processes example file correctly', async () => {
     assert.strictEqual(
       summary.balance,
       summary.totalIncome - summary.totalExpenses,
-      'Balance should equal income minus expenses'
+      'Balance should equal income minus expenses',
     );
   }
 
   // Verify months are sorted
-  const months = summaries.map(s => s.month);
+  const months = summaries.map((s) => s.month);
   const sortedMonths = [...months].sort((a, b) => a - b);
   assert.deepStrictEqual(months, sortedMonths, 'Months should be sorted');
 
   // Based on the example CSV, we should have specific months
   const monthSet = new Set(months);
-  assert(monthSet.has(9) || monthSet.has(10) || monthSet.has(11) || monthSet.has(12),
-    'Should have at least one of the months from the example');
+  assert(
+    monthSet.has(9) || monthSet.has(10) || monthSet.has(11) || monthSet.has(12),
+    'Should have at least one of the months from the example',
+  );
 });
