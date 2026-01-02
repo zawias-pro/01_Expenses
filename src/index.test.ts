@@ -8,9 +8,13 @@ import { classifyTransaction } from './classifyTransaction.ts';
 import * as fs from 'fs';
 import * as path from 'path';
 
-test('classifyTransaction - returns others for any row', () => {
-  assert.strictEqual(classifyTransaction({}), 'others');
-  assert.strictEqual(classifyTransaction({ description: 'some description' }), 'others');
+test('classifyTransaction - uses rules from rules.csv', () => {
+  // Description containing "Czynsz" (mapped to housing in rules.csv)
+  assert.strictEqual(classifyTransaction({ description: 'PRZELEW ZA CZYNSZ' }), 'housing');
+  // Description containing "Revolut" (mapped to finance)
+  assert.strictEqual(classifyTransaction({ description: 'Revolut**1234' }), 'finance');
+  // No match
+  assert.strictEqual(classifyTransaction({ description: 'some random transaction' }), 'others');
 });
 
 test('parsePolishAmount - positive amount', () => {
