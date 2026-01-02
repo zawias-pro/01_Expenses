@@ -1,15 +1,15 @@
 {
   "name": "private-expense-analyzer",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
+  "packageManager": "yarn@4.12.0",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "test": "node --test src/index.test.ts"
   },
   "dependencies": {
+    "csv-parser": "^3.2.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
