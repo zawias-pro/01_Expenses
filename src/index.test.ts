@@ -1,6 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert';
-import { parsePolishAmount, getMonthFromDate, formatPolishNumber, processCSV } from './index.ts';
+import { parsePolishAmount } from './parsePolishAmount.ts';
+import { getMonthFromDate } from './getMonthFromDate.ts';
+import { formatPolishNumber } from './formatPolishNumber.ts';
+import { processCSV } from './processCSV.ts';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -74,4 +77,3 @@ test('processCSV - processes example file correctly', async () => {
   assert(monthSet.has(9) || monthSet.has(10) || monthSet.has(11) || monthSet.has(12),
     'Should have at least one of the months from the example');
 });
-
