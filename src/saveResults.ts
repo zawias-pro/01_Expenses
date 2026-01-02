@@ -24,13 +24,12 @@ const saveResults = (summaries: MonthlySummary[]): void => {
 
   // 2. Save category breakdown for each month
   for (const summary of summaries) {
-    let content = `${summary.month}\n`;
+    const header = 'Category;Amount\n';
     const categoryRows = Array.from(summary.categories.entries())
-      .map(([cat, amount]) => `${cat} ${formatPolishNumber(amount)}`)
+      .map(([cat, amount]) => `${cat};${formatPolishNumber(amount)}`)
       .join('\n');
-    content += categoryRows;
 
-    fs.writeFileSync(path.join(resultDir, `month_${summary.month}.csv`), content);
+    fs.writeFileSync(path.join(resultDir, `month_${summary.month}.csv`), header + categoryRows);
   }
 };
 

@@ -49,8 +49,8 @@ test('getMonthFromDate - invalid date throws', () => {
 });
 
 test('formatPolishNumber - formats correctly', () => {
-  assert.strictEqual(formatPolishNumber(1234.56), '1\u00A0234,56');
-  assert.strictEqual(formatPolishNumber(5000), '5\u00A0000,00');
+  assert.strictEqual(formatPolishNumber(1234.56), '1234,56');
+  assert.strictEqual(formatPolishNumber(5000), '5000,00');
   assert.strictEqual(formatPolishNumber(-450), '-450,00');
   assert.strictEqual(formatPolishNumber(0), '0,00');
 });

@@ -6,8 +6,7 @@ const formatPolishNumber = (num: number): string => {
   const abs = Math.abs(num);
   const fixed = abs.toFixed(2); // e.g. "1234.56"
   let [intPart, frac] = fixed.split('.');
-  // Insert non-breaking space as thousands separator
-  intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '\u00A0');
+  // Thousands separator removed as per request
   return `${sign}${intPart},${frac}`;
 };
 
