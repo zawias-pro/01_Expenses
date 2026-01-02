@@ -27,12 +27,13 @@ function App() {
   const [transactions, setTransactions] = useState<Transaction[]>(getInitialData);
   const [summaries, setSummaries] = useState<MonthlySummary[] | null>(null);
 
-  const handleUpdate = (id: string, field: keyof Transaction, value: string) => {
+  const handleUpdate = (id: string, field: keyof Transaction, value: string | boolean) => {
     setTransactions(prev => prev.map(t => t.id === id ? { ...t, [field]: value } : t));
   };
 
   const handleProcess = () => {
-    const result = processTransactions(transactions, RULES);
+    const activeTransactions = transactions.filter(t => !t.excluded);
+    const result = processTransactions(activeTransactions, RULES);
     setSummaries(result);
   };
 
@@ -43,6 +44,7 @@ function App() {
       <table className="transaction-table">
         <thead>
           <tr>
+            <th>Exclude</th>
             <th>Date</th>
             <th>Description</th>
             <th>Account</th>
@@ -52,7 +54,14 @@ function App() {
         </thead>
         <tbody>
           {transactions.map(t => (
-            <tr key={t.id}>
+            <tr key={t.id} className={t.excluded ? 'excluded-row' : ''}>
+              <td>
+                <input 
+                  type="checkbox" 
+                  checked={t.excluded} 
+                  onChange={e => handleUpdate(t.id, 'excluded', e.target.checked)} 
+                />
+              </td>
               <td><input type="text" value={t.date} onChange={e => handleUpdate(t.id, 'date', e.target.value)} /></td>
               <td><input type="text" value={t.description} onChange={e => handleUpdate(t.id, 'description', e.target.value)} /></td>
               <td><input type="text" value={t.account} onChange={e => handleUpdate(t.id, 'account', e.target.value)} /></td>

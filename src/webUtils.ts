@@ -8,6 +8,7 @@ export interface Transaction {
   account: string;
   category: string;
   amount: string;
+  excluded: boolean;
 }
 
 export interface MonthlySummary {
@@ -33,6 +34,7 @@ export const parseCSVLine = (line: string): Transaction | null => {
     account: clean(parts[2]),
     category: clean(parts[3]),
     amount: clean(parts[4]),
+    excluded: false,
   };
 };
 
