@@ -1,4 +1,4 @@
-import { MonthlySummary } from './processCSV.ts';
+import type { MonthlySummary } from './processCSV.ts';
 import { formatPolishNumber } from './formatPolishNumber.ts';
 
 const outputSummary = (summaries: MonthlySummary[]): void => {
