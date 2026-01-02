@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import type { TransactionRow } from './processCSV.ts';
 
 /**
  * Loads classification rules from rules.csv
@@ -30,7 +31,7 @@ const rules = loadRules();
 /**
  * Classifies a transaction row into a category based on description.
  */
-const classifyTransaction = (row: any): string => {
+const classifyTransaction = (row: Partial<TransactionRow>): string => {
   const description = (row.description || '').toLowerCase();
 
   for (const [keyword, category] of rules.entries()) {

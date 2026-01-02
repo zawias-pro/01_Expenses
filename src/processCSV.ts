@@ -4,6 +4,16 @@ import { getMonthFromDate } from './getMonthFromDate.ts';
 import { parsePolishAmount } from './parsePolishAmount.ts';
 import { classifyTransaction } from './classifyTransaction.ts';
 
+interface TransactionRow {
+  date: string;
+  description: string;
+  account: string;
+  category: string;
+  amount: string;
+  empty1?: string;
+  empty2?: string;
+}
+
 interface MonthlySummary {
   month: number;
   totalExpenses: number;
@@ -26,7 +36,7 @@ const processCSV = async (csvPath: string): Promise<MonthlySummary[]> => {
           headers: ['date', 'description', 'account', 'category', 'amount', 'empty1', 'empty2'],
         }),
       )
-      .on('data', (data: any) => {
+      .on('data', (data: TransactionRow) => {
         try {
           const month = getMonthFromDate(data.date);
           const amount = parsePolishAmount(data.amount);
@@ -73,4 +83,4 @@ const processCSV = async (csvPath: string): Promise<MonthlySummary[]> => {
 };
 
 export { processCSV };
-export type { MonthlySummary };
+export type { MonthlySummary, TransactionRow };
