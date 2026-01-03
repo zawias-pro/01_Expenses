@@ -4,11 +4,6 @@
   padding: 2rem;
 }
 
-.transaction-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
 .transaction-table th, .transaction-table td {
   border: 1px solid #ddd;
   padding: 8px;
@@ -26,4 +21,26 @@
 
 .month-summary {
   margin-bottom: 2rem;
+}
+
+.transaction-table-container {
+  max-height: 60vh;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+}
+
+.transaction-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.transaction-table thead {
+  position: sticky;
+  top: 0;
+  background-color: #f8f9fa;
+  z-index: 1;
+}
+
+.transaction-table thead th {
+  border-bottom: 2px solid #ddd;
 }
