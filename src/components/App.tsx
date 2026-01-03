@@ -152,7 +152,7 @@ function App() {
   })
   const [csvContent, setCsvContent] = useState<string>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.csv)
-    return saved || INITIAL_CSV
+    return saved || ''
   })
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.transactions)
@@ -192,10 +192,14 @@ function App() {
     localStorage.removeItem(STORAGE_KEYS.csv)
     localStorage.removeItem(STORAGE_KEYS.transactions)
     localStorage.removeItem(STORAGE_KEYS.step)
-    setCsvContent(INITIAL_CSV)
+    setCsvContent('')
     setTransactions([])
     setSummaries(null)
     setStep(1)
+  }
+
+  const handleFillExample = () => {
+    setCsvContent(INITIAL_CSV)
   }
 
   const handleCsvSubmit = () => {
@@ -239,6 +243,7 @@ function App() {
         <Step1
           csvContent={csvContent}
           onCsvChange={setCsvContent}
+          onFillExample={handleFillExample}
           onNext={handleCsvSubmit}
         />
       )}
