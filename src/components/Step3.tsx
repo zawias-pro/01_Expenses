@@ -1,5 +1,5 @@
-import type { MonthlySummary } from '../calculations'
-import { formatPolishNumber } from '../formatPolishNumber'
+import type { MonthlySummary } from '../parsing/calculations.ts'
+import { formatPolishNumber } from '../parsing/formatPolishNumber.ts'
 
 interface Step3Props {
   summaries: MonthlySummary[]

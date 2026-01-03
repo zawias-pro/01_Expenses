@@ -1,4 +1,4 @@
-import type { Transaction } from '../calculations'
+import type { Transaction } from '../parsing/calculations.ts'
 
 interface Step2Props {
   transactions: Transaction[]

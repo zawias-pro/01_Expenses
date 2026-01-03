@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
 import './App.css'
-import { parseCSVLine, processTransactions, parseRules } from './calculations'
-import type { Transaction, MonthlySummary } from './calculations'
-import { Step1 } from './components/Step1'
-import { Step2 } from './components/Step2'
-import { Step3 } from './components/Step3'
-import rulesContent from './rules.csv?raw'
+import { parseCSVLine, processTransactions, parseRules } from '../parsing/calculations.ts'
+import type { Transaction, MonthlySummary } from '../parsing/calculations.ts'
+import { Step1 } from './Step1.tsx'
+import { Step2 } from './Step2.tsx'
+import { Step3 } from './Step3.tsx'
+import rulesContent from '../rules.csv?raw'
 
 const INITIAL_CSV = `2025-12-12;"JAN ADAM KOWALSKI, CZYNSZ NAJMU                                                                         PRZELEW ZEWNĘTRZNY WYCHODZĄCY                                                     74899274659992743764666621  ";"MojBank 1234 ... 5678";"Czynsz i wynajem";-5 000,00 PLN;;
 2025-11-18;"ALA MAKOTA, PLATNOSC                                                                         PRZELEW ZEWNĘTRZNY WYCHODZĄCY                                                     73829917394502917062843947  ";"MojBank 1234 ... 5678";"Bez kategorii";-450,00 PLN;;
