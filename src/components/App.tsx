@@ -200,7 +200,7 @@ function App() {
 
   const handleCsvSubmit = () => {
     const lines = csvContent.split('\n').filter(l => l.trim())
-    const parsed = lines.map(parseCSVLine).filter((t): t is Transaction => t !== null)
+    const parsed = lines.map(parseCSVLine)
     setTransactions(parsed)
     setStep(2)
   }

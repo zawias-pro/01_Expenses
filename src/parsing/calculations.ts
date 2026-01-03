@@ -46,7 +46,11 @@ const parseRules = (content: string): Record<string, string> => {
   return rules
 }
 
-const validateTransaction = (date: string, description: string, account: string, category: string, amount: string): { isValid: boolean; error?: string } => {
+const validateTransaction = (date: string, description: string, account: string, category: string, amount: string, originalLine: string): { isValid: boolean; error?: string } => {
+  if (!originalLine.trim()) {
+    return { isValid: false, error: 'Empty line' }
+  }
+
   if (!date.trim()) {
     return { isValid: false, error: 'Date is required' }
   }
@@ -82,21 +86,26 @@ const validateTransaction = (date: string, description: string, account: string,
   return { isValid: true }
 }
 
-const parseCSVLine = (line: string): Transaction | null => {
+const parseCSVLine = (line: string): Transaction => {
   // Simple CSV parser for the specific format:
   // 2025-12-12;"Description";"Account";"Category";-5 000,00 PLN;;
   const parts = line.split(';')
-  if (parts.length < 5) return null
-
   const clean = (s: string) => s.replace(/^"|"$/g, '').trim()
 
-  const date = clean(parts[0])
-  const description = clean(parts[1])
-  const account = clean(parts[2])
-  const category = clean(parts[3])
-  const amount = clean(parts[4])
+  // Handle cases where we don't have enough parts
+  const date = parts.length > 0 ? clean(parts[0]) : ''
+  const description = parts.length > 1 ? clean(parts[1]) : ''
+  const account = parts.length > 2 ? clean(parts[2]) : ''
+  const category = parts.length > 3 ? clean(parts[3]) : ''
+  const amount = parts.length > 4 ? clean(parts[4]) : ''
 
-  const validation = validateTransaction(date, description, account, category, amount)
+  // Check for insufficient parts
+  let validation = validateTransaction(date, description, account, category, amount, line)
+
+  // Additional validation for insufficient CSV parts
+  if (parts.length < 5 && line.trim()) {
+    validation = { isValid: false, error: `Insufficient CSV columns (expected 5, got ${parts.length})` }
+  }
 
   return {
     id: Math.random().toString(36).substr(2, 9),
