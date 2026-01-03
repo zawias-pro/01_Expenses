@@ -57,7 +57,7 @@ const validateTransaction = (date: string, description: string, account: string,
 
   try {
     getMonthFromDate(date)
-  } catch (e) {
+  } catch {
     return { isValid: false, error: `Invalid date format: ${date}` }
   }
 
@@ -79,7 +79,7 @@ const validateTransaction = (date: string, description: string, account: string,
 
   try {
     parsePolishAmount(amount)
-  } catch (e) {
+  } catch {
     return { isValid: false, error: `Invalid amount format: ${amount}` }
   }
 
