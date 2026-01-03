@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import './App.css'
-import { parseCSVLine, processTransactions, parseRules } from './webUtils'
-import type { Transaction, MonthlySummary } from './webUtils'
-import { formatPolishNumber } from './formatPolishNumber'
+import { parseCSVLine, processTransactions, parseRules } from './calculations'
+import type { Transaction, MonthlySummary } from './calculations'
+import { Step1 } from './components/Step1'
+import { Step2 } from './components/Step2'
+import { Step3 } from './components/Step3'
 import rulesContent from './rules.csv?raw'
 
 const INITIAL_CSV = `2025-12-12;"JAN ADAM KOWALSKI, CZYNSZ NAJMU                                                                         PRZELEW ZEWNĘTRZNY WYCHODZĄCY                                                     74899274659992743764666621  ";"MojBank 1234 ... 5678";"Czynsz i wynajem";-5 000,00 PLN;;
@@ -103,81 +105,27 @@ function App() {
       </div>
       
       {step === 1 && (
-        <div>
-          <h2>Step 1: Paste CSV Content</h2>
-          <textarea
-            value={csvContent}
-            onChange={e => setCsvContent(e.target.value)}
-            rows={10}
-            style={{ width: '100%', fontFamily: 'monospace' }}
-          />
-          <div style={{ marginTop: '1rem' }}>
-            <button onClick={handleCsvSubmit}>Next</button>
-          </div>
-        </div>
+        <Step1
+          csvContent={csvContent}
+          onCsvChange={setCsvContent}
+          onNext={handleCsvSubmit}
+        />
       )}
 
       {step === 2 && (
-        <div>
-          <h2>Step 2: Exclude Transactions</h2>
-          <table className="transaction-table">
-            <thead>
-              <tr>
-                <th>Exclude</th>
-                <th>Date</th>
-                <th>Description</th>
-                <th>Account</th>
-                <th>Category</th>
-                <th>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transactions.map(t => (
-                <tr key={t.id} className={t.excluded ? 'excluded-row' : ''}>
-                  <td>
-                    <input 
-                      type="checkbox" 
-                      checked={t.excluded} 
-                      onChange={e => handleUpdateExcluded(t.id, e.target.checked)} 
-                    />
-                  </td>
-                  <td>{t.date}</td>
-                  <td>{t.description}</td>
-                  <td>{t.account}</td>
-                  <td>{t.category}</td>
-                  <td>{t.amount}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div style={{ marginTop: '1rem' }}>
-            <button onClick={handleBack} style={{ marginRight: '0.5rem' }}>Back</button>
-            <button onClick={handleProcess}>Next</button>
-          </div>
-        </div>
+        <Step2
+          transactions={transactions}
+          onExcludedChange={handleUpdateExcluded}
+          onBack={handleBack}
+          onNext={handleProcess}
+        />
       )}
 
       {step === 3 && summaries && (
-        <div>
-          <h2>Step 3: Summary</h2>
-          {summaries.map(s => (
-            <div key={s.month} className="month-summary">
-              <h3>Month: {s.month}</h3>
-              <p>Total Expenses: {formatPolishNumber(s.totalExpenses)}</p>
-              <p>Total Income: {formatPolishNumber(s.totalIncome)}</p>
-              <p>Balance: {formatPolishNumber(s.balance)}</p>
-              <h4>Categories:</h4>
-              <ul>
-                {Object.entries(s.categories).map(([cat, amount]) => (
-                  <li key={cat}>{cat}: {formatPolishNumber(amount)}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
-          <div style={{ marginTop: '1rem' }}>
-            <button onClick={handleBack}>Back</button>
-          </div>
-        </div>
+        <Step3
+          summaries={summaries}
+          onBack={handleBack}
+        />
       )}
     </div>
   )
