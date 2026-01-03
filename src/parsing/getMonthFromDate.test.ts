@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert'
 import { getMonthFromDate } from './getMonthFromDate.ts'
-import { getYearFromDate } from './calculations.ts'
+import { getYearFromDate } from './transactionProcessor.ts'
 
 test('getMonthFromDate - extracts month correctly', () => {
   assert.strictEqual(getMonthFromDate('2025-12-12'), 12)

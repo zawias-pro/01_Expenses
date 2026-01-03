@@ -1,5 +1,5 @@
-import { parseCSVLine } from '../parsing/calculations.ts'
-import type { Transaction } from '../parsing/calculations.ts'
+import { parseCSVLine } from '../parsing/csvParser.ts'
+import type { Transaction } from '../parsing/types.ts'
 
 interface Step1Props {
   csvContent: string

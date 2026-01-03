@@ -1,7 +1,10 @@
 import { test } from 'node:test'
 import assert from 'node:assert'
-import { parseCSVLine, parseRules, classifyDescription, processTransactions, aggregateByYear, aggregateAllData } from './calculations.ts'
-import type { Transaction } from './calculations.ts'
+import { parseCSVLine } from './csvParser.ts'
+import { parseRules, classifyDescription } from './classifier.ts'
+import { processTransactions } from './transactionProcessor.ts'
+import { aggregateByYear, aggregateAllData } from './aggregator.ts'
+import type { Transaction } from './types.ts'
 
 test('parseRules - parses rules correctly', () => {
   const content = 'keyword1;category1\nkeyword2;category2\n'

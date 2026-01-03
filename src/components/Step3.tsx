@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import type { MonthlySummary } from '../parsing/calculations.ts'
-import { aggregateByYear, aggregateAllData } from '../parsing/calculations.ts'
+import type { MonthlySummary } from '../parsing/types.ts'
+import { aggregateByYear, aggregateAllData } from '../parsing/aggregator.ts'
 import { formatPolishNumber } from '../parsing/formatPolishNumber.ts'
 
 type SelectionType = 'month' | 'year' | 'all'
