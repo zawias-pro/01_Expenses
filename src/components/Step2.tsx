@@ -20,16 +20,18 @@ function Step2({ transactions, onExcludedChange, onBack, onNext }: Step2Props) {
             <th>Account</th>
             <th>Category</th>
             <th>Amount</th>
+            <th>Status</th>
           </tr>
         </thead>
         <tbody>
           {transactions.map(t => (
-            <tr key={t.id} className={t.excluded ? 'excluded-row' : ''}>
+            <tr key={t.id} className={`${t.excluded ? 'excluded-row' : ''} ${!t.isValid ? 'invalid-row' : ''}`}>
               <td>
-                <input 
-                  type="checkbox" 
-                  checked={t.excluded} 
-                  onChange={e => onExcludedChange(t.id, e.target.checked)} 
+                <input
+                  type="checkbox"
+                  checked={t.excluded}
+                  onChange={e => onExcludedChange(t.id, e.target.checked)}
+                  disabled={!t.isValid}
                 />
               </td>
               <td>{t.date}</td>
@@ -37,6 +39,15 @@ function Step2({ transactions, onExcludedChange, onBack, onNext }: Step2Props) {
               <td>{t.account}</td>
               <td>{t.category}</td>
               <td>{t.amount}</td>
+              <td>
+                {t.isValid ? (
+                  <span style={{ color: 'green' }}>✓ Valid</span>
+                ) : (
+                  <span style={{ color: 'red' }}>
+                    ✗ Error: {t.validationError}
+                  </span>
+                )}
+              </td>
             </tr>
           ))}
         </tbody>

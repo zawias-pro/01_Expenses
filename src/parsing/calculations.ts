@@ -9,6 +9,8 @@ interface Transaction {
   category: string
   amount: string
   excluded: boolean
+  isValid: boolean
+  validationError?: string
 }
 
 interface MonthlySummary {
@@ -35,22 +37,68 @@ const parseRules = (content: string): Record<string, string> => {
   return rules
 }
 
+const validateTransaction = (date: string, description: string, account: string, category: string, amount: string): { isValid: boolean; error?: string } => {
+  if (!date.trim()) {
+    return { isValid: false, error: 'Date is required' }
+  }
+
+  try {
+    getMonthFromDate(date)
+  } catch (e) {
+    return { isValid: false, error: `Invalid date format: ${date}` }
+  }
+
+  if (!description.trim()) {
+    return { isValid: false, error: 'Description is required' }
+  }
+
+  if (!account.trim()) {
+    return { isValid: false, error: 'Account is required' }
+  }
+
+  if (!category.trim()) {
+    return { isValid: false, error: 'Category is required' }
+  }
+
+  if (!amount.trim()) {
+    return { isValid: false, error: 'Amount is required' }
+  }
+
+  try {
+    parsePolishAmount(amount)
+  } catch (e) {
+    return { isValid: false, error: `Invalid amount format: ${amount}` }
+  }
+
+  return { isValid: true }
+}
+
 const parseCSVLine = (line: string): Transaction | null => {
-  // Simple CSV parser for the specific format: 
+  // Simple CSV parser for the specific format:
   // 2025-12-12;"Description";"Account";"Category";-5 000,00 PLN;;
   const parts = line.split(';')
   if (parts.length < 5) return null
 
   const clean = (s: string) => s.replace(/^"|"$/g, '').trim()
 
+  const date = clean(parts[0])
+  const description = clean(parts[1])
+  const account = clean(parts[2])
+  const category = clean(parts[3])
+  const amount = clean(parts[4])
+
+  const validation = validateTransaction(date, description, account, category, amount)
+
   return {
     id: Math.random().toString(36).substr(2, 9),
-    date: clean(parts[0]),
-    description: clean(parts[1]),
-    account: clean(parts[2]),
-    category: clean(parts[3]),
-    amount: clean(parts[4]),
-    excluded: false,
+    date,
+    description,
+    account,
+    category,
+    amount,
+    excluded: !validation.isValid, // Automatically exclude invalid rows
+    isValid: validation.isValid,
+    validationError: validation.error,
   }
 }
 

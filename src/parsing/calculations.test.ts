@@ -27,6 +27,8 @@ test('parseCSVLine - parses valid CSV line', () => {
   assert.strictEqual(result?.category, 'Category')
   assert.strictEqual(result?.amount, '-5 000,00 PLN')
   assert.strictEqual(result?.excluded, false)
+  assert.strictEqual(result?.isValid, true)
+  assert.strictEqual(result?.validationError, undefined)
   assert(typeof result?.id === 'string')
 })
 
@@ -34,6 +36,33 @@ test('parseCSVLine - returns null for invalid line', () => {
   const line = 'invalid'
   const result = parseCSVLine(line)
   assert.strictEqual(result, null)
+})
+
+test('parseCSVLine - marks invalid date as excluded', () => {
+  const line = 'invalid-date;"Description";"Account";"Category";-5 000,00 PLN;;'
+  const result = parseCSVLine(line)
+  assert(result !== null)
+  assert.strictEqual(result?.isValid, false)
+  assert.strictEqual(result?.excluded, true)
+  assert.strictEqual(result?.validationError, 'Invalid date format: invalid-date')
+})
+
+test('parseCSVLine - marks missing amount as excluded', () => {
+  const line = '2025-12-12;"Description";"Account";"Category";;'
+  const result = parseCSVLine(line)
+  assert(result !== null)
+  assert.strictEqual(result?.isValid, false)
+  assert.strictEqual(result?.excluded, true)
+  assert.strictEqual(result?.validationError, 'Amount is required')
+})
+
+test('parseCSVLine - marks invalid amount as excluded', () => {
+  const line = '2025-12-12;"Description";"Account";"Category";invalid-amount;;'
+  const result = parseCSVLine(line)
+  assert(result !== null)
+  assert.strictEqual(result?.isValid, false)
+  assert.strictEqual(result?.excluded, true)
+  assert.strictEqual(result?.validationError, 'Invalid amount format: invalid-amount')
 })
 
 test('parseCSVLine - handles quotes correctly', () => {
@@ -67,6 +96,7 @@ test('processTransactions - processes transactions correctly', () => {
       category: 'Category1',
       amount: '-5 000,00 PLN',
       excluded: false,
+      isValid: true,
     },
     {
       id: '2',
@@ -76,6 +106,7 @@ test('processTransactions - processes transactions correctly', () => {
       category: 'Category1',
       amount: '2 000,00 PLN',
       excluded: false,
+      isValid: true,
     },
     {
       id: '3',
@@ -85,6 +116,7 @@ test('processTransactions - processes transactions correctly', () => {
       category: 'Category1',
       amount: '-1 000,00 PLN',
       excluded: false,
+      isValid: true,
     },
   ]
   const rules = { 'test': 'test-category' }
@@ -115,6 +147,7 @@ test('processTransactions - processes all transactions passed to it', () => {
       category: 'Category1',
       amount: '-5 000,00 PLN',
       excluded: true,
+      isValid: true,
     },
     {
       id: '2',
@@ -124,6 +157,7 @@ test('processTransactions - processes all transactions passed to it', () => {
       category: 'Category1',
       amount: '2 000,00 PLN',
       excluded: false,
+      isValid: true,
     },
   ]
   const rules = {}
@@ -148,6 +182,8 @@ test('processTransactions - handles invalid transactions gracefully', () => {
       category: 'Category1',
       amount: '-5 000,00 PLN',
       excluded: false,
+      isValid: false,
+      validationError: 'Invalid date format: invalid-date',
     },
     {
       id: '2',
@@ -157,6 +193,8 @@ test('processTransactions - handles invalid transactions gracefully', () => {
       category: 'Category1',
       amount: 'invalid-amount',
       excluded: false,
+      isValid: false,
+      validationError: 'Invalid amount format: invalid-amount',
     },
     {
       id: '3',
@@ -166,6 +204,7 @@ test('processTransactions - handles invalid transactions gracefully', () => {
       category: 'Category1',
       amount: '100,00 PLN',
       excluded: false,
+      isValid: true,
     },
   ]
   const rules = {}
@@ -186,6 +225,7 @@ test('processTransactions - sorts months correctly', () => {
       category: 'Category1',
       amount: '100,00 PLN',
       excluded: false,
+      isValid: true,
     },
     {
       id: '2',
@@ -195,6 +235,7 @@ test('processTransactions - sorts months correctly', () => {
       category: 'Category1',
       amount: '200,00 PLN',
       excluded: false,
+      isValid: true,
     },
     {
       id: '3',
@@ -204,6 +245,7 @@ test('processTransactions - sorts months correctly', () => {
       category: 'Category1',
       amount: '300,00 PLN',
       excluded: false,
+      isValid: true,
     },
   ]
   const rules = {}

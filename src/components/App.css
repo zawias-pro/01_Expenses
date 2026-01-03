@@ -19,6 +19,11 @@
   color: #999;
 }
 
+.invalid-row {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
 .month-summary {
   margin-bottom: 2rem;
 }
