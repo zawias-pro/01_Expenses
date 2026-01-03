@@ -20,7 +20,8 @@ describe('Expense Analyzer App', () => {
     // Step 2 -> Step 3
     cy.contains('Next').click()
     cy.contains('Step 3: Summary').should('be.visible')
-    cy.contains('Month:').should('be.visible')
+    cy.get('select#month-select').should('be.visible')
+    cy.contains(/\w+ \d{4}/).should('be.visible') // Month Year format
   })
 
   it('should allow going back to previous steps', () => {

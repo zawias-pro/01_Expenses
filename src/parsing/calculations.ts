@@ -1,6 +1,14 @@
 import { getMonthFromDate } from './getMonthFromDate.ts'
 import { parsePolishAmount } from './parsePolishAmount.ts'
 
+const getYearFromDate = (dateStr: string): number => {
+  const date = new Date(dateStr)
+  if (isNaN(date.getTime())) {
+    throw new Error(`Invalid date: ${dateStr}`)
+  }
+  return date.getFullYear()
+}
+
 interface Transaction {
   id: string
   date: string
@@ -14,6 +22,7 @@ interface Transaction {
 }
 
 interface MonthlySummary {
+  year: number
   month: number
   totalExpenses: number
   totalIncome: number
@@ -113,19 +122,21 @@ const classifyDescription = (description: string, rules: Record<string, string>)
 }
 
 const processTransactions = (transactions: Transaction[], rules: Record<string, string>): MonthlySummary[] => {
-  const monthlyData: Record<number, { expenses: number; income: number; categories: Record<string, number> }> = {}
+  const monthlyData: Record<string, { expenses: number; income: number; categories: Record<string, number> }> = {}
 
   transactions.forEach(t => {
     try {
+      const year = getYearFromDate(t.date)
       const month = getMonthFromDate(t.date)
       const amount = parsePolishAmount(t.amount)
       const category = classifyDescription(t.description, rules)
 
-      if (!monthlyData[month]) {
-        monthlyData[month] = { expenses: 0, income: 0, categories: {} }
+      const key = `${year}-${month}`
+      if (!monthlyData[key]) {
+        monthlyData[key] = { expenses: 0, income: 0, categories: {} }
       }
 
-      const data = monthlyData[month]
+      const data = monthlyData[key]
       if (amount < 0) {
         const absAmount = Math.abs(amount)
         data.expenses += absAmount
@@ -139,16 +150,23 @@ const processTransactions = (transactions: Transaction[], rules: Record<string, 
   })
 
   return Object.entries(monthlyData)
-    .map(([month, data]) => ({
-      month: parseInt(month),
-      totalExpenses: data.expenses,
-      totalIncome: data.income,
-      balance: data.income - data.expenses,
-      categories: data.categories,
-    }))
-    .sort((a, b) => a.month - b.month)
+    .map(([key, data]) => {
+      const [year, month] = key.split('-').map(Number)
+      return {
+        year,
+        month,
+        totalExpenses: data.expenses,
+        totalIncome: data.income,
+        balance: data.income - data.expenses,
+        categories: data.categories,
+      }
+    })
+    .sort((a, b) => {
+      if (a.year !== b.year) return a.year - b.year
+      return a.month - b.month
+    })
 }
 
-export { parseCSVLine, classifyDescription, processTransactions, parseRules }
+export { parseCSVLine, classifyDescription, processTransactions, parseRules, getYearFromDate }
 export type { Transaction, MonthlySummary }
 

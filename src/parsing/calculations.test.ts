@@ -123,14 +123,14 @@ test('processTransactions - processes transactions correctly', () => {
   const result = processTransactions(transactions, rules)
   
   assert(result.length === 2)
-  const dec = result.find(s => s.month === 12)
-  const nov = result.find(s => s.month === 11)
-  
+  const dec = result.find(s => s.year === 2025 && s.month === 12)
+  const nov = result.find(s => s.year === 2025 && s.month === 11)
+
   assert(dec !== undefined)
   assert.strictEqual(dec.totalExpenses, 5000)
   assert.strictEqual(dec.totalIncome, 2000)
   assert.strictEqual(dec.balance, -3000)
-  
+
   assert(nov !== undefined)
   assert.strictEqual(nov.totalExpenses, 1000)
   assert.strictEqual(nov.totalIncome, 0)
@@ -215,7 +215,7 @@ test('processTransactions - handles invalid transactions gracefully', () => {
   assert.strictEqual(result[0].totalIncome, 100)
 })
 
-test('processTransactions - sorts months correctly', () => {
+test('processTransactions - sorts months correctly within same year', () => {
   const transactions: Transaction[] = [
     {
       id: '1',
@@ -250,10 +250,59 @@ test('processTransactions - sorts months correctly', () => {
   ]
   const rules = {}
   const result = processTransactions(transactions, rules)
-  
+
   assert.strictEqual(result.length, 3)
+  assert.strictEqual(result[0].year, 2025)
   assert.strictEqual(result[0].month, 1)
+  assert.strictEqual(result[1].year, 2025)
   assert.strictEqual(result[1].month, 6)
+  assert.strictEqual(result[2].year, 2025)
   assert.strictEqual(result[2].month, 12)
+})
+
+test('processTransactions - sorts by year then month across multiple years', () => {
+  const transactions: Transaction[] = [
+    {
+      id: '1',
+      date: '2025-03-15',
+      description: 'Test 2025 March',
+      account: 'Account1',
+      category: 'Category1',
+      amount: '100,00 PLN',
+      excluded: false,
+      isValid: true,
+    },
+    {
+      id: '2',
+      date: '2024-12-01',
+      description: 'Test 2024 December',
+      account: 'Account1',
+      category: 'Category1',
+      amount: '200,00 PLN',
+      excluded: false,
+      isValid: true,
+    },
+    {
+      id: '3',
+      date: '2024-01-15',
+      description: 'Test 2024 January',
+      account: 'Account1',
+      category: 'Category1',
+      amount: '300,00 PLN',
+      excluded: false,
+      isValid: true,
+    },
+  ]
+  const rules = {}
+  const result = processTransactions(transactions, rules)
+
+  assert.strictEqual(result.length, 3)
+  // Should be sorted by year then month: 2024-01, 2024-12, 2025-03
+  assert.strictEqual(result[0].year, 2024)
+  assert.strictEqual(result[0].month, 1)
+  assert.strictEqual(result[1].year, 2024)
+  assert.strictEqual(result[1].month, 12)
+  assert.strictEqual(result[2].year, 2025)
+  assert.strictEqual(result[2].month, 3)
 })
 
