@@ -1,7 +1,7 @@
 import { getMonthFromDate } from './getMonthFromDate.ts'
 import { parsePolishAmount } from './parsePolishAmount.ts'
 
-export interface Transaction {
+interface Transaction {
   id: string
   date: string
   description: string
@@ -11,7 +11,7 @@ export interface Transaction {
   excluded: boolean
 }
 
-export interface MonthlySummary {
+interface MonthlySummary {
   month: number
   totalExpenses: number
   totalIncome: number
@@ -19,7 +19,7 @@ export interface MonthlySummary {
   categories: Record<string, number>
 }
 
-export const parseRules = (content: string): Record<string, string> => {
+const parseRules = (content: string): Record<string, string> => {
   const rules: Record<string, string> = {}
   const lines = content.split('\n')
   for (const line of lines) {
@@ -35,7 +35,7 @@ export const parseRules = (content: string): Record<string, string> => {
   return rules
 }
 
-export const parseCSVLine = (line: string): Transaction | null => {
+const parseCSVLine = (line: string): Transaction | null => {
   // Simple CSV parser for the specific format: 
   // 2025-12-12;"Description";"Account";"Category";-5 000,00 PLN;;
   const parts = line.split(';')
@@ -54,7 +54,7 @@ export const parseCSVLine = (line: string): Transaction | null => {
   }
 }
 
-export const classifyDescription = (description: string, rules: Record<string, string>): string => {
+const classifyDescription = (description: string, rules: Record<string, string>): string => {
   const desc = description.toLowerCase()
   for (const [keyword, category] of Object.entries(rules)) {
     if (desc.includes(keyword.toLowerCase())) {
@@ -64,7 +64,7 @@ export const classifyDescription = (description: string, rules: Record<string, s
   return 'others'
 }
 
-export const processTransactions = (transactions: Transaction[], rules: Record<string, string>): MonthlySummary[] => {
+const processTransactions = (transactions: Transaction[], rules: Record<string, string>): MonthlySummary[] => {
   const monthlyData: Record<number, { expenses: number; income: number; categories: Record<string, number> }> = {}
 
   transactions.forEach(t => {
@@ -100,4 +100,7 @@ export const processTransactions = (transactions: Transaction[], rules: Record<s
     }))
     .sort((a, b) => a.month - b.month)
 }
+
+export { parseCSVLine, classifyDescription, processTransactions, parseRules }
+export type { Transaction, MonthlySummary }
 

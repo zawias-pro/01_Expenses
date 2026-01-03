@@ -4,7 +4,7 @@ interface Step1Props {
   onNext: () => void
 }
 
-export function Step1({ csvContent, onCsvChange, onNext }: Step1Props) {
+function Step1({ csvContent, onCsvChange, onNext }: Step1Props) {
   return (
     <div>
       <h2>Step 1: Paste CSV Content</h2>
@@ -20,4 +20,7 @@ export function Step1({ csvContent, onCsvChange, onNext }: Step1Props) {
     </div>
   )
 }
+
+export { Step1 }
+
 

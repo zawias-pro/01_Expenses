@@ -7,7 +7,7 @@ interface Step2Props {
   onNext: () => void
 }
 
-export function Step2({ transactions, onExcludedChange, onBack, onNext }: Step2Props) {
+function Step2({ transactions, onExcludedChange, onBack, onNext }: Step2Props) {
   return (
     <div>
       <h2>Step 2: Exclude Transactions</h2>
@@ -48,4 +48,7 @@ export function Step2({ transactions, onExcludedChange, onBack, onNext }: Step2P
     </div>
   )
 }
+
+export { Step2 }
+
 

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "lint": "eslint .",
-    "test": "node --test src/index.test.ts",
+    "test": "node --test src/**/*.test.ts",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run"
   },

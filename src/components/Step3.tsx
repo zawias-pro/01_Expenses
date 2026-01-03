@@ -6,7 +6,7 @@ interface Step3Props {
   onBack: () => void
 }
 
-export function Step3({ summaries, onBack }: Step3Props) {
+function Step3({ summaries, onBack }: Step3Props) {
   return (
     <div>
       <h2>Step 3: Summary</h2>
@@ -30,4 +30,7 @@ export function Step3({ summaries, onBack }: Step3Props) {
     </div>
   )
 }
+
+export { Step3 }
+
 
