@@ -9,6 +9,7 @@ const config = defineConfig([
   globalIgnores(['.yarn', '*.config.{js,ts}']),
   {
     files: ['**/*.{ts,tsx}'],
+    ignores: ['cypress/**'],
     extends: [
       js.configs.recommended,
       tseslint.configs.recommended,
@@ -32,6 +33,17 @@ const config = defineConfig([
         },
       ],
       'semi': ['error', 'never'],
+    },
+  },
+  {
+    files: ['cypress/**/*.{ts,js}'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: {
+        ...globals.node,
+        cy: 'readonly',
+        Cypress: 'readonly',
+      },
     },
   },
 ])
