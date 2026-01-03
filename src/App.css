@@ -2,13 +2,11 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
-  font-family: sans-serif;
 }
 
 .transaction-table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 2rem;
 }
 
 .transaction-table th, .transaction-table td {
@@ -18,71 +16,9 @@
 }
 
 .excluded-row {
-  background-color: #f9f9f9;
   color: #999;
-}
-
-.excluded-row input[type="text"] {
-  color: #999;
-  text-decoration: line-through;
-}
-
-.transaction-table th {
-  background-color: #f4f4f4;
-}
-
-.transaction-table input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 4px;
-  border: 1px solid transparent;
-}
-
-.transaction-table input:focus {
-  border-color: #007bff;
-  outline: none;
-}
-
-.process-btn {
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 4px;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  width: 80%;
-  max-height: 80%;
-  overflow-y: auto;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  color: #333;
 }
 
 .month-summary {
-  border-bottom: 1px solid #eee;
-  padding-bottom: 1rem;
-  margin-bottom: 1rem;
-}
-
-.month-summary:last-child {
-  border-bottom: none;
+  margin-bottom: 2rem;
 }
