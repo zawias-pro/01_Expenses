@@ -139,6 +139,7 @@ const RULES = parseRules(rulesContent)
 
 const STORAGE_KEYS = {
   csv: 'expense-analyzer-csv',
+  delimiter: 'expense-analyzer-delimiter',
   transactions: 'expense-analyzer-transactions',
   step: 'expense-analyzer-step',
 }
@@ -154,6 +155,10 @@ function App() {
     const saved = localStorage.getItem(STORAGE_KEYS.csv)
     return saved || ''
   })
+  const [delimiter, setDelimiter] = useState<string>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.delimiter)
+    return saved || ';'
+  })
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.transactions)
     return saved ? JSON.parse(saved) : []
@@ -165,6 +170,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.csv, csvContent)
   }, [csvContent])
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.delimiter, delimiter)
+  }, [delimiter])
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.transactions, JSON.stringify(transactions))
@@ -190,9 +199,11 @@ function App() {
 
   const handleClear = () => {
     localStorage.removeItem(STORAGE_KEYS.csv)
+    localStorage.removeItem(STORAGE_KEYS.delimiter)
     localStorage.removeItem(STORAGE_KEYS.transactions)
     localStorage.removeItem(STORAGE_KEYS.step)
     setCsvContent('')
+    setDelimiter(';')
     setTransactions([])
     setSummaries(null)
     setStep(1)
@@ -204,7 +215,7 @@ function App() {
 
   const handleCsvSubmit = () => {
     const lines = csvContent.split('\n').filter(l => l.trim())
-    const parsed = lines.map(parseCSVLine)
+    const parsed = lines.map(line => parseCSVLine(line, delimiter))
     setTransactions(parsed)
     setStep(2)
   }
@@ -242,7 +253,9 @@ function App() {
       {step === 1 && (
         <Step1
           csvContent={csvContent}
+          delimiter={delimiter}
           onCsvChange={setCsvContent}
+          onDelimiterChange={setDelimiter}
           onFillExample={handleFillExample}
           onNext={handleCsvSubmit}
         />

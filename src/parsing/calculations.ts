@@ -86,10 +86,10 @@ const validateTransaction = (date: string, description: string, account: string,
   return { isValid: true }
 }
 
-const parseCSVLine = (line: string): Transaction => {
+const parseCSVLine = (line: string, delimiter: string = ';'): Transaction => {
   // Simple CSV parser for the specific format:
   // 2025-12-12;"Description";"Account";"Category";-5 000,00 PLN;;
-  const parts = line.split(';')
+  const parts = line.split(delimiter)
   const clean = (s: string) => s.replace(/^"|"$/g, '').trim()
 
   // Handle cases where we don't have enough parts
