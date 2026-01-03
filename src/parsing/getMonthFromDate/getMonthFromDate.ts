@@ -1,3 +1,8 @@
+/**
+ * Example:
+ * Input: "2025-12-15"
+ * Output: 12
+ */
 const getMonthFromDate = (dateStr: string): number => {
   const date = new Date(dateStr)
   if (isNaN(date.getTime())) {

@@ -1,3 +1,8 @@
+/**
+ * Example:
+ * Input: 1234.56
+ * Output: "1 234,56"
+ */
 const formatPolishNumber = (num: number): string => {
   const sign = num < 0 ? '-' : ''
   const abs = Math.abs(num)

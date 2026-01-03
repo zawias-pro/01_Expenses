@@ -1,3 +1,8 @@
+/**
+ * Example:
+ * Input: "-1 234,56 PLN"
+ * Output: -1234.56
+ */
 const parsePolishAmount = (amountStr: string): number => {
   const cleanAmount = amountStr.replace(' PLN', '').trim()
   const isNegative = cleanAmount.startsWith('-')

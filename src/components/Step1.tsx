@@ -1,4 +1,4 @@
-import { parseCSVLine } from '../parsing/csvParser.ts'
+import { parseCSVLine } from '../parsing/parseCSVLine/parseCSVLine.ts'
 import type { Transaction } from '../parsing/types.ts'
 
 const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillExample, onNext }: {

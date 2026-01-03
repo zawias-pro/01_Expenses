@@ -1,6 +1,22 @@
-import type { Transaction } from './types.ts'
-import { validateTransaction } from './validation.ts'
+import type { Transaction } from '../types.ts'
+import { validateTransaction } from '../validateTransaction/validateTransaction.ts'
 
+/**
+ * Example:
+ * Input: "2025-12-12;"JAN ADAM KOWALSKI, CZYNSZ NAJMU PRZELEW ZEWNĘTRZNY WYCHODZĄCY 74899274659992743764666621 ";"MojBank 1234 ... 5678";"Czynsz i wynajem";-5 000,00 PLN;;"
+ * Output: {
+ *   id: "abc123",
+ *   date: "2025-12-12",
+ *   description: "JAN ADAM KOWALSKI, CZYNSZ NAJMU PRZELEW ZEWNĘTRZNY WYCHODZĄCY 74899274659992743764666621",
+ *   account: "MojBank 1234 ... 5678",
+ *   category: "Czynsz i wynajem",
+ *   amount: "-5 000,00 PLN",
+ *   excluded: false,
+ *   isValid: true,
+ *   validationError: undefined,
+ *   overridden: false
+ * }
+ */
 const parseCSVLine = (line: string, delimiter: string = ';'): Transaction => {
   // Simple CSV parser for the specific format:
   // 2025-12-12;"Description";"Account";"Category";-5 000,00 PLN;;

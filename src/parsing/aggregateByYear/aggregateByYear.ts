@@ -1,5 +1,15 @@
-import type { MonthlySummary, YearlySummary, AllDataSummary } from './types.ts'
+import type { MonthlySummary, YearlySummary } from '../types.ts'
 
+/**
+ * Example:
+ * Input: [
+ *   { year: 2025, month: 1, totalExpenses: 1000, totalIncome: 2000, balance: 1000, categories: { 'food': 500, 'transport': 500 } },
+ *   { year: 2025, month: 2, totalExpenses: 1500, totalIncome: 2500, balance: 1000, categories: { 'food': 800, 'entertainment': 700 } }
+ * ]
+ * Output: [
+ *   { year: 2025, totalExpenses: 2500, totalIncome: 4500, balance: 2000, categories: { 'food': 1300, 'transport': 500, 'entertainment': 700 } }
+ * ]
+ */
 const aggregateByYear = (summaries: MonthlySummary[]): YearlySummary[] => {
   const yearlyData: Record<number, { expenses: number; income: number; categories: Record<string, number> }> = {}
 
@@ -28,24 +38,4 @@ const aggregateByYear = (summaries: MonthlySummary[]): YearlySummary[] => {
     .sort((a, b) => a.year - b.year)
 }
 
-const aggregateAllData = (summaries: MonthlySummary[]): AllDataSummary => {
-  const allData = { expenses: 0, income: 0, categories: {} as Record<string, number> }
-
-  summaries.forEach(s => {
-    allData.expenses += s.totalExpenses
-    allData.income += s.totalIncome
-
-    Object.entries(s.categories).forEach(([cat, amount]) => {
-      allData.categories[cat] = (allData.categories[cat] || 0) + amount
-    })
-  })
-
-  return {
-    totalExpenses: allData.expenses,
-    totalIncome: allData.income,
-    balance: allData.income - allData.expenses,
-    categories: allData.categories,
-  }
-}
-
-export { aggregateByYear, aggregateAllData }
+export { aggregateByYear }

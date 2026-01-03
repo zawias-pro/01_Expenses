@@ -1,6 +1,11 @@
-import { getMonthFromDate } from './getMonthFromDate.ts'
-import { parsePolishAmount } from './parsePolishAmount.ts'
+import { getMonthFromDate } from '../getMonthFromDate/getMonthFromDate.ts'
+import { parsePolishAmount } from '../parsePolishAmount/parsePolishAmount.ts'
 
+/**
+ * Example:
+ * Input: "2025-12-12", "Description", "Account", "Category", "-5000,00 PLN", "original line"
+ * Output: { isValid: true } or { isValid: false, error: "error message" }
+ */
 const validateTransaction = (date: string, description: string, account: string, category: string, amount: string, originalLine: string): { isValid: boolean; error?: string } => {
   if (!originalLine.trim()) {
     return { isValid: false, error: 'Empty line' }
