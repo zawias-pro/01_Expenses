@@ -5,19 +5,17 @@ import { formatPolishNumber } from '../parsing/formatPolishNumber.ts'
 
 type SelectionType = 'month' | 'year' | 'all'
 
-interface Step3Props {
-  summaries: MonthlySummary[]
-  selectedMonth: { year: number; month: number }
-  onSelectionChange: (type: SelectionType, year?: number, month?: number) => void
-  onBack: () => void
-}
-
 const monthNames = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'
 ]
 
-const Step3 = ({ summaries, selectedMonth, onSelectionChange, onBack }: Step3Props) => {
+const Step3 = ({ summaries, selectedMonth, onSelectionChange, onBack }: {
+  summaries: MonthlySummary[]
+  selectedMonth: { year: number; month: number }
+  onSelectionChange: (type: SelectionType, year?: number, month?: number) => void
+  onBack: () => void
+}) => {
   const [selectionType, setSelectionType] = useState<SelectionType>('month')
   const [selectedYear, setSelectedYear] = useState<number | null>(selectedMonth.year)
 

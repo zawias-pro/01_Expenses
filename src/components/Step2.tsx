@@ -1,6 +1,14 @@
 import type { Transaction } from '../parsing/types.ts'
 
-interface Step2Props {
+const Step2 = ({
+   transactions,
+   categories,
+   onExcludedChange,
+   onCategoryChange,
+   onDateChange,
+   onBack,
+   onNext
+}: {
   transactions: Transaction[]
   categories: string[]
   onExcludedChange: (id: string, excluded: boolean) => void
@@ -8,9 +16,7 @@ interface Step2Props {
   onDateChange: (id: string, date: string) => void
   onBack: () => void
   onNext: () => void
-}
-
-const Step2 = ({ transactions, categories, onExcludedChange, onCategoryChange, onDateChange, onBack, onNext }: Step2Props) => {
+}) => {
   return (
     <div>
       <h2>Step 2: Exclude Transactions</h2>

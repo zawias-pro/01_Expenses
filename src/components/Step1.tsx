@@ -1,16 +1,14 @@
 import { parseCSVLine } from '../parsing/csvParser.ts'
 import type { Transaction } from '../parsing/types.ts'
 
-interface Step1Props {
+const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillExample, onNext }: {
   csvContent: string
   delimiter: string
   onCsvChange: (content: string) => void
   onDelimiterChange: (delimiter: string) => void
   onFillExample: () => void
   onNext: () => void
-}
-
-const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillExample, onNext }: Step1Props) => {
+}) => {
   // Parse preview transactions from first 3 rows
   const getPreviewTransactions = (): Transaction[] => {
     if (!csvContent.trim()) return []
