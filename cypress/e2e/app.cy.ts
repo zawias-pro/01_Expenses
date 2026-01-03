@@ -41,6 +41,8 @@ describe('Expense Analyzer App', () => {
     // Step 2 -> Step 3
     cy.contains('Next').click()
     cy.contains('Step 3: Summary').should('be.visible')
+    cy.get('select#selection-type-select').should('be.visible')
+    cy.get('select#selection-type-select').should('have.value', 'month')
     cy.get('select#month-select').should('be.visible')
     cy.contains(/\w+ \d{4}/).should('be.visible') // Month Year format
   })
@@ -109,6 +111,61 @@ describe('Expense Analyzer App', () => {
     cy.reload()
     cy.contains('Step 1: Paste CSV Content').should('be.visible')
     cy.get('textarea').should('be.empty')
+  })
+
+  it('should allow selecting all data view in step 3', () => {
+    cy.visit('/')
+    cy.contains('Fill with Example Data').click()
+    cy.contains('Next').click()
+    cy.contains('Next').click()
+    cy.contains('Step 3: Summary').should('be.visible')
+
+    // Select "All Data" view
+    cy.get('select#selection-type-select').select('all')
+    cy.contains('All Data').should('be.visible')
+    cy.get('select#month-select').should('not.exist')
+    cy.get('select#year-select').should('not.exist')
+  })
+
+  it('should allow selecting year view in step 3', () => {
+    cy.visit('/')
+    cy.contains('Fill with Example Data').click()
+    cy.contains('Next').click()
+    cy.contains('Next').click()
+    cy.contains('Step 3: Summary').should('be.visible')
+
+    // Select "By Year" view
+    cy.get('select#selection-type-select').select('year')
+    cy.get('select#year-select').should('be.visible')
+    cy.contains('Year').should('be.visible')
+    cy.get('select#month-select').should('not.exist')
+  })
+
+  it('should allow switching between view types in step 3', () => {
+    cy.visit('/')
+    cy.contains('Fill with Example Data').click()
+    cy.contains('Next').click()
+    cy.contains('Next').click()
+    cy.contains('Step 3: Summary').should('be.visible')
+
+    // Start with month view (default)
+    cy.get('select#selection-type-select').should('have.value', 'month')
+    cy.get('select#month-select').should('be.visible')
+
+    // Switch to year view
+    cy.get('select#selection-type-select').select('year')
+    cy.get('select#year-select').should('be.visible')
+    cy.get('select#month-select').should('not.exist')
+
+    // Switch to all data view
+    cy.get('select#selection-type-select').select('all')
+    cy.contains('All Data').should('be.visible')
+    cy.get('select#year-select').should('not.exist')
+    cy.get('select#month-select').should('not.exist')
+
+    // Switch back to month view
+    cy.get('select#selection-type-select').select('month')
+    cy.get('select#month-select').should('be.visible')
   })
 })
 

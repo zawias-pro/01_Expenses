@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert'
-import { parseCSVLine, parseRules, classifyDescription, processTransactions } from './calculations.ts'
+import { parseCSVLine, parseRules, classifyDescription, processTransactions, aggregateByYear, aggregateAllData } from './calculations.ts'
 import type { Transaction } from './calculations.ts'
 
 test('parseRules - parses rules correctly', () => {
@@ -42,7 +42,7 @@ test('parseCSVLine - marks insufficient columns as invalid', () => {
 
 test('parseCSVLine - marks empty line as invalid', () => {
   const line = ''
-  const result = parseCSVLine(line)
+  const result = parseCSVLine(line, ';')
   assert.strictEqual(result.isValid, false)
   assert.strictEqual(result.excluded, true)
   assert.strictEqual(result.validationError, 'Empty line')
@@ -146,7 +146,7 @@ test('processTransactions - processes transactions correctly', () => {
   ]
   const rules = { 'test': 'test-category' }
   const result = processTransactions(transactions, rules)
-  
+
   assert(result.length === 2)
   const dec = result.find(s => s.year === 2025 && s.month === 12)
   const nov = result.find(s => s.year === 2025 && s.month === 11)
@@ -189,7 +189,7 @@ test('processTransactions - processes all transactions passed to it', () => {
   // Note: processTransactions processes all transactions - filtering excluded ones
   // should happen before calling this function
   const result = processTransactions(transactions, rules)
-  
+
   assert(result.length === 1)
   const dec = result[0]
   // Both transactions are processed regardless of excluded flag
@@ -234,7 +234,7 @@ test('processTransactions - handles invalid transactions gracefully', () => {
   ]
   const rules = {}
   const result = processTransactions(transactions, rules)
-  
+
   // Should only process the valid transaction
   assert(result.length === 1)
   assert.strictEqual(result[0].totalIncome, 100)
@@ -331,3 +331,45 @@ test('processTransactions - sorts by year then month across multiple years', () 
   assert.strictEqual(result[2].month, 3)
 })
 
+test('aggregateByYear - aggregates monthly summaries by year', () => {
+  const monthlySummaries = [
+    { year: 2024, month: 1, totalExpenses: 1000, totalIncome: 2000, balance: 1000, categories: { 'cat1': 1000 } },
+    { year: 2024, month: 2, totalExpenses: 500, totalIncome: 1500, balance: 1000, categories: { 'cat1': 300, 'cat2': 200 } },
+    { year: 2025, month: 1, totalExpenses: 800, totalIncome: 1200, balance: 400, categories: { 'cat1': 800 } },
+  ]
+
+  const result = aggregateByYear(monthlySummaries)
+
+  assert.strictEqual(result.length, 2)
+
+  const year2024 = result.find(s => s.year === 2024)
+  assert(year2024 !== undefined)
+  assert.strictEqual(year2024.totalExpenses, 1500)
+  assert.strictEqual(year2024.totalIncome, 3500)
+  assert.strictEqual(year2024.balance, 2000)
+  assert.strictEqual(year2024.categories.cat1, 1300)
+  assert.strictEqual(year2024.categories.cat2, 200)
+
+  const year2025 = result.find(s => s.year === 2025)
+  assert(year2025 !== undefined)
+  assert.strictEqual(year2025.totalExpenses, 800)
+  assert.strictEqual(year2025.totalIncome, 1200)
+  assert.strictEqual(year2025.balance, 400)
+  assert.strictEqual(year2025.categories.cat1, 800)
+})
+
+test('aggregateAllData - aggregates all monthly summaries', () => {
+  const monthlySummaries = [
+    { year: 2024, month: 1, totalExpenses: 1000, totalIncome: 2000, balance: 1000, categories: { 'cat1': 1000 } },
+    { year: 2024, month: 2, totalExpenses: 500, totalIncome: 1500, balance: 1000, categories: { 'cat1': 300, 'cat2': 200 } },
+    { year: 2025, month: 1, totalExpenses: 800, totalIncome: 1200, balance: 400, categories: { 'cat1': 800 } },
+  ]
+
+  const result = aggregateAllData(monthlySummaries)
+
+  assert.strictEqual(result.totalExpenses, 2300)
+  assert.strictEqual(result.totalIncome, 4700)
+  assert.strictEqual(result.balance, 2400)
+  assert.strictEqual(result.categories.cat1, 2100)
+  assert.strictEqual(result.categories.cat2, 200)
+})

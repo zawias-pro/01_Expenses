@@ -274,7 +274,12 @@ function App() {
         <Step3
           summaries={summaries}
           selectedMonth={selectedMonth}
-          onMonthChange={setSelectedMonth}
+          onSelectionChange={(type, year, month) => {
+            if (type === 'month' && year && month) {
+              setSelectedMonth({ year, month })
+            }
+            // For 'year' and 'all' types, Step3 manages its own state
+          }}
           onBack={handleBack}
         />
       )}
