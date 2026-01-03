@@ -8,3 +8,4 @@ test('formatPolishNumber - formats correctly', () => {
   assert.strictEqual(formatPolishNumber(-450), '-450,00')
   assert.strictEqual(formatPolishNumber(0), '0,00')
 })
+

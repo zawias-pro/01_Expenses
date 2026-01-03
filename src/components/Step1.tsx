@@ -10,7 +10,7 @@ interface Step1Props {
   onNext: () => void
 }
 
-function Step1({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillExample, onNext }: Step1Props) {
+const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillExample, onNext }: Step1Props) => {
   // Parse preview transactions from first 3 rows
   const getPreviewTransactions = (): Transaction[] => {
     if (!csvContent.trim()) return []

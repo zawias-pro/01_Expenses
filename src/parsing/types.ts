@@ -8,6 +8,7 @@ interface Transaction {
   excluded: boolean
   isValid: boolean
   validationError?: string
+  overridden: boolean
 }
 
 interface MonthlySummary {

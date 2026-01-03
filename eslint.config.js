@@ -30,6 +30,10 @@ const config = defineConfig([
           selector: 'ExportDefaultDeclaration',
           message: 'Default exports are not allowed. Use named exports instead.',
         },
+        {
+          selector: 'FunctionDeclaration',
+          message: 'Function declarations are not allowed. Use arrow functions instead.',
+        },
       ],
       'semi': ['error', 'never'],
     },

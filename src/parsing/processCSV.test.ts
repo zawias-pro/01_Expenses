@@ -43,3 +43,4 @@ test('processCSV - processes example file correctly', async () => {
     'Should have at least one of the months from the example',
   )
 })
+

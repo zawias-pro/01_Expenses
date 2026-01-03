@@ -24,3 +24,4 @@ test('parsePolishAmount - invalid amount throws', () => {
   assert.throws(() => parsePolishAmount('invalid'), /Invalid amount: invalid/)
   assert.throws(() => parsePolishAmount('abc PLN'), /Invalid amount: abc PLN/)
 })
+

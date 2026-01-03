@@ -24,4 +24,10 @@ const classifyDescription = (description: string, rules: Record<string, string>)
   return 'others'
 }
 
-export { parseRules, classifyDescription }
+const getCategories = (rules: Record<string, string>): string[] => {
+  const categories = new Set(Object.values(rules))
+  categories.add('others') // Always include the default category
+  return Array.from(categories).sort()
+}
+
+export { parseRules, classifyDescription, getCategories }

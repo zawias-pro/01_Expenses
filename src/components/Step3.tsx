@@ -17,7 +17,7 @@ const monthNames = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ]
 
-function Step3({ summaries, selectedMonth, onSelectionChange, onBack }: Step3Props) {
+const Step3 = ({ summaries, selectedMonth, onSelectionChange, onBack }: Step3Props) => {
   const [selectionType, setSelectionType] = useState<SelectionType>('month')
   const [selectedYear, setSelectedYear] = useState<number | null>(selectedMonth.year)
 

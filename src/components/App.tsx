@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import { parseCSVLine } from '../parsing/csvParser.ts'
 import { processTransactions } from '../parsing/transactionProcessor.ts'
-import { parseRules } from '../parsing/classifier.ts'
+import { parseRules, getCategories } from '../parsing/classifier.ts'
 import type { Transaction, MonthlySummary } from '../parsing/types.ts'
 import { Step1 } from './Step1.tsx'
 import { Step2 } from './Step2.tsx'
@@ -138,6 +138,7 @@ const INITIAL_CSV = `2025-12-12;"JAN ADAM KOWALSKI, CZYNSZ NAJMU                
 invalid-date;"INVALID DATE TRANSACTION";"MojBank 1234 ... 5678";"Bez kategorii";-100,00 PLN;;`
 
 const RULES = parseRules(rulesContent)
+const CATEGORIES = getCategories(RULES)
 
 const STORAGE_KEYS = {
   csv: 'expense-analyzer-csv',
@@ -148,7 +149,7 @@ const STORAGE_KEYS = {
 
 type Step = 1 | 2 | 3
 
-function App() {
+const App = () => {
   const [step, setStep] = useState<Step>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.step)
     return saved ? (Number(saved) as Step) : 1
@@ -226,6 +227,14 @@ function App() {
     setTransactions(prev => prev.map(t => t.id === id ? { ...t, excluded } : t))
   }
 
+  const handleCategoryChange = (id: string, category: string) => {
+    setTransactions(prev => prev.map(t => t.id === id ? { ...t, category, overridden: true } : t))
+  }
+
+  const handleDateChange = (id: string, date: string) => {
+    setTransactions(prev => prev.map(t => t.id === id ? { ...t, date, overridden: true } : t))
+  }
+
   const handleProcess = () => {
     const activeTransactions = transactions.filter(t => !t.excluded)
     const result = processTransactions(activeTransactions, RULES)
@@ -266,7 +275,10 @@ function App() {
       {step === 2 && (
         <Step2
           transactions={transactions}
+          categories={CATEGORIES}
           onExcludedChange={handleUpdateExcluded}
+          onCategoryChange={handleCategoryChange}
+          onDateChange={handleDateChange}
           onBack={handleBack}
           onNext={handleProcess}
         />

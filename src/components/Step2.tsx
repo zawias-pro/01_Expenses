@@ -2,12 +2,15 @@ import type { Transaction } from '../parsing/types.ts'
 
 interface Step2Props {
   transactions: Transaction[]
+  categories: string[]
   onExcludedChange: (id: string, excluded: boolean) => void
+  onCategoryChange: (id: string, category: string) => void
+  onDateChange: (id: string, date: string) => void
   onBack: () => void
   onNext: () => void
 }
 
-function Step2({ transactions, onExcludedChange, onBack, onNext }: Step2Props) {
+const Step2 = ({ transactions, categories, onExcludedChange, onCategoryChange, onDateChange, onBack, onNext }: Step2Props) => {
   return (
     <div>
       <h2>Step 2: Exclude Transactions</h2>
@@ -35,14 +38,38 @@ function Step2({ transactions, onExcludedChange, onBack, onNext }: Step2Props) {
                     disabled={!t.isValid}
                   />
                 </td>
-                <td>{t.date}</td>
+                <td>
+                  <input
+                    type="text"
+                    value={t.date}
+                    onChange={e => onDateChange(t.id, e.target.value)}
+                    style={{ width: '100px' }}
+                    disabled={!t.isValid}
+                  />
+                </td>
                 <td>{t.description}</td>
                 <td>{t.account}</td>
-                <td>{t.category}</td>
+                <td>
+                  <select
+                    value={t.category}
+                    onChange={e => onCategoryChange(t.id, e.target.value)}
+                    disabled={!t.isValid}
+                    style={{ width: '120px' }}
+                  >
+                    {categories.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </td>
                 <td>{t.amount}</td>
                 <td>
                   {t.isValid ? (
-                    <span style={{ color: 'green' }}>✓ Valid</span>
+                    <div>
+                      <span style={{ color: 'green' }}>✓ Valid</span>
+                      {t.overridden && (
+                        <div style={{ color: 'orange', fontSize: '0.8em' }}>⚠ Overridden</div>
+                      )}
+                    </div>
                   ) : (
                     <span style={{ color: 'red' }}>
                       ✗ Error: {t.validationError}

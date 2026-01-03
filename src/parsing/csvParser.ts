@@ -32,6 +32,7 @@ const parseCSVLine = (line: string, delimiter: string = ';'): Transaction => {
     excluded: !validation.isValid, // Automatically exclude invalid rows
     isValid: validation.isValid,
     validationError: validation.error,
+    overridden: false,
   }
 }
 

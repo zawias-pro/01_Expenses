@@ -19,7 +19,9 @@ const processTransactions = (transactions: Transaction[], rules: Record<string, 
       const year = getYearFromDate(t.date)
       const month = getMonthFromDate(t.date)
       const amount = parsePolishAmount(t.amount)
-      const category = classifyDescription(t.description, rules)
+      // Use the transaction's category (which may have been overridden in step 2)
+      // If no category is set, fall back to classification
+      const category = t.category || classifyDescription(t.description, rules)
 
       const key = `${year}-${month}`
       if (!monthlyData[key]) {

@@ -10,3 +10,4 @@ test('classifyTransaction - uses rules from rules.csv', () => {
   // No match
   assert.strictEqual(classifyTransaction({ description: 'some random transaction' }), 'others')
 })
+
