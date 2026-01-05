@@ -147,6 +147,7 @@ const STORAGE_KEYS = {
   delimiter: 'expense-analyzer-delimiter',
   transactions: 'expense-analyzer-transactions',
   step: 'expense-analyzer-step',
+  customRules: 'expense-analyzer-custom-rules',
 }
 
 type Step = 1 | 2 | 3
@@ -170,6 +171,14 @@ const App = () => {
   })
   const [summaries, setSummaries] = useState<MonthlySummary[] | null>(null)
   const [selectedMonth, setSelectedMonth] = useState<{ year: number; month: number } | null>(null)
+  const [customRules, setCustomRules] = useState<Record<string, string>>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.customRules)
+    return saved ? (JSON.parse(saved) as Record<string, string>) : {}
+  })
+
+  // Merge base rules with custom rules
+  const allRules = { ...RULES, ...customRules }
+  const categories = getCategories(allRules)
 
   // Save to localStorage whenever data changes
   useEffect(() => {
@@ -188,11 +197,31 @@ const App = () => {
     localStorage.setItem(STORAGE_KEYS.step, String(step))
   }, [step])
 
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.customRules, JSON.stringify(customRules))
+  }, [customRules])
+
+  // Re-classify transactions when rules change (only for non-overridden transactions)
+  useEffect(() => {
+    if (transactions.length > 0) {
+      setTransactions(prev => prev.map(t => {
+        if (t.overridden) {
+          return t // Keep overridden categories
+        }
+        return {
+          ...t,
+          category: classifyDescription(t.description, allRules)
+        }
+      }))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customRules])
+
   // Recalculate summaries on initial load if we're on step 3
   useEffect(() => {
     if (step === 3 && transactions.length > 0 && summaries === null) {
       const activeTransactions = transactions.filter(t => !t.excluded)
-      const result = processTransactions(activeTransactions, RULES)
+      const result = processTransactions(activeTransactions, allRules)
       setSummaries(result)
       // Set selected month to the first available month
       if (result.length > 0 && selectedMonth === null) {
@@ -207,10 +236,12 @@ const App = () => {
     localStorage.removeItem(STORAGE_KEYS.delimiter)
     localStorage.removeItem(STORAGE_KEYS.transactions)
     localStorage.removeItem(STORAGE_KEYS.step)
+    localStorage.removeItem(STORAGE_KEYS.customRules)
     setCsvContent('')
     setDelimiter(';')
     setTransactions([])
     setSummaries(null)
+    setCustomRules({})
     setStep(1)
   }
 
@@ -224,7 +255,7 @@ const App = () => {
     // Classify categories immediately after parsing so Step2 displays correct categories
     const classified = parsed.map(t => ({
       ...t,
-      category: classifyDescription(t.description, RULES)
+      category: classifyDescription(t.description, allRules)
     }))
     setTransactions(classified)
     setStep(2)
@@ -248,13 +279,25 @@ const App = () => {
 
   const handleProcess = () => {
     const activeTransactions = transactions.filter(t => !t.excluded)
-    const result = processTransactions(activeTransactions, RULES)
+    const result = processTransactions(activeTransactions, allRules)
     setSummaries(result)
     // Set selected month to the first available month
     if (result.length > 0) {
       setSelectedMonth({ year: result[0].year, month: result[0].month })
     }
     setStep(3)
+  }
+
+  const handleAddRule = (keyword: string, category: string) => {
+    setCustomRules(prev => ({ ...prev, [keyword]: category }))
+  }
+
+  const handleRemoveRule = (keyword: string) => {
+    setCustomRules(prev => {
+      const newRules = { ...prev }
+      delete newRules[keyword]
+      return newRules
+    })
   }
 
   const handleBack = () => {
@@ -286,11 +329,16 @@ const App = () => {
       {step === 2 && (
         <Step2
           transactions={transactions}
-          categories={CATEGORIES}
+          categories={categories}
+          rules={allRules}
+          baseRules={RULES}
+          customRules={customRules}
           onExcludedChange={handleUpdateExcluded}
           onCategoryChange={handleCategoryChange}
           onDateChange={handleDateChange}
           onOverrideModeChange={handleOverrideModeChange}
+          onAddRule={handleAddRule}
+          onRemoveRule={handleRemoveRule}
           onBack={handleBack}
           onNext={handleProcess}
         />
