@@ -74,7 +74,6 @@ const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillEx
                   <th>Exclude</th>
                   <th>Date</th>
                   <th>Description</th>
-                  <th>Account</th>
                   <th>Category</th>
                   <th>Amount</th>
                   <th>Status</th>
@@ -93,7 +92,6 @@ const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillEx
                     </td>
                     <td>{t.date}</td>
                     <td>{t.description}</td>
-                    <td>{t.account}</td>
                     <td>{t.category}</td>
                     <td>{t.amount}</td>
                     <td>

@@ -8,7 +8,7 @@ import { validateTransaction } from '../validateTransaction/validateTransaction.
  *   id: "abc123",
  *   date: "2025-12-12",
  *   description: "JAN ADAM KOWALSKI, CZYNSZ NAJMU PRZELEW ZEWNĘTRZNY WYCHODZĄCY 74899274659992743764666621",
- *   account: "MojBank 1234 ... 5678",
+ *   account: "",
  *   category: "others",
  *   amount: "-5 000,00 PLN",
  *   excluded: false,
@@ -20,19 +20,21 @@ import { validateTransaction } from '../validateTransaction/validateTransaction.
 const parseCSVLine = (line: string, delimiter: string = ';'): Transaction => {
   // Simple CSV parser for the specific format:
   // 2025-12-12;"Description";"Account";"Category";-5 000,00 PLN;;
+  // Note: Account field is ignored and not parsed
   const parts = line.split(delimiter)
   const clean = (s: string) => s.replace(/^"|"$/g, '').trim()
 
   // Handle cases where we don't have enough parts
   const date = parts.length > 0 ? clean(parts[0]) : ''
   const description = parts.length > 1 ? clean(parts[1]) : ''
-  const account = parts.length > 2 ? clean(parts[2]) : ''
+  // Account field is ignored - always set to empty string
+  const account = ''
   // Category from CSV is ignored - always default to "others"
   const category = 'others'
   const amount = parts.length > 4 ? clean(parts[4]) : ''
 
   // Check for insufficient parts
-  let validation = validateTransaction(date, description, account, category, amount, line)
+  let validation = validateTransaction(date, description, category, amount, line)
 
   // Additional validation for insufficient CSV parts
   if (parts.length < 5 && line.trim()) {

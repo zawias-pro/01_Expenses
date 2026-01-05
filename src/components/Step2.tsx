@@ -171,7 +171,6 @@ const Step2 = ({
               <th>Override</th>
               <th>Date</th>
               <th>Description</th>
-              <th>Account</th>
               <th>Category</th>
               <th>Amount</th>
               <th>Status</th>
@@ -210,7 +209,6 @@ const Step2 = ({
                   )}
                 </td>
                 <td>{t.description}</td>
-                <td>{t.account}</td>
                 <td>
                   {t.overrideMode ? (
                     <select
