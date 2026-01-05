@@ -14,11 +14,7 @@ const aggregateByYear = (summaries: MonthlySummary[]): YearlySummary[] => {
   const yearlyData: Record<number, { expenses: number; income: number; categories: Record<string, number> }> = {}
 
   summaries.forEach(s => {
-    if (!yearlyData[s.year]) {
-      yearlyData[s.year] = { expenses: 0, income: 0, categories: {} }
-    }
-
-    const data = yearlyData[s.year]
+    const data = yearlyData[s.year] ??= { expenses: 0, income: 0, categories: {} }
     data.expenses += s.totalExpenses
     data.income += s.totalIncome
 

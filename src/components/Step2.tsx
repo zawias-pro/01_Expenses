@@ -40,7 +40,7 @@ const Step2 = ({
                   <input
                     type="checkbox"
                     checked={t.excluded}
-                    onChange={e => onExcludedChange(t.id, e.target.checked)}
+                    onChange={e => { onExcludedChange(t.id, e.target.checked) }}
                     disabled={!t.isValid}
                   />
                 </td>
@@ -48,7 +48,7 @@ const Step2 = ({
                   <input
                     type="text"
                     value={t.date}
-                    onChange={e => onDateChange(t.id, e.target.value)}
+                    onChange={e => { onDateChange(t.id, e.target.value) }}
                     style={{ width: '100px' }}
                     disabled={!t.isValid}
                   />
@@ -58,7 +58,7 @@ const Step2 = ({
                 <td>
                   <select
                     value={t.category}
-                    onChange={e => onCategoryChange(t.id, e.target.value)}
+                    onChange={e => { onCategoryChange(t.id, e.target.value) }}
                     disabled={!t.isValid}
                     style={{ width: '120px' }}
                   >
@@ -96,5 +96,3 @@ const Step2 = ({
 }
 
 export { Step2 }
-
-

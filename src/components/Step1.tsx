@@ -30,7 +30,7 @@ const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillEx
         <select
           id="delimiter-select"
           value={delimiter}
-          onChange={e => onDelimiterChange(e.target.value)}
+          onChange={e => { onDelimiterChange(e.target.value) }}
           style={{ marginRight: '1rem' }}
         >
           <option value=";">Semicolon (;)</option>
@@ -42,7 +42,7 @@ const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillEx
 
       <textarea
         value={csvContent}
-        onChange={e => onCsvChange(e.target.value)}
+        onChange={e => { onCsvChange(e.target.value) }}
         rows={10}
         style={{ width: '100%', fontFamily: 'monospace' }}
         placeholder="Paste your CSV data here..."
@@ -113,5 +113,3 @@ const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillEx
 }
 
 export { Step1 }
-
-

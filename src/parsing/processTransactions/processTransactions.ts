@@ -25,12 +25,8 @@ const processTransactions = (transactions: Transaction[], rules: Record<string, 
       // If no category is set, fall back to classification
       const category = t.category || classifyDescription(t.description, rules)
 
-      const key = `${year}-${month}`
-      if (!monthlyData[key]) {
-        monthlyData[key] = { expenses: 0, income: 0, categories: {} }
-      }
-
-      const data = monthlyData[key]
+      const key = `${year.toString()}-${month.toString()}`
+      const data = monthlyData[key] ??= { expenses: 0, income: 0, categories: {} }
       if (amount < 0) {
         const absAmount = Math.abs(amount)
         data.expenses += absAmount

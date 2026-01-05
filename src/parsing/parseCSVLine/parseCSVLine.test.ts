@@ -5,16 +5,15 @@ import { parseCSVLine } from './parseCSVLine.ts'
 test('parseCSVLine - parses valid CSV line', () => {
   const line = '2025-12-12;"Description";"Account";"Category";-5 000,00 PLN;;'
   const result = parseCSVLine(line, ';')
-  assert(result !== null)
-  assert.strictEqual(result?.date, '2025-12-12')
-  assert.strictEqual(result?.description, 'Description')
-  assert.strictEqual(result?.account, 'Account')
-  assert.strictEqual(result?.category, 'Category')
-  assert.strictEqual(result?.amount, '-5 000,00 PLN')
-  assert.strictEqual(result?.excluded, false)
-  assert.strictEqual(result?.isValid, true)
-  assert.strictEqual(result?.validationError, undefined)
-  assert(typeof result?.id === 'string')
+  assert.strictEqual(result.date, '2025-12-12')
+  assert.strictEqual(result.description, 'Description')
+  assert.strictEqual(result.account, 'Account')
+  assert.strictEqual(result.category, 'Category')
+  assert.strictEqual(result.amount, '-5 000,00 PLN')
+  assert.strictEqual(result.excluded, false)
+  assert.strictEqual(result.isValid, true)
+  assert.strictEqual(result.validationError, undefined)
+  assert(typeof result.id === 'string')
 })
 
 test('parseCSVLine - marks insufficient columns as invalid', () => {
@@ -51,33 +50,29 @@ test('parseCSVLine - handles user example invalid rows', () => {
 test('parseCSVLine - marks invalid date as excluded', () => {
   const line = 'invalid-date;"Description";"Account";"Category";-5 000,00 PLN;;'
   const result = parseCSVLine(line, ';')
-  assert(result !== null)
-  assert.strictEqual(result?.isValid, false)
-  assert.strictEqual(result?.excluded, true)
-  assert.strictEqual(result?.validationError, 'Invalid date format: invalid-date')
+  assert.strictEqual(result.isValid, false)
+  assert.strictEqual(result.excluded, true)
+  assert.strictEqual(result.validationError, 'Invalid date format: invalid-date')
 })
 
 test('parseCSVLine - marks missing amount as excluded', () => {
   const line = '2025-12-12;"Description";"Account";"Category";;'
   const result = parseCSVLine(line, ';')
-  assert(result !== null)
-  assert.strictEqual(result?.isValid, false)
-  assert.strictEqual(result?.excluded, true)
-  assert.strictEqual(result?.validationError, 'Amount is required')
+  assert.strictEqual(result.isValid, false)
+  assert.strictEqual(result.excluded, true)
+  assert.strictEqual(result.validationError, 'Amount is required')
 })
 
 test('parseCSVLine - marks invalid amount as excluded', () => {
   const line = '2025-12-12;"Description";"Account";"Category";invalid-amount;;'
   const result = parseCSVLine(line, ';')
-  assert(result !== null)
-  assert.strictEqual(result?.isValid, false)
-  assert.strictEqual(result?.excluded, true)
-  assert.strictEqual(result?.validationError, 'Invalid amount format: invalid-amount')
+  assert.strictEqual(result.isValid, false)
+  assert.strictEqual(result.excluded, true)
+  assert.strictEqual(result.validationError, 'Invalid amount format: invalid-amount')
 })
 
 test('parseCSVLine - handles quotes correctly', () => {
   const line = '2025-12-12;"Test "quoted" text";"Account";"Category";100,00 PLN;;'
   const result = parseCSVLine(line, ';')
-  assert(result !== null)
-  assert.strictEqual(result?.description, 'Test "quoted" text')
+  assert.strictEqual(result.description, 'Test "quoted" text')
 })

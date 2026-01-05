@@ -35,11 +35,11 @@ const parseCSVLine = (line: string, delimiter: string = ';'): Transaction => {
 
   // Additional validation for insufficient CSV parts
   if (parts.length < 5 && line.trim()) {
-    validation = { isValid: false, error: `Insufficient CSV columns (expected 5, got ${parts.length})` }
+    validation = { isValid: false, error: `Insufficient CSV columns (expected 5, got ${parts.length.toString()})` }
   }
 
   return {
-    id: Math.random().toString(36).substr(2, 9),
+    id: Math.random().toString(36).substring(2, 11),
     date,
     description,
     account,

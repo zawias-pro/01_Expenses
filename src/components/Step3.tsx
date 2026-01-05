@@ -66,11 +66,11 @@ const Step3 = ({ summaries, selectedMonth, onSelectionChange, onBack }: {
     if (selectionType === 'all') {
       return 'All Data'
     } else if (selectionType === 'year' && selectedYear !== null) {
-      return `Year ${selectedYear}`
+      return `Year ${selectedYear.toString()}`
     } else {
       const summary = summaries.find(s => s.year === selectedMonth.year && s.month === selectedMonth.month)
       if (summary) {
-        return `${monthNames[summary.month - 1]} ${summary.year}`
+        return `${monthNames[summary.month - 1]} ${summary.year.toString()}`
       }
       return ''
     }
@@ -79,8 +79,8 @@ const Step3 = ({ summaries, selectedMonth, onSelectionChange, onBack }: {
   const displaySummary = getDisplaySummary()
 
   const monthOptions = summaries.map(s => ({
-    value: `${s.year}-${s.month}`,
-    label: `${monthNames[s.month - 1]} ${s.year}`
+    value: `${s.year.toString()}-${s.month.toString()}`,
+    label: `${monthNames[s.month - 1]} ${s.year.toString()}`
   }))
 
   return (
@@ -118,7 +118,7 @@ const Step3 = ({ summaries, selectedMonth, onSelectionChange, onBack }: {
         {selectionType === 'month' && (
           <select
             id="month-select"
-            value={`${selectedMonth.year}-${selectedMonth.month}`}
+            value={`${selectedMonth.year.toString()}-${selectedMonth.month.toString()}`}
             onChange={handleMonthChange}
           >
             {monthOptions.map(option => (
@@ -153,5 +153,3 @@ const Step3 = ({ summaries, selectedMonth, onSelectionChange, onBack }: {
 }
 
 export { Step3 }
-
-

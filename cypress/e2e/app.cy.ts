@@ -27,7 +27,6 @@ describe('Expense Analyzer App', () => {
     cy.get('table.transaction-table thead th').should('have.length', 7) // 7 columns: Exclude, Date, Description, Account, Category, Amount, Status
   })
 
-
   it('should navigate through all steps', () => {
     cy.visit('/')
     // Fill with example data first

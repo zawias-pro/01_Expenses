@@ -165,7 +165,7 @@ const App = () => {
   })
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.transactions)
-    return saved ? JSON.parse(saved) : []
+    return saved ? (JSON.parse(saved) as Transaction[]) : []
   })
   const [summaries, setSummaries] = useState<MonthlySummary[] | null>(null)
   const [selectedMonth, setSelectedMonth] = useState<{ year: number; month: number } | null>(null)
