@@ -15,6 +15,7 @@ test('processTransactions - processes transactions correctly', () => {
       excluded: false,
       isValid: true,
       overridden: false,
+      overrideMode: false,
     },
     {
       id: '2',
@@ -26,6 +27,7 @@ test('processTransactions - processes transactions correctly', () => {
       excluded: false,
       isValid: true,
       overridden: false,
+      overrideMode: false,
     },
     {
       id: '3',
@@ -37,6 +39,7 @@ test('processTransactions - processes transactions correctly', () => {
       excluded: false,
       isValid: true,
       overridden: false,
+      overrideMode: false,
     },
   ]
   const rules = { 'test': 'test-category' }
@@ -69,6 +72,7 @@ test('processTransactions - processes all transactions passed to it', () => {
       excluded: true,
       isValid: true,
       overridden: false,
+      overrideMode: false,
     },
     {
       id: '2',
@@ -80,6 +84,7 @@ test('processTransactions - processes all transactions passed to it', () => {
       excluded: false,
       isValid: true,
       overridden: false,
+      overrideMode: false,
     },
   ]
   const rules = {}

@@ -24,7 +24,7 @@ describe('Expense Analyzer App', () => {
     cy.get('textarea').type('date;description;account;category;amount\n2025-01-01;Test 1;Account1;Cat1;100.00\n2025-01-02;Test 2;Account2;Cat2;200.00\n2025-01-03;Test 3;Account3;Cat3;300.00')
     cy.contains('Preview (first 3 rows)').should('be.visible')
     cy.get('table.transaction-table tbody tr').should('have.length', 3)
-    cy.get('table.transaction-table thead th').should('have.length', 7) // 7 columns: Exclude, Date, Description, Account, Category, Amount, Status
+    cy.get('table.transaction-table thead th').should('have.length', 8) // 8 columns: Exclude, Override, Date, Description, Account, Category, Amount, Status
   })
 
   it('should navigate through all steps', () => {
@@ -165,6 +165,103 @@ describe('Expense Analyzer App', () => {
     // Switch back to month view
     cy.get('select#selection-type-select').select('month')
     cy.get('select#month-select').should('be.visible')
+  })
+
+  it('should show date and category as text when override is unchecked', () => {
+    cy.visit('/')
+    cy.contains('Fill with Example Data').click()
+    cy.contains('Next').click()
+    cy.contains('Step 2: Exclude Transactions').should('be.visible')
+
+    // First row should have unchecked override checkbox
+    cy.get('table.transaction-table tbody tr').first().within(() => {
+      // Override checkbox should exist and be unchecked
+      cy.get('input[type="checkbox"]').eq(1).should('not.be.checked')
+      // Date should be displayed as text (span), not input
+      cy.get('td').eq(2).find('span').should('contain', '2025-12-12')
+      cy.get('td').eq(2).find('input').should('not.exist')
+      // Category should be displayed as text (span), not select
+      cy.get('td').eq(5).find('span').should('exist')
+      cy.get('td').eq(5).find('select').should('not.exist')
+    })
+  })
+
+  it('should show date and category as editable controls when override is checked', () => {
+    cy.visit('/')
+    cy.contains('Fill with Example Data').click()
+    cy.contains('Next').click()
+    cy.contains('Step 2: Exclude Transactions').should('be.visible')
+
+    // Check the override checkbox for the first transaction
+    cy.get('table.transaction-table tbody tr').first().within(() => {
+      // Check the override checkbox (second checkbox, first is exclude)
+      cy.get('input[type="checkbox"]').eq(1).check()
+      // Date should now be an input field
+      cy.get('td').eq(2).find('input[type="text"]').should('exist')
+      cy.get('td').eq(2).find('input[type="text"]').should('have.value', '2025-12-12')
+      cy.get('td').eq(2).find('span').should('not.exist')
+      // Category should now be a select dropdown
+      cy.get('td').eq(5).find('select').should('exist')
+      cy.get('td').eq(5).find('span').should('not.exist')
+    })
+  })
+
+  it('should allow editing date when override is enabled', () => {
+    cy.visit('/')
+    cy.contains('Fill with Example Data').click()
+    cy.contains('Next').click()
+    cy.contains('Step 2: Exclude Transactions').should('be.visible')
+
+    // Check override and edit date
+    cy.get('table.transaction-table tbody tr').first().within(() => {
+      cy.get('input[type="checkbox"]').eq(1).check()
+      cy.get('td').eq(2).find('input[type="text"]').clear().type('2025-12-31')
+      cy.get('td').eq(2).find('input[type="text"]').should('have.value', '2025-12-31')
+    })
+  })
+
+  it('should allow changing category when override is enabled', () => {
+    cy.visit('/')
+    cy.contains('Fill with Example Data').click()
+    cy.contains('Next').click()
+    cy.contains('Step 2: Exclude Transactions').should('be.visible')
+
+    // Check override and change category
+    cy.get('table.transaction-table tbody tr').first().within(() => {
+      cy.get('input[type="checkbox"]').eq(1).check()
+      cy.get('td').eq(5).find('select').select('Żywność i napoje')
+      cy.get('td').eq(5).find('select').should('have.value', 'Żywność i napoje')
+    })
+  })
+
+  it('should toggle between text and editable controls when override checkbox is toggled', () => {
+    cy.visit('/')
+    cy.contains('Fill with Example Data').click()
+    cy.contains('Next').click()
+    cy.contains('Step 2: Exclude Transactions').should('be.visible')
+
+    cy.get('table.transaction-table tbody tr').first().within(() => {
+      // Initially unchecked - should show text
+      cy.get('input[type="checkbox"]').eq(1).should('not.be.checked')
+      cy.get('td').eq(2).find('span').should('exist')
+      cy.get('td').eq(2).find('input').should('not.exist')
+      cy.get('td').eq(5).find('span').should('exist')
+      cy.get('td').eq(5).find('select').should('not.exist')
+
+      // Check override - should show editable controls
+      cy.get('input[type="checkbox"]').eq(1).check()
+      cy.get('td').eq(2).find('input[type="text"]').should('exist')
+      cy.get('td').eq(2).find('span').should('not.exist')
+      cy.get('td').eq(5).find('select').should('exist')
+      cy.get('td').eq(5).find('span').should('not.exist')
+
+      // Uncheck override - should show text again
+      cy.get('input[type="checkbox"]').eq(1).uncheck()
+      cy.get('td').eq(2).find('span').should('exist')
+      cy.get('td').eq(2).find('input').should('not.exist')
+      cy.get('td').eq(5).find('span').should('exist')
+      cy.get('td').eq(5).find('select').should('not.exist')
+    })
   })
 })
 

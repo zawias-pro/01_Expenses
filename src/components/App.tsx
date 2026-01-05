@@ -236,6 +236,10 @@ const App = () => {
     setTransactions(prev => prev.map(t => t.id === id ? { ...t, date, overridden: true } : t))
   }
 
+  const handleOverrideModeChange = (id: string, overrideMode: boolean) => {
+    setTransactions(prev => prev.map(t => t.id === id ? { ...t, overrideMode } : t))
+  }
+
   const handleProcess = () => {
     const activeTransactions = transactions.filter(t => !t.excluded)
     const result = processTransactions(activeTransactions, RULES)
@@ -280,6 +284,7 @@ const App = () => {
           onExcludedChange={handleUpdateExcluded}
           onCategoryChange={handleCategoryChange}
           onDateChange={handleDateChange}
+          onOverrideModeChange={handleOverrideModeChange}
           onBack={handleBack}
           onNext={handleProcess}
         />

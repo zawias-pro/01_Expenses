@@ -9,6 +9,7 @@ interface Transaction {
   isValid: boolean
   validationError?: string
   overridden: boolean
+  overrideMode: boolean
 }
 
 interface MonthlySummary {

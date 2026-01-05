@@ -76,3 +76,16 @@ test('parseCSVLine - handles quotes correctly', () => {
   const result = parseCSVLine(line, ';')
   assert.strictEqual(result.description, 'Test "quoted" text')
 })
+
+test('parseCSVLine - initializes overrideMode to false', () => {
+  const line = '2025-12-12;"Description";"Account";"Category";-5 000,00 PLN;;'
+  const result = parseCSVLine(line, ';')
+  assert.strictEqual(result.overrideMode, false)
+})
+
+test('parseCSVLine - initializes overrideMode to false for invalid transactions', () => {
+  const line = 'invalid-date;"Description";"Account";"Category";-5 000,00 PLN;;'
+  const result = parseCSVLine(line, ';')
+  assert.strictEqual(result.overrideMode, false)
+  assert.strictEqual(result.isValid, false)
+})

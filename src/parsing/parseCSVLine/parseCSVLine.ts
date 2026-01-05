@@ -49,6 +49,7 @@ const parseCSVLine = (line: string, delimiter: string = ';'): Transaction => {
     isValid: validation.isValid,
     validationError: validation.error,
     overridden: false,
+    overrideMode: false,
   }
 }
 

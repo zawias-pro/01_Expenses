@@ -6,6 +6,7 @@ const Step2 = ({
    onExcludedChange,
    onCategoryChange,
    onDateChange,
+   onOverrideModeChange,
    onBack,
    onNext
 }: {
@@ -14,6 +15,7 @@ const Step2 = ({
   onExcludedChange: (id: string, excluded: boolean) => void
   onCategoryChange: (id: string, category: string) => void
   onDateChange: (id: string, date: string) => void
+  onOverrideModeChange: (id: string, overrideMode: boolean) => void
   onBack: () => void
   onNext: () => void
 }) => {
@@ -25,6 +27,7 @@ const Step2 = ({
           <thead>
             <tr>
               <th>Exclude</th>
+              <th>Override</th>
               <th>Date</th>
               <th>Description</th>
               <th>Account</th>
@@ -46,26 +49,42 @@ const Step2 = ({
                 </td>
                 <td>
                   <input
-                    type="text"
-                    value={t.date}
-                    onChange={e => { onDateChange(t.id, e.target.value) }}
-                    style={{ width: '100px' }}
+                    type="checkbox"
+                    checked={t.overrideMode}
+                    onChange={e => { onOverrideModeChange(t.id, e.target.checked) }}
                     disabled={!t.isValid}
                   />
+                </td>
+                <td>
+                  {t.overrideMode ? (
+                    <input
+                      type="text"
+                      value={t.date}
+                      onChange={e => { onDateChange(t.id, e.target.value) }}
+                      style={{ width: '100px' }}
+                      disabled={!t.isValid}
+                    />
+                  ) : (
+                    <span>{t.date}</span>
+                  )}
                 </td>
                 <td>{t.description}</td>
                 <td>{t.account}</td>
                 <td>
-                  <select
-                    value={t.category}
-                    onChange={e => { onCategoryChange(t.id, e.target.value) }}
-                    disabled={!t.isValid}
-                    style={{ width: '120px' }}
-                  >
-                    {categories.map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
+                  {t.overrideMode ? (
+                    <select
+                      value={t.category}
+                      onChange={e => { onCategoryChange(t.id, e.target.value) }}
+                      disabled={!t.isValid}
+                      style={{ width: '120px' }}
+                    >
+                      {categories.map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <span>{t.category}</span>
+                  )}
                 </td>
                 <td>{t.amount}</td>
                 <td>
