@@ -2,12 +2,14 @@ import { parseCSVLine } from '../parsing/parseCSVLine/parseCSVLine.ts'
 import { classifyDescription } from '../parsing/classifyDescription/classifyDescription.ts'
 import type { Transaction } from '../parsing/types.ts'
 
-const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillExample, rules }: {
+const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillExample, onCsvAccept, csvAccepted, rules }: {
   csvContent: string
   delimiter: string
   onCsvChange: (content: string) => void
   onDelimiterChange: (delimiter: string) => void
   onFillExample: () => void
+  onCsvAccept: () => void
+  csvAccepted: boolean
   rules: Record<string, string>
 }) => {
   // Parse preview transactions from first 3 rows and classify categories
@@ -26,6 +28,25 @@ const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillEx
 
   const previewTransactions = getPreviewTransactions()
 
+  const handleConfirm = () => {
+    const hasErrors = getPreviewTransactions().some(t => !t.isValid)
+    
+    if (hasErrors) {
+      alert('Please fix all errors in the CSV before confirming. Check the preview for details.')
+      return
+    }
+
+    if (csvContent.trim().length === 0) {
+      alert('Please paste CSV data before confirming.')
+      return
+    }
+
+    const confirmed = window.confirm('Are you sure you want to accept this CSV? Once accepted, the CSV cannot be modified later.')
+    if (confirmed) {
+      onCsvAccept()
+    }
+  }
+
   return (
     <div>
       <h2>CSV Input & Preview</h2>
@@ -38,6 +59,7 @@ const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillEx
           id="delimiter-select"
           value={delimiter}
           onChange={e => { onDelimiterChange(e.target.value) }}
+          disabled={csvAccepted}
         >
           <option value=";">Semicolon (;)</option>
           <option value=",">Comma (,)</option>
@@ -52,6 +74,7 @@ const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillEx
         rows={10}
         style={{ width: '100%' }}
         placeholder="Paste your CSV data here..."
+        readOnly={csvAccepted}
       />
 
       {previewTransactions.length > 0 && (
@@ -102,9 +125,23 @@ const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillEx
       )}
 
       <div>
-        <button onClick={onFillExample}>
+        <button onClick={onFillExample} disabled={csvAccepted}>
           Fill with Example Data
         </button>
+        {!csvAccepted && (
+          <button 
+            onClick={handleConfirm}
+            disabled={csvContent.trim().length === 0}
+            style={{ marginLeft: '10px' }}
+          >
+            Confirm CSV
+          </button>
+        )}
+        {csvAccepted && (
+          <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#e8f5e9', borderRadius: '4px' }}>
+            ✓ CSV has been accepted and cannot be modified. Use "Clear & Start Over" to reset.
+          </div>
+        )}
       </div>
     </div>
   )

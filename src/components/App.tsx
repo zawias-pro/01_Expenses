@@ -149,13 +149,23 @@ const STORAGE_KEYS = {
   transactions: 'expense-analyzer-transactions',
   view: 'expense-analyzer-view',
   customRules: 'expense-analyzer-custom-rules',
+  csvAccepted: 'expense-analyzer-csv-accepted',
 }
 
 type View = 'csv' | 'categories' | 'transactions' | 'summary' | 'chart'
 
 const App = () => {
+  const [csvAccepted, setCsvAccepted] = useState<boolean>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.csvAccepted)
+    return saved === 'true'
+  })
   const [view, setView] = useState<View>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.view) as View|null
+    const csvAcceptedSaved = localStorage.getItem(STORAGE_KEYS.csvAccepted) === 'true'
+    // Always start on CSV page if CSV is not accepted
+    if (!csvAcceptedSaved) {
+      return 'csv' as const
+    }
     return saved || 'csv' as const
   })
   const [csvContent, setCsvContent] = useState<string>(() => {
@@ -201,6 +211,17 @@ const App = () => {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.customRules, JSON.stringify(customRules))
   }, [customRules])
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.csvAccepted, csvAccepted.toString())
+  }, [csvAccepted])
+
+  // Reset view to CSV if CSV is not accepted
+  useEffect(() => {
+    if (!csvAccepted && view !== 'csv') {
+      setView('csv')
+    }
+  }, [csvAccepted, view])
 
   // Re-classify transactions when rules change (only for non-overridden transactions)
   useEffect(() => {
@@ -250,12 +271,18 @@ const App = () => {
     localStorage.removeItem(STORAGE_KEYS.transactions)
     localStorage.removeItem(STORAGE_KEYS.view)
     localStorage.removeItem(STORAGE_KEYS.customRules)
+    localStorage.removeItem(STORAGE_KEYS.csvAccepted)
     setCsvContent('')
     setDelimiter(';')
     setTransactions([])
     setSummaries(null)
     setCustomRules({})
+    setCsvAccepted(false)
     setView('csv')
+  }
+
+  const handleCsvAccept = () => {
+    setCsvAccepted(true)
   }
 
   const handleFillExample = () => {
@@ -327,21 +354,27 @@ const App = () => {
           <button onClick={() => { setView('csv') }}>
             CSV Input & Preview
           </button>
-          <button onClick={() => { setView('categories') }}>
+          <button 
+            onClick={() => { setView('categories') }}
+            disabled={!csvAccepted}
+          >
             Custom Categories
           </button>
-          <button onClick={() => { setView('transactions') }}>
+          <button 
+            onClick={() => { setView('transactions') }}
+            disabled={!csvAccepted}
+          >
             Transactions Table
           </button>
           <button
             onClick={() => { setView('summary') }}
-            disabled={summaries === null || summaries.length === 0}
+            disabled={!csvAccepted || summaries === null || summaries.length === 0}
           >
             Data by Period
           </button>
           <button
             onClick={() => { setView('chart') }}
-            disabled={summaries === null || summaries.length === 0}
+            disabled={!csvAccepted || summaries === null || summaries.length === 0}
           >
             Cumulative Bar Chart
           </button>
@@ -357,6 +390,8 @@ const App = () => {
             onCsvChange={setCsvContent}
             onDelimiterChange={setDelimiter}
             onFillExample={handleFillExample}
+            onCsvAccept={handleCsvAccept}
+            csvAccepted={csvAccepted}
             rules={allRules}
           />
         )}
