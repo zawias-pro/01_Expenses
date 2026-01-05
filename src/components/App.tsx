@@ -10,6 +10,7 @@ import { Step1 } from './Step1.tsx'
 import { Step2 } from './Step2.tsx'
 import { Step3 } from './Step3.tsx'
 import { Step4 } from './Step4.tsx'
+import { Categories } from './Categories.tsx'
 import rulesContent from '../rules.csv?raw'
 
 const INITIAL_CSV = `2025-12-12;"JAN ADAM KOWALSKI, CZYNSZ NAJMU                                                                         PRZELEW ZEWNĘTRZNY WYCHODZĄCY                                                     74899274659992743764666621  ";"MojBank 1234 ... 5678";"Czynsz i wynajem";-5 000,00 PLN;;
@@ -141,7 +142,6 @@ const INITIAL_CSV = `2025-12-12;"JAN ADAM KOWALSKI, CZYNSZ NAJMU                
 invalid-date;"INVALID DATE TRANSACTION";"MojBank 1234 ... 5678";"Bez kategorii";-100,00 PLN;;`
 
 const RULES = parseRules(rulesContent)
-const CATEGORIES = getCategories(RULES)
 
 const STORAGE_KEYS = {
   csv: 'expense-analyzer-csv',
@@ -151,7 +151,7 @@ const STORAGE_KEYS = {
   customRules: 'expense-analyzer-custom-rules',
 }
 
-type View = 'csv' | 'transactions' | 'summary' | 'chart'
+type View = 'csv' | 'categories' | 'transactions' | 'summary' | 'chart'
 
 const App = () => {
   const [view, setView] = useState<View>(() => {
@@ -340,8 +340,11 @@ const App = () => {
           <button onClick={() => setView('csv')}>
             CSV Input & Preview
           </button>
+          <button onClick={() => setView('categories')}>
+            Custom Categories
+          </button>
           <button onClick={() => setView('transactions')}>
-            Custom Categories & Table
+            Transactions Table
           </button>
           <button
             onClick={() => setView('summary')}
@@ -369,6 +372,16 @@ const App = () => {
             onFillExample={handleFillExample}
             onNext={handleCsvSubmit}
             rules={allRules}
+          />
+        )}
+
+        {view === 'categories' && (
+          <Categories
+            rules={allRules}
+            baseRules={RULES}
+            customRules={customRules}
+            onAddRule={handleAddRule}
+            onRemoveRule={handleRemoveRule}
           />
         )}
 
