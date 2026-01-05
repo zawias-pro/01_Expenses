@@ -4,12 +4,11 @@
   "type": "module",
   "packageManager": "yarn@4.12.0",
   "scripts": {
-    "dev": "vite",
+    "start": "vite",
     "lint": "eslint .",
     "test": "node --test src/**/*.test.ts",
     "check-types": "tsc --build --noEmit",
-    "cypress:open": "cypress open",
-    "cypress:run": "cypress run"
+    "cypress": "cypress"
   },
   "dependencies": {
     "csv-parser": "^3.2.0",

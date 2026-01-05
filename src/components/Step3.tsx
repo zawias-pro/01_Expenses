@@ -26,7 +26,7 @@ const CategoryBarChart = ({ categories }: { categories: Record<string, number> }
   if (categoryEntries.length === 0) {
     return <p>No category data available</p>
   }
-
+ 
   return (
     <div className="chart-wrapper" style={{ height: '300px' }}>
       <ResponsiveContainer width="100%" height={300}>
@@ -34,7 +34,12 @@ const CategoryBarChart = ({ categories }: { categories: Record<string, number> }
           <CartesianGrid />
           <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} interval={0} />
           <YAxis tickFormatter={(value: number) => formatPolishNumber(value)} />
-          <Tooltip formatter={(value: number) => formatPolishNumber(value)} />
+          <Tooltip
+            formatter={(value: number | undefined) => {
+              if (value === undefined) { return '???' }
+              return formatPolishNumber(value)
+            }}
+          />
           <Bar dataKey="amount">
             {categoryEntries.map((entry) => (
               <Cell key={entry.name} fill={entry.color} />

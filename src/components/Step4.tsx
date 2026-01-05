@@ -81,7 +81,12 @@ const Step4 = ({ summaries, onBack }: {
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
             <XAxis dataKey="month" angle={-45} textAnchor="end" height={80} interval={0} />
             <YAxis tickFormatter={(value: number) => formatPolishNumber(value)} />
-            <Tooltip formatter={(value: number) => formatPolishNumber(value)} />
+            <Tooltip
+              formatter={(value: number | undefined) => {
+                if (value === undefined) { return '???' }
+                return formatPolishNumber(value)
+              }}
+            />
             <Legend />
             {categoryColors.map(({ category, color }) => (
               <Bar
