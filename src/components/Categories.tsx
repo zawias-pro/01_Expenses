@@ -59,7 +59,7 @@ const Categories = ({
                   </td>
                   <td>
                     {isCustomRule(keyword) && (
-                      <button onClick={() => onRemoveRule(keyword)}>
+                      <button onClick={() => { onRemoveRule(keyword) }}>
                         Remove
                       </button>
                     )}
@@ -74,8 +74,8 @@ const Categories = ({
             type="text"
             placeholder="Keyword (e.g., 'netflix')"
             value={newKeyword}
-            onChange={e => setNewKeyword(e.target.value)}
-            onKeyPress={e => {
+            onChange={e => { setNewKeyword(e.target.value) }}
+            onKeyDown={e => {
               if (e.key === 'Enter') {
                 handleAddRuleClick()
               }
@@ -85,8 +85,8 @@ const Categories = ({
             type="text"
             placeholder="Category (e.g., 'entertainment')"
             value={newCategory}
-            onChange={e => setNewCategory(e.target.value)}
-            onKeyPress={e => {
+            onChange={e => { setNewCategory(e.target.value) }}
+            onKeyDown={e => {
               if (e.key === 'Enter') {
                 handleAddRuleClick()
               }
@@ -105,4 +105,3 @@ const Categories = ({
 }
 
 export { Categories }
-

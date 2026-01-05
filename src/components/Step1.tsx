@@ -1,18 +1,13 @@
 import { parseCSVLine } from '../parsing/parseCSVLine/parseCSVLine.ts'
 import { classifyDescription } from '../parsing/classifyDescription/classifyDescription.ts'
-import { parseRules } from '../parsing/parseRules/parseRules.ts'
 import type { Transaction } from '../parsing/types.ts'
-import rulesContent from '../rules.csv?raw'
 
-const RULES = parseRules(rulesContent)
-
-const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillExample, onNext, rules }: {
+const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillExample, rules }: {
   csvContent: string
   delimiter: string
   onCsvChange: (content: string) => void
   onDelimiterChange: (delimiter: string) => void
   onFillExample: () => void
-  onNext?: () => void
   rules: Record<string, string>
 }) => {
   // Parse preview transactions from first 3 rows and classify categories

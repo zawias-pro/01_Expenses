@@ -20,7 +20,7 @@ const CategoryBarChart = ({ categories }: { categories: Record<string, number> }
     .map(([name, amount], index) => ({
       name,
       amount,
-      color: `hsl(${(index * 137.5) % 360}, 70%, 50%)` // Generate distinct colors
+      color: `hsl(${String((index * 137.5) % 360)}, 70%, 50%)` // Generate distinct colors
     }))
 
   if (categoryEntries.length === 0) {
@@ -33,10 +33,10 @@ const CategoryBarChart = ({ categories }: { categories: Record<string, number> }
         <BarChart data={categoryEntries}>
           <CartesianGrid />
           <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} interval={0} />
-          <YAxis tickFormatter={(value) => formatPolishNumber(value)} />
+          <YAxis tickFormatter={(value: number) => formatPolishNumber(value)} />
           <Tooltip formatter={(value: number) => formatPolishNumber(value)} />
           <Bar dataKey="amount">
-            {categoryEntries.map((entry, index) => (
+            {categoryEntries.map((entry) => (
               <Cell key={entry.name} fill={entry.color} />
             ))}
           </Bar>
@@ -53,7 +53,7 @@ const monthNames = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ]
 
-const Step3 = ({ summaries, selectedMonth, onSelectionChange, onBack, onNext }: {
+const Step3 = ({ summaries, selectedMonth, onSelectionChange }: {
   summaries: MonthlySummary[]
   selectedMonth: { year: number; month: number }
   onSelectionChange: (type: SelectionType, year?: number, month?: number) => void

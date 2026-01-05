@@ -57,6 +57,39 @@ const config = defineConfig([
       '@typescript-eslint/no-floating-promises': 'off',
     },
   },
+  {
+    files: ['cypress/**/*.{ts,tsx}'],
+    extends: [
+      js.configs.recommended,
+      tseslint.configs.recommended,
+      tseslint.configs.strict,
+      tseslint.configs.strictTypeChecked,
+    ],
+    languageOptions: {
+      ecmaVersion: 2020,
+      parserOptions: {project: './tsconfig.node.json',},
+    },
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'ExportNamedDeclaration[declaration!=null]',
+          message: 'Inline exports are not allowed. Use a single export block at the end of the file instead.',
+        },
+        {
+          selector: 'ExportDefaultDeclaration',
+          message: 'Default exports are not allowed. Use named exports instead.',
+        },
+        {
+          selector: 'FunctionDeclaration',
+          message: 'Function declarations are not allowed. Use arrow functions instead.',
+        },
+      ],
+      'eol-last': ['error', 'always'],
+      'no-multiple-empty-lines': ['error', { 'max': 1, 'maxEOF': 0 }],
+      'semi': ['error', 'never'],
+    },
+  },
 ])
 
 export default config

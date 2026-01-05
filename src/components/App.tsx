@@ -155,8 +155,8 @@ type View = 'csv' | 'categories' | 'transactions' | 'summary' | 'chart'
 
 const App = () => {
   const [view, setView] = useState<View>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.view)
-    return (saved as View) || 'csv'
+    const saved = localStorage.getItem(STORAGE_KEYS.view) as View|null
+    return saved || 'csv' as const
   })
   const [csvContent, setCsvContent] = useState<string>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.csv)
@@ -262,17 +262,6 @@ const App = () => {
     setCsvContent(INITIAL_CSV)
   }
 
-  const handleCsvSubmit = () => {
-    const lines = csvContent.split('\n').filter(l => l.trim())
-    const parsed = lines.map(line => parseCSVLine(line, delimiter))
-    // Classify categories immediately after parsing
-    const classified = parsed.map(t => ({
-      ...t,
-      category: classifyDescription(t.description, allRules)
-    }))
-    setTransactions(classified)
-  }
-
   // Auto-parse CSV when content changes
   useEffect(() => {
     if (csvContent.trim()) {
@@ -306,19 +295,17 @@ const App = () => {
     setTransactions(prev => prev.map(t => t.id === id ? { ...t, overrideMode } : t))
   }
 
-
   const handleAddRule = (keyword: string, category: string) => {
     setCustomRules(prev => ({ ...prev, [keyword]: category }))
   }
 
   const handleRemoveRule = (keyword: string) => {
     setCustomRules(prev => {
-      const newRules = { ...prev }
-      delete newRules[keyword]
-      return newRules
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { [keyword]: _, ...rest } = prev
+      return rest
     })
   }
-
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
@@ -337,23 +324,23 @@ const App = () => {
         </div>
 
         <nav style={{ display: 'flex', flexDirection: 'column' }}>
-          <button onClick={() => setView('csv')}>
+          <button onClick={() => { setView('csv') }}>
             CSV Input & Preview
           </button>
-          <button onClick={() => setView('categories')}>
+          <button onClick={() => { setView('categories') }}>
             Custom Categories
           </button>
-          <button onClick={() => setView('transactions')}>
+          <button onClick={() => { setView('transactions') }}>
             Transactions Table
           </button>
           <button
-            onClick={() => setView('summary')}
+            onClick={() => { setView('summary') }}
             disabled={summaries === null || summaries.length === 0}
           >
             Data by Period
           </button>
           <button
-            onClick={() => setView('chart')}
+            onClick={() => { setView('chart') }}
             disabled={summaries === null || summaries.length === 0}
           >
             Cumulative Bar Chart
@@ -370,7 +357,6 @@ const App = () => {
             onCsvChange={setCsvContent}
             onDelimiterChange={setDelimiter}
             onFillExample={handleFillExample}
-            onNext={handleCsvSubmit}
             rules={allRules}
           />
         )}
@@ -389,17 +375,10 @@ const App = () => {
           <Step2
             transactions={transactions}
             categories={categories}
-            rules={allRules}
-            baseRules={RULES}
-            customRules={customRules}
             onExcludedChange={handleUpdateExcluded}
             onCategoryChange={handleCategoryChange}
             onDateChange={handleDateChange}
             onOverrideModeChange={handleOverrideModeChange}
-            onAddRule={handleAddRule}
-            onRemoveRule={handleRemoveRule}
-            onBack={() => {}}
-            onNext={() => {}}
           />
         )}
 

@@ -4,31 +4,17 @@ import type { Transaction } from '../parsing/types.ts'
 const Step2 = ({
    transactions,
    categories,
-   rules,
-   baseRules,
-   customRules,
    onExcludedChange,
    onCategoryChange,
    onDateChange,
    onOverrideModeChange,
-   onAddRule,
-   onRemoveRule,
-   onBack,
-   onNext
 }: {
   transactions: Transaction[]
   categories: string[]
-  rules: Record<string, string>
-  baseRules: Record<string, string>
-  customRules: Record<string, string>
   onExcludedChange: (id: string, excluded: boolean) => void
   onCategoryChange: (id: string, category: string) => void
   onDateChange: (id: string, date: string) => void
   onOverrideModeChange: (id: string, overrideMode: boolean) => void
-  onAddRule: (keyword: string, category: string) => void
-  onRemoveRule: (keyword: string) => void
-  onBack?: () => void
-  onNext?: () => void
 }) => {
   const [onlyShowOthers, setOnlyShowOthers] = useState(false)
 
@@ -46,7 +32,7 @@ const Step2 = ({
           <input
             type="checkbox"
             checked={onlyShowOthers}
-            onChange={e => setOnlyShowOthers(e.target.checked)}
+            onChange={e => { setOnlyShowOthers(e.target.checked) }}
           />
           Only show "others" category
         </label>
