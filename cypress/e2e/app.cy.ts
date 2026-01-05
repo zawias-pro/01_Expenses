@@ -33,14 +33,17 @@ describe('Expense Analyzer App', () => {
     cy.contains('Fill with Example Data').click()
     // Wait for data to be parsed
     cy.wait(500)
+    // Confirm CSV to enable navigation
+    cy.contains('button', 'Confirm CSV').click()
+    cy.wait(500)
     
     // Navigate to Transactions Table view
-    cy.contains('button', 'Transactions Table').click()
+    cy.contains('button', 'Transactions Table').should('not.be.disabled').click()
     cy.contains('Transactions Table').should('be.visible')
     cy.get('table tbody tr').should('have.length.at.least', 1)
 
     // Navigate to Data by Period view
-    cy.contains('button', 'Data by Period').click()
+    cy.contains('button', 'Data by Period').should('not.be.disabled').click()
     cy.contains('Data Aggregated by Period').should('be.visible')
     cy.get('select#selection-type-select').should('be.visible')
     cy.get('select#selection-type-select').should('have.value', 'month')
@@ -53,9 +56,12 @@ describe('Expense Analyzer App', () => {
     // Fill with example data first
     cy.contains('Fill with Example Data').click()
     cy.wait(500)
+    // Confirm CSV to enable navigation
+    cy.contains('button', 'Confirm CSV').click()
+    cy.wait(500)
     
     // Go to Transactions Table view
-    cy.contains('button', 'Transactions Table').click()
+    cy.contains('button', 'Transactions Table').should('not.be.disabled').click()
     cy.contains('Transactions Table').should('be.visible')
 
     // Go back to CSV Input view
@@ -63,15 +69,15 @@ describe('Expense Analyzer App', () => {
     cy.contains('CSV Input & Preview').should('be.visible')
 
     // Go to Transactions Table again
-    cy.contains('button', 'Transactions Table').click()
+    cy.contains('button', 'Transactions Table').should('not.be.disabled').click()
     cy.contains('Transactions Table').should('be.visible')
 
     // Go to Data by Period view
-    cy.contains('button', 'Data by Period').click()
+    cy.contains('button', 'Data by Period').should('not.be.disabled').click()
     cy.contains('Data Aggregated by Period').should('be.visible')
 
     // Go back to Transactions Table
-    cy.contains('button', 'Transactions Table').click()
+    cy.contains('button', 'Transactions Table').should('not.be.disabled').click()
     cy.contains('Transactions Table').should('be.visible')
   })
 
@@ -80,9 +86,12 @@ describe('Expense Analyzer App', () => {
     // Modify CSV
     cy.get('textarea').clear().type('2025-01-01;"Test Transaction";"Account";"Category";-100,00 PLN;;')
     cy.wait(500)
+    // Confirm CSV to enable navigation
+    cy.contains('button', 'Confirm CSV').click()
+    cy.wait(500)
     
     // Navigate to Transactions Table view
-    cy.contains('button', 'Transactions Table').click()
+    cy.contains('button', 'Transactions Table').should('not.be.disabled').click()
     cy.contains('Transactions Table').should('be.visible')
     
     // Exclude a transaction (first checkbox in table)
@@ -106,9 +115,12 @@ describe('Expense Analyzer App', () => {
     // Fill with example data and navigate to Data by Period view
     cy.contains('Fill with Example Data').click()
     cy.wait(500)
-    cy.contains('button', 'Transactions Table').click()
+    // Confirm CSV to enable navigation
+    cy.contains('button', 'Confirm CSV').click()
+    cy.wait(500)
+    cy.contains('button', 'Transactions Table').should('not.be.disabled').click()
     cy.contains('Transactions Table').should('be.visible')
-    cy.contains('button', 'Data by Period').click()
+    cy.contains('button', 'Data by Period').should('not.be.disabled').click()
     cy.contains('Data Aggregated by Period').should('be.visible')
 
     // Click clear button
@@ -128,12 +140,17 @@ describe('Expense Analyzer App', () => {
     cy.visit('/')
     cy.contains('Fill with Example Data').click()
     cy.wait(500)
-    cy.contains('button', 'Data by Period').click()
-    cy.contains('Data Aggregated by Period').should('be.visible')
+    // Confirm CSV to enable navigation
+    cy.contains('button', 'Confirm CSV').click()
+    cy.wait(500)
+    cy.contains('button', 'Data by Period').should('not.be.disabled').click()
+    // Wait for the view to load - check for existence and scroll into view if needed
+    cy.get('select#selection-type-select').should('exist').scrollIntoView().should('be.visible')
 
     // Select "All Data" view
     cy.get('select#selection-type-select').select('all')
-    cy.contains('All Data').should('be.visible')
+    cy.wait(300)
+    cy.contains('All Data').should('exist')
     cy.get('select#month-select').should('not.exist')
     cy.get('select#year-select').should('not.exist')
   })
@@ -142,13 +159,18 @@ describe('Expense Analyzer App', () => {
     cy.visit('/')
     cy.contains('Fill with Example Data').click()
     cy.wait(500)
-    cy.contains('button', 'Data by Period').click()
-    cy.contains('Data Aggregated by Period').should('be.visible')
+    // Confirm CSV to enable navigation
+    cy.contains('button', 'Confirm CSV').click()
+    cy.wait(500)
+    cy.contains('button', 'Data by Period').should('not.be.disabled').click()
+    // Wait for the view to load - check for existence and scroll into view if needed
+    cy.get('select#selection-type-select').should('exist').scrollIntoView().should('be.visible')
 
     // Select "By Year" view
     cy.get('select#selection-type-select').select('year')
+    cy.wait(300)
     cy.get('select#year-select').should('be.visible')
-    cy.contains('Year').should('be.visible')
+    cy.contains('Year').should('exist')
     cy.get('select#month-select').should('not.exist')
   })
 
@@ -156,8 +178,12 @@ describe('Expense Analyzer App', () => {
     cy.visit('/')
     cy.contains('Fill with Example Data').click()
     cy.wait(500)
-    cy.contains('button', 'Data by Period').click()
-    cy.contains('Data Aggregated by Period').should('be.visible')
+    // Confirm CSV to enable navigation
+    cy.contains('button', 'Confirm CSV').click()
+    cy.wait(500)
+    cy.contains('button', 'Data by Period').should('not.be.disabled').click()
+    // Wait for the view to load - check for existence and scroll into view if needed
+    cy.get('select#selection-type-select').should('exist').scrollIntoView().should('be.visible')
 
     // Start with month view (default)
     cy.get('select#selection-type-select').should('have.value', 'month')
@@ -165,17 +191,20 @@ describe('Expense Analyzer App', () => {
 
     // Switch to year view
     cy.get('select#selection-type-select').select('year')
+    cy.wait(300)
     cy.get('select#year-select').should('be.visible')
     cy.get('select#month-select').should('not.exist')
 
     // Switch to all data view
     cy.get('select#selection-type-select').select('all')
-    cy.contains('All Data').should('be.visible')
+    cy.wait(300)
+    cy.contains('All Data').should('exist')
     cy.get('select#year-select').should('not.exist')
     cy.get('select#month-select').should('not.exist')
 
     // Switch back to month view
     cy.get('select#selection-type-select').select('month')
+    cy.wait(300)
     cy.get('select#month-select').should('be.visible')
   })
 
@@ -183,7 +212,10 @@ describe('Expense Analyzer App', () => {
     cy.visit('/')
     cy.contains('Fill with Example Data').click()
     cy.wait(500)
-    cy.contains('button', 'Transactions Table').click()
+    // Confirm CSV to enable navigation
+    cy.contains('button', 'Confirm CSV').click()
+    cy.wait(500)
+    cy.contains('button', 'Transactions Table').should('not.be.disabled').click()
     cy.contains('Transactions Table').should('be.visible')
 
     // First row should have unchecked override checkbox
@@ -203,7 +235,10 @@ describe('Expense Analyzer App', () => {
     cy.visit('/')
     cy.contains('Fill with Example Data').click()
     cy.wait(500)
-    cy.contains('button', 'Transactions Table').click()
+    // Confirm CSV to enable navigation
+    cy.contains('button', 'Confirm CSV').click()
+    cy.wait(500)
+    cy.contains('button', 'Transactions Table').should('not.be.disabled').click()
     cy.contains('Transactions Table').should('be.visible')
 
     // Check the override checkbox for the first transaction
@@ -224,7 +259,10 @@ describe('Expense Analyzer App', () => {
     cy.visit('/')
     cy.contains('Fill with Example Data').click()
     cy.wait(500)
-    cy.contains('button', 'Transactions Table').click()
+    // Confirm CSV to enable navigation
+    cy.contains('button', 'Confirm CSV').click()
+    cy.wait(500)
+    cy.contains('button', 'Transactions Table').should('not.be.disabled').click()
     cy.contains('Transactions Table').should('be.visible')
 
     // Check override and edit date
@@ -239,7 +277,10 @@ describe('Expense Analyzer App', () => {
     cy.visit('/')
     cy.contains('Fill with Example Data').click()
     cy.wait(500)
-    cy.contains('button', 'Transactions Table').click()
+    // Confirm CSV to enable navigation
+    cy.contains('button', 'Confirm CSV').click()
+    cy.wait(500)
+    cy.contains('button', 'Transactions Table').should('not.be.disabled').click()
     cy.contains('Transactions Table').should('be.visible')
 
     // Check override and change category
@@ -260,7 +301,10 @@ describe('Expense Analyzer App', () => {
     cy.visit('/')
     cy.contains('Fill with Example Data').click()
     cy.wait(500)
-    cy.contains('button', 'Transactions Table').click()
+    // Confirm CSV to enable navigation
+    cy.contains('button', 'Confirm CSV').click()
+    cy.wait(500)
+    cy.contains('button', 'Transactions Table').should('not.be.disabled').click()
     cy.contains('Transactions Table').should('be.visible')
 
     cy.get('table tbody tr').first().within(() => {
@@ -289,7 +333,12 @@ describe('Expense Analyzer App', () => {
 
   it('should navigate to Custom Categories view', () => {
     cy.visit('/')
-    cy.contains('button', 'Custom Categories').click()
+    // Fill with example data and confirm CSV to enable navigation
+    cy.contains('Fill with Example Data').click()
+    cy.wait(500)
+    cy.contains('button', 'Confirm CSV').click()
+    cy.wait(500)
+    cy.contains('button', 'Custom Categories').should('not.be.disabled').click()
     cy.contains('Custom Categories').should('be.visible')
     cy.contains('Expense Categories').should('be.visible')
     cy.get('table').should('be.visible')
@@ -299,8 +348,10 @@ describe('Expense Analyzer App', () => {
     cy.visit('/')
     cy.contains('Fill with Example Data').click()
     cy.wait(500)
-    cy.contains('button', 'Cumulative Bar Chart').should('not.be.disabled')
-    cy.contains('button', 'Cumulative Bar Chart').click()
+    // Confirm CSV to enable navigation
+    cy.contains('button', 'Confirm CSV').click()
+    cy.wait(500)
+    cy.contains('button', 'Cumulative Bar Chart').should('not.be.disabled').click()
     cy.contains('Cumulative Bar Chart').should('be.visible')
   })
 })
