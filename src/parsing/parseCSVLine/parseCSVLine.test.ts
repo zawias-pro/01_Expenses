@@ -8,7 +8,8 @@ test('parseCSVLine - parses valid CSV line', () => {
   assert.strictEqual(result.date, '2025-12-12')
   assert.strictEqual(result.description, 'Description')
   assert.strictEqual(result.account, 'Account')
-  assert.strictEqual(result.category, 'Category')
+  // Category from CSV is ignored, always defaults to "others"
+  assert.strictEqual(result.category, 'others')
   assert.strictEqual(result.amount, '-5 000,00 PLN')
   assert.strictEqual(result.excluded, false)
   assert.strictEqual(result.isValid, true)

@@ -1,5 +1,10 @@
 import { parseCSVLine } from '../parsing/parseCSVLine/parseCSVLine.ts'
+import { classifyDescription } from '../parsing/classifyDescription/classifyDescription.ts'
+import { parseRules } from '../parsing/parseRules/parseRules.ts'
 import type { Transaction } from '../parsing/types.ts'
+import rulesContent from '../rules.csv?raw'
+
+const RULES = parseRules(rulesContent)
 
 const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillExample, onNext }: {
   csvContent: string
@@ -9,12 +14,18 @@ const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillEx
   onFillExample: () => void
   onNext: () => void
 }) => {
-  // Parse preview transactions from first 3 rows
+  // Parse preview transactions from first 3 rows and classify categories
   const getPreviewTransactions = (): Transaction[] => {
     if (!csvContent.trim()) return []
 
     const lines = csvContent.split('\n').filter(line => line.trim())
-    return lines.slice(0, 3).map(line => parseCSVLine(line, delimiter))
+    return lines.slice(0, 3).map(line => {
+      const parsed = parseCSVLine(line, delimiter)
+      return {
+        ...parsed,
+        category: classifyDescription(parsed.description, RULES)
+      }
+    })
   }
 
   const previewTransactions = getPreviewTransactions()

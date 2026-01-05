@@ -9,7 +9,7 @@ import { validateTransaction } from '../validateTransaction/validateTransaction.
  *   date: "2025-12-12",
  *   description: "JAN ADAM KOWALSKI, CZYNSZ NAJMU PRZELEW ZEWNĘTRZNY WYCHODZĄCY 74899274659992743764666621",
  *   account: "MojBank 1234 ... 5678",
- *   category: "Czynsz i wynajem",
+ *   category: "others",
  *   amount: "-5 000,00 PLN",
  *   excluded: false,
  *   isValid: true,
@@ -27,7 +27,8 @@ const parseCSVLine = (line: string, delimiter: string = ';'): Transaction => {
   const date = parts.length > 0 ? clean(parts[0]) : ''
   const description = parts.length > 1 ? clean(parts[1]) : ''
   const account = parts.length > 2 ? clean(parts[2]) : ''
-  const category = parts.length > 3 ? clean(parts[3]) : ''
+  // Category from CSV is ignored - always default to "others"
+  const category = 'others'
   const amount = parts.length > 4 ? clean(parts[4]) : ''
 
   // Check for insufficient parts

@@ -4,6 +4,7 @@ import { parseCSVLine } from '../parsing/parseCSVLine/parseCSVLine.ts'
 import { processTransactions } from '../parsing/processTransactions/processTransactions.ts'
 import { parseRules } from '../parsing/parseRules/parseRules.ts'
 import { getCategories } from '../parsing/getCategories/getCategories.ts'
+import { classifyDescription } from '../parsing/classifyDescription/classifyDescription.ts'
 import type { Transaction, MonthlySummary } from '../parsing/types.ts'
 import { Step1 } from './Step1.tsx'
 import { Step2 } from './Step2.tsx'
@@ -220,7 +221,12 @@ const App = () => {
   const handleCsvSubmit = () => {
     const lines = csvContent.split('\n').filter(l => l.trim())
     const parsed = lines.map(line => parseCSVLine(line, delimiter))
-    setTransactions(parsed)
+    // Classify categories immediately after parsing so Step2 displays correct categories
+    const classified = parsed.map(t => ({
+      ...t,
+      category: classifyDescription(t.description, RULES)
+    }))
+    setTransactions(classified)
     setStep(2)
   }
 

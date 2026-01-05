@@ -98,3 +98,55 @@ test('processTransactions - processes all transactions passed to it', () => {
   assert.strictEqual(dec.totalExpenses, 5000)
   assert.strictEqual(dec.totalIncome, 2000)
 })
+
+test('processTransactions - classifies categories from description and respects overrides', () => {
+  const transactions: Transaction[] = [
+    {
+      id: '1',
+      date: '2025-12-12',
+      description: 'BIEDRONKA purchase',
+      account: 'Account1',
+      category: 'others',
+      amount: '-100,00 PLN',
+      excluded: false,
+      isValid: true,
+      overridden: false,
+      overrideMode: false,
+    },
+    {
+      id: '2',
+      date: '2025-12-12',
+      description: 'Random transaction',
+      account: 'Account1',
+      category: 'others',
+      amount: '-50,00 PLN',
+      excluded: false,
+      isValid: true,
+      overridden: false,
+      overrideMode: false,
+    },
+    {
+      id: '3',
+      date: '2025-12-12',
+      description: 'Another transaction',
+      account: 'Account1',
+      category: 'custom-category',
+      amount: '-25,00 PLN',
+      excluded: false,
+      isValid: true,
+      overridden: true, // Manually overridden
+      overrideMode: false,
+    },
+  ]
+  const rules = { 'biedronka': 'grocery' }
+  const result = processTransactions(transactions, rules)
+
+  assert(result.length === 1)
+  const dec = result[0]
+  // BIEDRONKA should be classified as "grocery"
+  assert.strictEqual(dec.categories['grocery'], 100)
+  // Random transaction should default to "others"
+  assert.strictEqual(dec.categories['others'], 50)
+  // Overridden transaction should use the overridden category
+  assert.strictEqual(dec.categories['custom-category'], 25)
+})

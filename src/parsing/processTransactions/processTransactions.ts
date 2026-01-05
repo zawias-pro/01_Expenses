@@ -7,10 +7,10 @@ import { getYearFromDate } from '../getYearFromDate/getYearFromDate.ts'
 /**
  * Example:
  * Input: [
- *   { id: "1", date: "2025-12-12", description: "Purchase", account: "Bank", category: "grocery", amount: "-50,00 PLN", excluded: false, isValid: true, validationError: undefined, overridden: false }
+ *   { id: "1", date: "2025-12-12", description: "Purchase", account: "Bank", category: "others", amount: "-50,00 PLN", excluded: false, isValid: true, validationError: undefined, overridden: false }
  * ], { "biedronka": "grocery" }
  * Output: [
- *   { year: 2025, month: 12, totalExpenses: 50, totalIncome: 0, balance: -50, categories: { "grocery": 50 } }
+ *   { year: 2025, month: 12, totalExpenses: 50, totalIncome: 0, balance: -50, categories: { "others": 50 } }
  * ]
  */
 const processTransactions = (transactions: Transaction[], rules: Record<string, string>): MonthlySummary[] => {
@@ -21,9 +21,9 @@ const processTransactions = (transactions: Transaction[], rules: Record<string, 
       const year = getYearFromDate(t.date)
       const month = getMonthFromDate(t.date)
       const amount = parsePolishAmount(t.amount)
-      // Use the transaction's category (which may have been overridden in step 2)
-      // If no category is set, fall back to classification
-      const category = t.category || classifyDescription(t.description, rules)
+      // Use the transaction's category if it was manually overridden in step 2
+      // Otherwise, classify based on description (defaults to "others" if no match)
+      const category = t.overridden ? t.category : classifyDescription(t.description, rules)
 
       const key = `${year.toString()}-${month.toString()}`
       const data = monthlyData[key] ??= { expenses: 0, income: 0, categories: {} }
