@@ -27,8 +27,8 @@ const Step2 = ({
   onOverrideModeChange: (id: string, overrideMode: boolean) => void
   onAddRule: (keyword: string, category: string) => void
   onRemoveRule: (keyword: string) => void
-  onBack: () => void
-  onNext: () => void
+  onBack?: () => void
+  onNext?: () => void
 }) => {
   const [newKeyword, setNewKeyword] = useState('')
   const [newCategory, setNewCategory] = useState('')
@@ -52,48 +52,37 @@ const Step2 = ({
 
   return (
     <div>
-      <h2>Step 2: Exclude Transactions</h2>
+      <h2>Custom Categories & Transactions</h2>
       
-      <div style={{ marginBottom: '2rem', border: '1px solid #ddd', padding: '1rem', borderRadius: '4px' }}>
-        <h3 style={{ marginTop: 0 }}>Expense Categories</h3>
-        <div style={{ marginBottom: '1rem' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1rem' }}>
+      <div>
+        <h3>Expense Categories</h3>
+        <div>
+          <table style={{ width: '100%' }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid #ddd' }}>
-                <th style={{ textAlign: 'left', padding: '0.5rem' }}>Keyword</th>
-                <th style={{ textAlign: 'left', padding: '0.5rem' }}>Category</th>
-                <th style={{ textAlign: 'left', padding: '0.5rem' }}>Type</th>
-                <th style={{ textAlign: 'left', padding: '0.5rem' }}>Action</th>
+              <tr>
+                <th>Keyword</th>
+                <th>Category</th>
+                <th>Type</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
               {Object.entries(rules)
                 .sort(([a], [b]) => a.localeCompare(b))
                 .map(([keyword, category]) => (
-                <tr key={keyword} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '0.5rem' }}>{keyword}</td>
-                  <td style={{ padding: '0.5rem' }}>{category}</td>
-                  <td style={{ padding: '0.5rem' }}>
+                <tr key={keyword}>
+                  <td>{keyword}</td>
+                  <td>{category}</td>
+                  <td>
                     {isBaseRule(keyword) ? (
-                      <span style={{ color: '#666', fontSize: '0.9em' }}>Built-in</span>
+                      <span>Built-in</span>
                     ) : (
-                      <span style={{ color: '#0066cc', fontSize: '0.9em' }}>Custom</span>
+                      <span>Custom</span>
                     )}
                   </td>
-                  <td style={{ padding: '0.5rem' }}>
+                  <td>
                     {isCustomRule(keyword) && (
-                      <button
-                        onClick={() => onRemoveRule(keyword)}
-                        style={{
-                          padding: '0.25rem 0.5rem',
-                          fontSize: '0.85em',
-                          backgroundColor: '#dc3545',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '3px',
-                          cursor: 'pointer'
-                        }}
-                      >
+                      <button onClick={() => onRemoveRule(keyword)}>
                         Remove
                       </button>
                     )}
@@ -103,13 +92,12 @@ const Step2 = ({
             </tbody>
           </table>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex' }}>
           <input
             type="text"
             placeholder="Keyword (e.g., 'netflix')"
             value={newKeyword}
             onChange={e => setNewKeyword(e.target.value)}
-            style={{ padding: '0.5rem', border: '1px solid #ddd', borderRadius: '3px', minWidth: '150px' }}
             onKeyPress={e => {
               if (e.key === 'Enter') {
                 handleAddRuleClick()
@@ -121,7 +109,6 @@ const Step2 = ({
             placeholder="Category (e.g., 'entertainment')"
             value={newCategory}
             onChange={e => setNewCategory(e.target.value)}
-            style={{ padding: '0.5rem', border: '1px solid #ddd', borderRadius: '3px', minWidth: '150px' }}
             onKeyPress={e => {
               if (e.key === 'Enter') {
                 handleAddRuleClick()
@@ -131,40 +118,30 @@ const Step2 = ({
           <button
             onClick={handleAddRuleClick}
             disabled={!newKeyword.trim() || !newCategory.trim()}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: '#28a745',
-              color: 'white',
-              border: 'none',
-              borderRadius: '3px',
-              cursor: newKeyword.trim() && newCategory.trim() ? 'pointer' : 'not-allowed',
-              opacity: newKeyword.trim() && newCategory.trim() ? 1 : 0.6
-            }}
           >
             Add
           </button>
         </div>
       </div>
 
-      <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+      <div style={{ display: 'flex' }}>
+        <label>
           <input
             type="checkbox"
             checked={onlyShowOthers}
             onChange={e => setOnlyShowOthers(e.target.checked)}
-            style={{ cursor: 'pointer' }}
           />
-          <span>Only show "others" category</span>
+          Only show "others" category
         </label>
         {onlyShowOthers && (
-          <span style={{ color: '#666', fontSize: '0.9em' }}>
+          <span>
             ({filteredTransactions.length} of {transactions.length} transactions)
           </span>
         )}
       </div>
 
-      <div className="transaction-table-container">
-        <table className="transaction-table">
+      <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+        <table style={{ width: '100%' }}>
           <thead>
             <tr>
               <th>Exclude</th>
@@ -178,7 +155,7 @@ const Step2 = ({
           </thead>
           <tbody>
             {filteredTransactions.map(t => (
-              <tr key={t.id} className={`${t.excluded ? 'excluded-row' : ''} ${!t.isValid ? 'invalid-row' : ''}`}>
+              <tr key={t.id}>
                 <td>
                   <input
                     type="checkbox"
@@ -201,7 +178,6 @@ const Step2 = ({
                       type="text"
                       value={t.date}
                       onChange={e => { onDateChange(t.id, e.target.value) }}
-                      style={{ width: '100px' }}
                       disabled={!t.isValid}
                     />
                   ) : (
@@ -215,7 +191,6 @@ const Step2 = ({
                       value={t.category}
                       onChange={e => { onCategoryChange(t.id, e.target.value) }}
                       disabled={!t.isValid}
-                      style={{ width: '120px' }}
                     >
                       {categories.map(cat => (
                         <option key={cat} value={cat}>{cat}</option>
@@ -229,13 +204,13 @@ const Step2 = ({
                 <td>
                   {t.isValid ? (
                     <div>
-                      <span style={{ color: 'green' }}>✓ Valid</span>
+                      <span>✓ Valid</span>
                       {t.overridden && (
-                        <div style={{ color: 'orange', fontSize: '0.8em' }}>⚠ Overridden</div>
+                        <div>⚠ Overridden</div>
                       )}
                     </div>
                   ) : (
-                    <span style={{ color: 'red' }}>
+                    <span>
                       ✗ Error: {t.validationError}
                     </span>
                   )}
@@ -244,10 +219,6 @@ const Step2 = ({
             ))}
           </tbody>
         </table>
-      </div>
-      <div style={{ marginTop: '1rem' }}>
-        <button onClick={onBack} style={{ marginRight: '0.5rem' }}>Back</button>
-        <button onClick={onNext}>Next</button>
       </div>
     </div>
   )

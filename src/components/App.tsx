@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import './App.css'
 import { parseCSVLine } from '../parsing/parseCSVLine/parseCSVLine.ts'
 import { processTransactions } from '../parsing/processTransactions/processTransactions.ts'
@@ -9,6 +9,7 @@ import type { Transaction, MonthlySummary } from '../parsing/types.ts'
 import { Step1 } from './Step1.tsx'
 import { Step2 } from './Step2.tsx'
 import { Step3 } from './Step3.tsx'
+import { Step4 } from './Step4.tsx'
 import rulesContent from '../rules.csv?raw'
 
 const INITIAL_CSV = `2025-12-12;"JAN ADAM KOWALSKI, CZYNSZ NAJMU                                                                         PRZELEW ZEWNĘTRZNY WYCHODZĄCY                                                     74899274659992743764666621  ";"MojBank 1234 ... 5678";"Czynsz i wynajem";-5 000,00 PLN;;
@@ -146,16 +147,16 @@ const STORAGE_KEYS = {
   csv: 'expense-analyzer-csv',
   delimiter: 'expense-analyzer-delimiter',
   transactions: 'expense-analyzer-transactions',
-  step: 'expense-analyzer-step',
+  view: 'expense-analyzer-view',
   customRules: 'expense-analyzer-custom-rules',
 }
 
-type Step = 1 | 2 | 3
+type View = 'csv' | 'transactions' | 'summary' | 'chart'
 
 const App = () => {
-  const [step, setStep] = useState<Step>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.step)
-    return saved ? (Number(saved) as Step) : 1
+  const [view, setView] = useState<View>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.view)
+    return (saved as View) || 'csv'
   })
   const [csvContent, setCsvContent] = useState<string>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.csv)
@@ -176,9 +177,9 @@ const App = () => {
     return saved ? (JSON.parse(saved) as Record<string, string>) : {}
   })
 
-  // Merge base rules with custom rules
-  const allRules = { ...RULES, ...customRules }
-  const categories = getCategories(allRules)
+  // Merge base rules with custom rules (memoized to prevent infinite loops)
+  const allRules = useMemo(() => ({ ...RULES, ...customRules }), [customRules])
+  const categories = useMemo(() => getCategories(allRules), [allRules])
 
   // Save to localStorage whenever data changes
   useEffect(() => {
@@ -194,8 +195,8 @@ const App = () => {
   }, [transactions])
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.step, String(step))
-  }, [step])
+    localStorage.setItem(STORAGE_KEYS.view, view)
+  }, [view])
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.customRules, JSON.stringify(customRules))
@@ -208,41 +209,53 @@ const App = () => {
         if (t.overridden) {
           return t // Keep overridden categories
         }
+        const newCategory = classifyDescription(t.description, allRules)
+        if (t.category === newCategory) {
+          return t // No change needed
+        }
         return {
           ...t,
-          category: classifyDescription(t.description, allRules)
+          category: newCategory
         }
       }))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customRules])
 
-  // Recalculate summaries on initial load if we're on step 3
+  // Recalculate summaries when transactions or rules change
   useEffect(() => {
-    if (step === 3 && transactions.length > 0 && summaries === null) {
+    if (transactions.length > 0) {
       const activeTransactions = transactions.filter(t => !t.excluded)
-      const result = processTransactions(activeTransactions, allRules)
-      setSummaries(result)
-      // Set selected month to the first available month
-      if (result.length > 0 && selectedMonth === null) {
-        setSelectedMonth({ year: result[0].year, month: result[0].month })
+      if (activeTransactions.length > 0) {
+        const result = processTransactions(activeTransactions, allRules)
+        setSummaries(result)
+        // Set selected month to the first available month if not set
+        if (result.length > 0 && selectedMonth === null) {
+          setSelectedMonth({ year: result[0].year, month: result[0].month })
+        }
+      } else {
+        // All transactions are excluded
+        setSummaries([])
       }
+    } else {
+      setSummaries(null)
+      setSelectedMonth(null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [transactions, allRules])
 
   const handleClear = () => {
     localStorage.removeItem(STORAGE_KEYS.csv)
     localStorage.removeItem(STORAGE_KEYS.delimiter)
     localStorage.removeItem(STORAGE_KEYS.transactions)
-    localStorage.removeItem(STORAGE_KEYS.step)
+    localStorage.removeItem(STORAGE_KEYS.view)
     localStorage.removeItem(STORAGE_KEYS.customRules)
     setCsvContent('')
     setDelimiter(';')
     setTransactions([])
     setSummaries(null)
     setCustomRules({})
-    setStep(1)
+    setView('csv')
   }
 
   const handleFillExample = () => {
@@ -252,14 +265,30 @@ const App = () => {
   const handleCsvSubmit = () => {
     const lines = csvContent.split('\n').filter(l => l.trim())
     const parsed = lines.map(line => parseCSVLine(line, delimiter))
-    // Classify categories immediately after parsing so Step2 displays correct categories
+    // Classify categories immediately after parsing
     const classified = parsed.map(t => ({
       ...t,
       category: classifyDescription(t.description, allRules)
     }))
     setTransactions(classified)
-    setStep(2)
   }
+
+  // Auto-parse CSV when content changes
+  useEffect(() => {
+    if (csvContent.trim()) {
+      const lines = csvContent.split('\n').filter(l => l.trim())
+      if (lines.length > 0) {
+        const parsed = lines.map(line => parseCSVLine(line, delimiter))
+        const classified = parsed.map(t => ({
+          ...t,
+          category: classifyDescription(t.description, allRules)
+        }))
+        setTransactions(classified)
+      }
+    }
+    // Don't clear transactions when csvContent is empty - let user keep their data
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [csvContent, delimiter])
 
   const handleUpdateExcluded = (id: string, excluded: boolean) => {
     setTransactions(prev => prev.map(t => t.id === id ? { ...t, excluded } : t))
@@ -277,16 +306,6 @@ const App = () => {
     setTransactions(prev => prev.map(t => t.id === id ? { ...t, overrideMode } : t))
   }
 
-  const handleProcess = () => {
-    const activeTransactions = transactions.filter(t => !t.excluded)
-    const result = processTransactions(activeTransactions, allRules)
-    setSummaries(result)
-    // Set selected month to the first available month
-    if (result.length > 0) {
-      setSelectedMonth({ year: result[0].year, month: result[0].month })
-    }
-    setStep(3)
-  }
 
   const handleAddRule = (keyword: string, category: string) => {
     setCustomRules(prev => ({ ...prev, [keyword]: category }))
@@ -300,63 +319,98 @@ const App = () => {
     })
   }
 
-  const handleBack = () => {
-    if (step === 2) {
-      setStep(1)
-    } else if (step === 3) {
-      setStep(2)
-    }
-  }
 
   return (
-    <div className="container">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h1>Expense Analyzer</h1>
-        <button onClick={handleClear}>Clear & Start Over</button>
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+      {/* Sidebar */}
+      <div style={{
+        width: '250px',
+        overflowY: 'auto',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        <div>
+          <h1>Expense Analyzer</h1>
+          <button onClick={handleClear}>
+            Clear & Start Over
+          </button>
+        </div>
+
+        <nav style={{ display: 'flex', flexDirection: 'column' }}>
+          <button onClick={() => setView('csv')}>
+            CSV Input & Preview
+          </button>
+          <button onClick={() => setView('transactions')}>
+            Custom Categories & Table
+          </button>
+          <button
+            onClick={() => setView('summary')}
+            disabled={summaries === null || summaries.length === 0}
+          >
+            Data by Period
+          </button>
+          <button
+            onClick={() => setView('chart')}
+            disabled={summaries === null || summaries.length === 0}
+          >
+            Cumulative Bar Chart
+          </button>
+        </nav>
       </div>
-      
-      {step === 1 && (
-        <Step1
-          csvContent={csvContent}
-          delimiter={delimiter}
-          onCsvChange={setCsvContent}
-          onDelimiterChange={setDelimiter}
-          onFillExample={handleFillExample}
-          onNext={handleCsvSubmit}
-        />
-      )}
 
-      {step === 2 && (
-        <Step2
-          transactions={transactions}
-          categories={categories}
-          rules={allRules}
-          baseRules={RULES}
-          customRules={customRules}
-          onExcludedChange={handleUpdateExcluded}
-          onCategoryChange={handleCategoryChange}
-          onDateChange={handleDateChange}
-          onOverrideModeChange={handleOverrideModeChange}
-          onAddRule={handleAddRule}
-          onRemoveRule={handleRemoveRule}
-          onBack={handleBack}
-          onNext={handleProcess}
-        />
-      )}
+      {/* Main Content */}
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+        {view === 'csv' && (
+          <Step1
+            csvContent={csvContent}
+            delimiter={delimiter}
+            onCsvChange={setCsvContent}
+            onDelimiterChange={setDelimiter}
+            onFillExample={handleFillExample}
+            onNext={handleCsvSubmit}
+            rules={allRules}
+          />
+        )}
 
-      {step === 3 && summaries && selectedMonth && (
-        <Step3
-          summaries={summaries}
-          selectedMonth={selectedMonth}
-          onSelectionChange={(type, year, month) => {
-            if (type === 'month' && year && month) {
-              setSelectedMonth({ year, month })
-            }
-            // For 'year' and 'all' types, Step3 manages its own state
-          }}
-          onBack={handleBack}
-        />
-      )}
+        {view === 'transactions' && (
+          <Step2
+            transactions={transactions}
+            categories={categories}
+            rules={allRules}
+            baseRules={RULES}
+            customRules={customRules}
+            onExcludedChange={handleUpdateExcluded}
+            onCategoryChange={handleCategoryChange}
+            onDateChange={handleDateChange}
+            onOverrideModeChange={handleOverrideModeChange}
+            onAddRule={handleAddRule}
+            onRemoveRule={handleRemoveRule}
+            onBack={() => {}}
+            onNext={() => {}}
+          />
+        )}
+
+        {view === 'summary' && summaries && selectedMonth && (
+          <Step3
+            summaries={summaries}
+            selectedMonth={selectedMonth}
+            onSelectionChange={(type, year, month) => {
+              if (type === 'month' && year && month) {
+                setSelectedMonth({ year, month })
+              }
+            }}
+            onBack={() => {}}
+            onNext={() => {}}
+          />
+        )}
+
+        {view === 'chart' && summaries && (
+          <Step4
+            summaries={summaries}
+            onBack={() => {}}
+          />
+        )}
+      </div>
     </div>
   )
 }

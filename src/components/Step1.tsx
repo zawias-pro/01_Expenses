@@ -6,13 +6,14 @@ import rulesContent from '../rules.csv?raw'
 
 const RULES = parseRules(rulesContent)
 
-const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillExample, onNext }: {
+const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillExample, onNext, rules }: {
   csvContent: string
   delimiter: string
   onCsvChange: (content: string) => void
   onDelimiterChange: (delimiter: string) => void
   onFillExample: () => void
-  onNext: () => void
+  onNext?: () => void
+  rules: Record<string, string>
 }) => {
   // Parse preview transactions from first 3 rows and classify categories
   const getPreviewTransactions = (): Transaction[] => {
@@ -23,7 +24,7 @@ const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillEx
       const parsed = parseCSVLine(line, delimiter)
       return {
         ...parsed,
-        category: classifyDescription(parsed.description, RULES)
+        category: classifyDescription(parsed.description, rules)
       }
     })
   }
@@ -32,17 +33,16 @@ const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillEx
 
   return (
     <div>
-      <h2>Step 1: Paste CSV Content</h2>
+      <h2>CSV Input & Preview</h2>
 
-      <div style={{ marginBottom: '1rem' }}>
-        <label htmlFor="delimiter-select" style={{ marginRight: '0.5rem' }}>
+      <div>
+        <label htmlFor="delimiter-select">
           CSV Delimiter:
         </label>
         <select
           id="delimiter-select"
           value={delimiter}
           onChange={e => { onDelimiterChange(e.target.value) }}
-          style={{ marginRight: '1rem' }}
         >
           <option value=";">Semicolon (;)</option>
           <option value=",">Comma (,)</option>
@@ -55,20 +55,15 @@ const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillEx
         value={csvContent}
         onChange={e => { onCsvChange(e.target.value) }}
         rows={10}
-        style={{ width: '100%', fontFamily: 'monospace' }}
+        style={{ width: '100%' }}
         placeholder="Paste your CSV data here..."
       />
 
       {previewTransactions.length > 0 && (
-        <div style={{ marginTop: '1rem' }}>
+        <div>
           <h3>Preview (first 3 rows):</h3>
-          <div style={{
-            maxHeight: '200px',
-            overflowY: 'auto',
-            border: '1px solid #ddd',
-            marginBottom: '1rem'
-          }}>
-            <table className="transaction-table">
+          <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+            <table>
               <thead>
                 <tr>
                   <th>Exclude</th>
@@ -81,7 +76,7 @@ const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillEx
               </thead>
               <tbody>
                 {previewTransactions.map(t => (
-                  <tr key={t.id} className={`${t.excluded ? 'excluded-row' : ''} ${!t.isValid ? 'invalid-row' : ''}`}>
+                  <tr key={t.id}>
                     <td>
                       <input
                         type="checkbox"
@@ -96,9 +91,9 @@ const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillEx
                     <td>{t.amount}</td>
                     <td>
                       {t.isValid ? (
-                        <span style={{ color: 'green' }}>✓ Valid</span>
+                        <span>✓ Valid</span>
                       ) : (
-                        <span style={{ color: 'red' }}>
+                        <span>
                           ✗ Error: {t.validationError}
                         </span>
                       )}
@@ -111,11 +106,10 @@ const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillEx
         </div>
       )}
 
-      <div style={{ marginTop: '1rem' }}>
-        <button onClick={onFillExample} style={{ marginRight: '0.5rem' }}>
+      <div>
+        <button onClick={onFillExample}>
           Fill with Example Data
         </button>
-        <button onClick={onNext}>Next</button>
       </div>
     </div>
   )

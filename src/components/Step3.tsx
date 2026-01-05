@@ -1,8 +1,50 @@
 import { useState } from 'react'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell
+} from 'recharts'
 import type { MonthlySummary } from '../parsing/types.ts'
 import { aggregateByYear } from '../parsing/aggregateByYear/aggregateByYear.ts'
 import { aggregateAllData } from '../parsing/aggregateAllData/aggregateAllData.ts'
 import { formatPolishNumber } from '../parsing/formatPolishNumber/formatPolishNumber.ts'
+
+const CategoryBarChart = ({ categories }: { categories: Record<string, number> }) => {
+  const categoryEntries = Object.entries(categories)
+    .sort(([, a], [, b]) => b - a) // Sort by amount descending
+    .map(([name, amount], index) => ({
+      name,
+      amount,
+      color: `hsl(${(index * 137.5) % 360}, 70%, 50%)` // Generate distinct colors
+    }))
+
+  if (categoryEntries.length === 0) {
+    return <p>No category data available</p>
+  }
+
+  return (
+    <div style={{ width: '100%', height: '300px' }}>
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart data={categoryEntries}>
+          <CartesianGrid />
+          <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} interval={0} />
+          <YAxis tickFormatter={(value) => formatPolishNumber(value)} />
+          <Tooltip formatter={(value: number) => formatPolishNumber(value)} />
+          <Bar dataKey="amount">
+            {categoryEntries.map((entry, index) => (
+              <Cell key={entry.name} fill={entry.color} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  )
+}
 
 type SelectionType = 'month' | 'year' | 'all'
 
@@ -11,11 +53,12 @@ const monthNames = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ]
 
-const Step3 = ({ summaries, selectedMonth, onSelectionChange, onBack }: {
+const Step3 = ({ summaries, selectedMonth, onSelectionChange, onBack, onNext }: {
   summaries: MonthlySummary[]
   selectedMonth: { year: number; month: number }
   onSelectionChange: (type: SelectionType, year?: number, month?: number) => void
-  onBack: () => void
+  onBack?: () => void
+  onNext?: () => void
 }) => {
   const [selectionType, setSelectionType] = useState<SelectionType>('month')
   const [selectedYear, setSelectedYear] = useState<number | null>(selectedMonth.year)
@@ -85,15 +128,14 @@ const Step3 = ({ summaries, selectedMonth, onSelectionChange, onBack }: {
 
   return (
     <div>
-      <h2>Step 3: Summary</h2>
+      <h2>Data Aggregated by Period</h2>
 
-      <div style={{ marginBottom: '1rem' }}>
-        <label htmlFor="selection-type-select" style={{ marginRight: '0.5rem' }}>View:</label>
+      <div>
+        <label htmlFor="selection-type-select">View:</label>
         <select
           id="selection-type-select"
           value={selectionType}
           onChange={handleSelectionTypeChange}
-          style={{ marginRight: '0.5rem' }}
         >
           <option value="all">All Data</option>
           <option value="year">By Year</option>
@@ -105,7 +147,6 @@ const Step3 = ({ summaries, selectedMonth, onSelectionChange, onBack }: {
             id="year-select"
             value={selectedYear || ''}
             onChange={handleYearChange}
-            style={{ marginRight: '0.5rem' }}
           >
             {availableYears.map(year => (
               <option key={year} value={year}>
@@ -131,12 +172,15 @@ const Step3 = ({ summaries, selectedMonth, onSelectionChange, onBack }: {
       </div>
 
       {displaySummary && (
-        <div className="month-summary">
+        <div>
           <h3>{getDisplayTitle()}</h3>
           <p>Total Expenses: {formatPolishNumber(displaySummary.totalExpenses)}</p>
           <p>Total Income: {formatPolishNumber(displaySummary.totalIncome)}</p>
           <p>Balance: {formatPolishNumber(displaySummary.balance)}</p>
+          
           <h4>Categories:</h4>
+          <CategoryBarChart categories={displaySummary.categories} />
+          
           <ul>
             {Object.entries(displaySummary.categories).map(([cat, amount]) => (
               <li key={cat}>{cat}: {formatPolishNumber(amount)}</li>
@@ -145,9 +189,6 @@ const Step3 = ({ summaries, selectedMonth, onSelectionChange, onBack }: {
         </div>
       )}
 
-      <div style={{ marginTop: '1rem' }}>
-        <button onClick={onBack}>Back</button>
-      </div>
     </div>
   )
 }
