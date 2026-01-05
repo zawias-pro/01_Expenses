@@ -1,8 +1,8 @@
-import { parseCSVLine } from '../parsing/parseCSVLine/parseCSVLine.ts'
-import { classifyDescription } from '../parsing/classifyDescription/classifyDescription.ts'
-import type { Transaction } from '../parsing/types.ts'
+import { parseCSVLine } from '../../parsing/parseCSVLine/parseCSVLine.ts'
+import { classifyDescription } from '../../parsing/classifyDescription/classifyDescription.ts'
+import type { Transaction } from '../../parsing/types.ts'
 
-const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillExample, onCsvAccept, csvAccepted, rules }: {
+const CSVInputPreview = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillExample, onCsvAccept, csvAccepted, rules }: {
   csvContent: string
   delimiter: string
   onCsvChange: (content: string) => void
@@ -148,7 +148,7 @@ const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillEx
         </div>
       )}
     </div>
-  )
+  ) 
 }
 
-export { Step1 }
+export { CSVInputPreview }

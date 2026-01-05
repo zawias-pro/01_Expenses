@@ -8,15 +8,15 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts'
-import type { MonthlySummary } from '../parsing/types.ts'
-import { formatPolishNumber } from '../parsing/formatPolishNumber/formatPolishNumber.ts'
+import type { MonthlySummary } from '../../parsing/types.ts'
+import { formatPolishNumber } from '../../parsing/formatPolishNumber/formatPolishNumber.ts'
 
 const monthNames = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
 ]
 
-const Step4 = ({ summaries, onBack }: {
+const CumulativeBarChart = ({ summaries, onBack }: {
   summaries: MonthlySummary[]
   onBack?: () => void
 }) => {
@@ -100,8 +100,8 @@ const Step4 = ({ summaries, onBack }: {
         </ResponsiveContainer>
       </div>
 
-    </div>
+    </div> 
   )
 }
 
-export { Step4 }
+export { CumulativeBarChart }

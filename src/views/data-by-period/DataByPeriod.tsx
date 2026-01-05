@@ -9,10 +9,10 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts'
-import type { MonthlySummary } from '../parsing/types.ts'
-import { aggregateByYear } from '../parsing/aggregateByYear/aggregateByYear.ts'
-import { aggregateAllData } from '../parsing/aggregateAllData/aggregateAllData.ts'
-import { formatPolishNumber } from '../parsing/formatPolishNumber/formatPolishNumber.ts'
+import type { MonthlySummary } from '../../parsing/types.ts'
+import { aggregateByYear } from '../../parsing/aggregateByYear/aggregateByYear.ts'
+import { aggregateAllData } from '../../parsing/aggregateAllData/aggregateAllData.ts'
+import { formatPolishNumber } from '../../parsing/formatPolishNumber/formatPolishNumber.ts'
 
 const CategoryBarChart = ({ categories }: { categories: Record<string, number> }) => {
   const categoryEntries = Object.entries(categories)
@@ -58,8 +58,8 @@ const monthNames = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ]
 
-const Step3 = ({ summaries, selectedMonth, onSelectionChange }: {
-  summaries: MonthlySummary[]
+const DataByPeriod = ({ summaries, selectedMonth, onSelectionChange }: {
+  summaries: MonthlySummary[] 
   selectedMonth: { year: number; month: number }
   onSelectionChange: (type: SelectionType, year?: number, month?: number) => void
   onBack?: () => void
@@ -231,4 +231,4 @@ const Step3 = ({ summaries, selectedMonth, onSelectionChange }: {
   )
 }
 
-export { Step3 }
+export { DataByPeriod }

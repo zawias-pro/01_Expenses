@@ -6,11 +6,11 @@ import { parseRules } from '../parsing/parseRules/parseRules.ts'
 import { getCategories } from '../parsing/getCategories/getCategories.ts'
 import { classifyDescription } from '../parsing/classifyDescription/classifyDescription.ts'
 import type { Transaction, MonthlySummary } from '../parsing/types.ts'
-import { Step1 } from './Step1.tsx'
-import { Step2 } from './Step2.tsx'
-import { Step3 } from './Step3.tsx'
-import { Step4 } from './Step4.tsx'
-import { Categories } from './Categories.tsx'
+import { CSVInputPreview } from '../views/input/CSVInputPreview.tsx'
+import { TransactionsTable } from '../views/table/TransactionsTable.tsx'
+import { DataByPeriod } from '../views/data-by-period/DataByPeriod.tsx'
+import { CumulativeBarChart } from '../views/data-cumulative/CumulativeBarChart.tsx'
+import { Categories } from '../views/categories/Categories.tsx'
 import rulesContent from '../rules.csv?raw'
 
 const INITIAL_CSV = `2025-12-12;"JAN ADAM KOWALSKI, CZYNSZ NAJMU                                                                         PRZELEW ZEWNĘTRZNY WYCHODZĄCY                                                     74899274659992743764666621  ";"MojBank 1234 ... 5678";"Czynsz i wynajem";-5 000,00 PLN;;
@@ -383,7 +383,7 @@ const App = () => {
       {/* Main Content */}
       <div className="main-content">
         {view === 'csv' && (
-          <Step1
+          <CSVInputPreview
             csvContent={csvContent}
             delimiter={delimiter}
             onCsvChange={setCsvContent}
@@ -406,7 +406,7 @@ const App = () => {
         )}
 
         {view === 'transactions' && (
-          <Step2
+          <TransactionsTable
             transactions={transactions}
             categories={categories}
             onExcludedChange={handleUpdateExcluded}
@@ -417,7 +417,7 @@ const App = () => {
         )}
 
         {view === 'summary' && summaries && selectedMonth && (
-          <Step3
+          <DataByPeriod
             summaries={summaries}
             selectedMonth={selectedMonth}
             onSelectionChange={(type, year, month) => {
@@ -431,7 +431,7 @@ const App = () => {
         )}
 
         {view === 'chart' && summaries && (
-          <Step4
+          <CumulativeBarChart
             summaries={summaries}
             onBack={() => {}}
           />

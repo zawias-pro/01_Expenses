@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import type { Transaction } from '../parsing/types.ts'
+import type { Transaction } from '../../parsing/types.ts'
 
-const Step2 = ({
+const TransactionsTable = ({
    transactions,
    categories,
    onExcludedChange,
@@ -134,4 +134,4 @@ const Step2 = ({
   )
 }
 
-export { Step2 }
+export { TransactionsTable }
