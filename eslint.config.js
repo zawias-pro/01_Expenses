@@ -3,10 +3,9 @@ import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
-import { defineConfig, globalIgnores } from 'eslint/config'
+import { defineConfig } from 'eslint/config'
 
 const config = defineConfig([
-  globalIgnores(['.yarn', '*.config.{js,ts}']),
   {
     files: ['src/**/*.{ts,tsx}'],
     extends: [
@@ -20,9 +19,7 @@ const config = defineConfig([
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
-      parserOptions: {
-        project: './tsconfig.app.json',
-      },
+      parserOptions: {project: './tsconfig.app.json',},
     },
     rules: {
       'no-restricted-syntax': [
@@ -54,38 +51,10 @@ const config = defineConfig([
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.node,
-      parserOptions: {
-        project: './tsconfig.app.json',
-      },
+      parserOptions: {project: './tsconfig.app.json',},
     },
     rules: {
-      'no-restricted-syntax': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      'semi': ['error', 'never'],
-    },
-  },
-  {
-    files: ['cypress/**/*.{ts,js}'],
-    extends: [
-      js.configs.recommended,
-      tseslint.configs.recommended,
-    ],
-    languageOptions: {
-      ecmaVersion: 2020,
-      globals: {
-        ...globals.node,
-        cy: 'readonly',
-        Cypress: 'readonly',
-      },
-      parserOptions: {
-        project: './cypress/tsconfig.json',
-      },
-    },
-    rules: {
-      'no-restricted-syntax': 'off',
-      '@typescript-eslint/no-namespace': 'off',
-      'semi': ['error', 'never'],
+      '@typescript-eslint/no-floating-promises': 'off',
     },
   },
 ])

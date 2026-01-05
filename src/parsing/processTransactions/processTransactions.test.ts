@@ -14,6 +14,7 @@ test('processTransactions - processes transactions correctly', () => {
       amount: '-5 000,00 PLN',
       excluded: false,
       isValid: true,
+      overridden: false,
     },
     {
       id: '2',
@@ -24,6 +25,7 @@ test('processTransactions - processes transactions correctly', () => {
       amount: '2 000,00 PLN',
       excluded: false,
       isValid: true,
+      overridden: false,
     },
     {
       id: '3',
@@ -34,6 +36,7 @@ test('processTransactions - processes transactions correctly', () => {
       amount: '-1 000,00 PLN',
       excluded: false,
       isValid: true,
+      overridden: false,
     },
   ]
   const rules = { 'test': 'test-category' }
@@ -65,6 +68,7 @@ test('processTransactions - processes all transactions passed to it', () => {
       amount: '-5 000,00 PLN',
       excluded: true,
       isValid: true,
+      overridden: false,
     },
     {
       id: '2',
@@ -75,6 +79,7 @@ test('processTransactions - processes all transactions passed to it', () => {
       amount: '2 000,00 PLN',
       excluded: false,
       isValid: true,
+      overridden: false,
     },
   ]
   const rules = {}
