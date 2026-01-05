@@ -28,13 +28,13 @@ const Categories = ({
   const isCustomRule = (keyword: string) => keyword in customRules
 
   return (
-    <div>
-      <h2>Custom Categories</h2>
+    <div className="section">
+      <h2 className="section-header">Custom Categories</h2>
       
       <div>
-        <h3>Expense Categories</h3>
-        <div>
-          <table style={{ width: '100%' }}>
+        <h3 className="section-subheader">Expense Categories</h3>
+        <div className="table-container">
+          <table className="table">
             <thead>
               <tr>
                 <th>Keyword</th>
@@ -48,18 +48,24 @@ const Categories = ({
                 .sort(([a], [b]) => a.localeCompare(b))
                 .map(([keyword, category]) => (
                 <tr key={keyword}>
-                  <td>{keyword}</td>
+                  <td><strong>{keyword}</strong></td>
                   <td>{category}</td>
                   <td>
                     {isBaseRule(keyword) ? (
-                      <span>Built-in</span>
+                      <span className="status-badge" style={{ backgroundColor: 'var(--surface-hover)', color: 'var(--text-secondary)' }}>
+                        Built-in
+                      </span>
                     ) : (
-                      <span>Custom</span>
+                      <span className="status-badge status-warning">Custom</span>
                     )}
                   </td>
                   <td>
                     {isCustomRule(keyword) && (
-                      <button onClick={() => { onRemoveRule(keyword) }}>
+                      <button 
+                        className="btn btn-danger"
+                        style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}
+                        onClick={() => { onRemoveRule(keyword) }}
+                      >
                         Remove
                       </button>
                     )}
@@ -69,35 +75,50 @@ const Categories = ({
             </tbody>
           </table>
         </div>
-        <div style={{ display: 'flex' }}>
-          <input
-            type="text"
-            placeholder="Keyword (e.g., 'netflix')"
-            value={newKeyword}
-            onChange={e => { setNewKeyword(e.target.value) }}
-            onKeyDown={e => {
-              if (e.key === 'Enter') {
-                handleAddRuleClick()
-              }
-            }}
-          />
-          <input
-            type="text"
-            placeholder="Category (e.g., 'entertainment')"
-            value={newCategory}
-            onChange={e => { setNewCategory(e.target.value) }}
-            onKeyDown={e => {
-              if (e.key === 'Enter') {
-                handleAddRuleClick()
-              }
-            }}
-          />
-          <button
-            onClick={handleAddRuleClick}
-            disabled={!newKeyword.trim() || !newCategory.trim()}
-          >
-            Add
-          </button>
+        
+        <div style={{ marginTop: '1.5rem', padding: '1.5rem', backgroundColor: 'var(--surface-hover)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+          <h4 className="section-subheader" style={{ marginTop: 0 }}>Add New Rule</h4>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+            <div className="form-group" style={{ flex: '1', minWidth: '200px', marginBottom: 0 }}>
+              <label className="form-label">Keyword</label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="e.g., 'netflix'"
+                value={newKeyword}
+                onChange={e => { setNewKeyword(e.target.value) }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    handleAddRuleClick()
+                  }
+                }}
+              />
+            </div>
+            <div className="form-group" style={{ flex: '1', minWidth: '200px', marginBottom: 0 }}>
+              <label className="form-label">Category</label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="e.g., 'entertainment'"
+                value={newCategory}
+                onChange={e => { setNewCategory(e.target.value) }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    handleAddRuleClick()
+                  }
+                }}
+              />
+            </div>
+            <div>
+              <button
+                className="btn btn-primary"
+                onClick={handleAddRuleClick}
+                disabled={!newKeyword.trim() || !newCategory.trim()}
+              >
+                Add Rule
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

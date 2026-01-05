@@ -28,7 +28,7 @@ const CategoryBarChart = ({ categories }: { categories: Record<string, number> }
   }
 
   return (
-    <div style={{ width: '100%', height: '300px' }}>
+    <div className="chart-wrapper" style={{ height: '300px' }}>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={categoryEntries}>
           <CartesianGrid />
@@ -127,13 +127,15 @@ const Step3 = ({ summaries, selectedMonth, onSelectionChange }: {
   }))
 
   return (
-    <div>
-      <h2>Data Aggregated by Period</h2>
+    <div className="section">
+      <h2 className="section-header">Data Aggregated by Period</h2>
 
-      <div>
-        <label htmlFor="selection-type-select">View:</label>
+      <div className="selection-controls">
+        <label htmlFor="selection-type-select" className="form-label">View:</label>
         <select
           id="selection-type-select"
+          className="form-select"
+          style={{ width: 'auto', minWidth: '150px' }}
           value={selectionType}
           onChange={handleSelectionTypeChange}
         >
@@ -145,6 +147,8 @@ const Step3 = ({ summaries, selectedMonth, onSelectionChange }: {
         {selectionType === 'year' && (
           <select
             id="year-select"
+            className="form-select"
+            style={{ width: 'auto', minWidth: '120px' }}
             value={selectedYear || ''}
             onChange={handleYearChange}
           >
@@ -159,6 +163,8 @@ const Step3 = ({ summaries, selectedMonth, onSelectionChange }: {
         {selectionType === 'month' && (
           <select
             id="month-select"
+            className="form-select"
+            style={{ width: 'auto', minWidth: '200px' }}
             value={`${selectedMonth.year.toString()}-${selectedMonth.month.toString()}`}
             onChange={handleMonthChange}
           >
@@ -173,17 +179,44 @@ const Step3 = ({ summaries, selectedMonth, onSelectionChange }: {
 
       {displaySummary && (
         <div>
-          <h3>{getDisplayTitle()}</h3>
-          <p>Total Expenses: {formatPolishNumber(displaySummary.totalExpenses)}</p>
-          <p>Total Income: {formatPolishNumber(displaySummary.totalIncome)}</p>
-          <p>Balance: {formatPolishNumber(displaySummary.balance)}</p>
+          <h3 className="section-subheader">{getDisplayTitle()}</h3>
           
-          <h4>Categories:</h4>
-          <CategoryBarChart categories={displaySummary.categories} />
+          <div className="summary-stats">
+            <div className="summary-stat">
+              <div className="summary-stat-label">Total Expenses</div>
+              <div className="summary-stat-value" style={{ color: 'var(--danger-color)' }}>
+                {formatPolishNumber(displaySummary.totalExpenses)}
+              </div>
+            </div>
+            <div className="summary-stat">
+              <div className="summary-stat-label">Total Income</div>
+              <div className="summary-stat-value" style={{ color: 'var(--secondary-color)' }}>
+                {formatPolishNumber(displaySummary.totalIncome)}
+              </div>
+            </div>
+            <div className="summary-stat">
+              <div className="summary-stat-label">Balance</div>
+              <div className="summary-stat-value" style={{ 
+                color: displaySummary.balance >= 0 ? 'var(--secondary-color)' : 'var(--danger-color)' 
+              }}>
+                {formatPolishNumber(displaySummary.balance)}
+              </div>
+            </div>
+          </div>
           
-          <ul>
-            {Object.entries(displaySummary.categories).map(([cat, amount]) => (
-              <li key={cat}>{cat}: {formatPolishNumber(amount)}</li>
+          <h4 className="section-subheader">Categories:</h4>
+          <div className="chart-container">
+            <CategoryBarChart categories={displaySummary.categories} />
+          </div>
+          
+          <ul className="category-list">
+            {Object.entries(displaySummary.categories)
+              .sort(([, a], [, b]) => b - a)
+              .map(([cat, amount]) => (
+              <li key={cat}>
+                <span>{cat}</span>
+                <strong>{formatPolishNumber(amount)}</strong>
+              </li>
             ))}
           </ul>
         </div>

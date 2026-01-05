@@ -48,15 +48,16 @@ const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillEx
   }
 
   return (
-    <div>
-      <h2>CSV Input & Preview</h2>
+    <div className="section">
+      <h2 className="section-header">CSV Input & Preview</h2>
 
-      <div>
-        <label htmlFor="delimiter-select">
+      <div className="form-group">
+        <label htmlFor="delimiter-select" className="form-label">
           CSV Delimiter:
         </label>
         <select
           id="delimiter-select"
+          className="form-select"
           value={delimiter}
           onChange={e => { onDelimiterChange(e.target.value) }}
           disabled={csvAccepted}
@@ -68,20 +69,22 @@ const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillEx
         </select>
       </div>
 
-      <textarea
-        value={csvContent}
-        onChange={e => { onCsvChange(e.target.value) }}
-        rows={10}
-        style={{ width: '100%' }}
-        placeholder="Paste your CSV data here..."
-        readOnly={csvAccepted}
-      />
+      <div className="form-group">
+        <textarea
+          className="form-textarea"
+          value={csvContent}
+          onChange={e => { onCsvChange(e.target.value) }}
+          rows={10}
+          placeholder="Paste your CSV data here..."
+          readOnly={csvAccepted}
+        />
+      </div>
 
       {previewTransactions.length > 0 && (
         <div>
-          <h3>Preview (first 3 rows):</h3>
-          <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-            <table>
+          <h3 className="section-subheader">Preview (first 3 rows):</h3>
+          <div className="preview-container">
+            <table className="table">
               <thead>
                 <tr>
                   <th>Exclude</th>
@@ -98,6 +101,7 @@ const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillEx
                     <td>
                       <input
                         type="checkbox"
+                        className="form-checkbox"
                         checked={t.excluded}
                         disabled
                         readOnly
@@ -109,9 +113,9 @@ const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillEx
                     <td>{t.amount}</td>
                     <td>
                       {t.isValid ? (
-                        <span>✓ Valid</span>
+                        <span className="status-badge status-valid">✓ Valid</span>
                       ) : (
-                        <span>
+                        <span className="status-badge status-error">
                           ✗ Error: {t.validationError}
                         </span>
                       )}
@@ -124,25 +128,25 @@ const Step1 = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillEx
         </div>
       )}
 
-      <div>
-        <button onClick={onFillExample} disabled={csvAccepted}>
+      <div className="action-buttons">
+        <button className="btn btn-outline" onClick={onFillExample} disabled={csvAccepted}>
           Fill with Example Data
         </button>
         {!csvAccepted && (
           <button 
+            className="btn btn-primary"
             onClick={handleConfirm}
             disabled={csvContent.trim().length === 0}
-            style={{ marginLeft: '10px' }}
           >
             Confirm CSV
           </button>
         )}
-        {csvAccepted && (
-          <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#e8f5e9', borderRadius: '4px' }}>
-            ✓ CSV has been accepted and cannot be modified. Use "Clear & Start Over" to reset.
-          </div>
-        )}
       </div>
+      {csvAccepted && (
+        <div className="alert alert-success">
+          ✓ CSV has been accepted and cannot be modified. Use "Clear & Start Over" to reset.
+        </div>
+      )}
     </div>
   )
 }

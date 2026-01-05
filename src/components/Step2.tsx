@@ -24,27 +24,28 @@ const Step2 = ({
     : transactions
 
   return (
-    <div>
-      <h2>Transactions Table</h2>
+    <div className="section">
+      <h2 className="section-header">Transactions Table</h2>
 
-      <div style={{ display: 'flex' }}>
-        <label>
+      <div className="filter-controls">
+        <label className="filter-label">
           <input
             type="checkbox"
+            className="form-checkbox"
             checked={onlyShowOthers}
             onChange={e => { setOnlyShowOthers(e.target.checked) }}
           />
           Only show "others" category
         </label>
         {onlyShowOthers && (
-          <span>
+          <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
             ({filteredTransactions.length} of {transactions.length} transactions)
           </span>
         )}
       </div>
 
-      <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
-        <table style={{ width: '100%' }}>
+      <div className="table-container" style={{ maxHeight: '60vh' }}>
+        <table className="table">
           <thead>
             <tr>
               <th>Exclude</th>
@@ -62,6 +63,7 @@ const Step2 = ({
                 <td>
                   <input
                     type="checkbox"
+                    className="form-checkbox"
                     checked={t.excluded}
                     onChange={e => { onExcludedChange(t.id, e.target.checked) }}
                     disabled={!t.isValid}
@@ -70,6 +72,7 @@ const Step2 = ({
                 <td>
                   <input
                     type="checkbox"
+                    className="form-checkbox"
                     checked={t.overrideMode}
                     onChange={e => { onOverrideModeChange(t.id, e.target.checked) }}
                     disabled={!t.isValid}
@@ -79,6 +82,8 @@ const Step2 = ({
                   {t.overrideMode ? (
                     <input
                       type="text"
+                      className="form-input"
+                      style={{ width: '120px' }}
                       value={t.date}
                       onChange={e => { onDateChange(t.id, e.target.value) }}
                       disabled={!t.isValid}
@@ -91,6 +96,8 @@ const Step2 = ({
                 <td>
                   {t.overrideMode ? (
                     <select
+                      className="form-select"
+                      style={{ minWidth: '150px' }}
                       value={t.category}
                       onChange={e => { onCategoryChange(t.id, e.target.value) }}
                       disabled={!t.isValid}
@@ -106,14 +113,14 @@ const Step2 = ({
                 <td>{t.amount}</td>
                 <td>
                   {t.isValid ? (
-                    <div>
-                      <span>✓ Valid</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                      <span className="status-badge status-valid">✓ Valid</span>
                       {t.overridden && (
-                        <div>⚠ Overridden</div>
+                        <span className="status-badge status-warning">⚠ Overridden</span>
                       )}
                     </div>
                   ) : (
-                    <span>
+                    <span className="status-badge status-error">
                       ✗ Error: {t.validationError}
                     </span>
                   )}

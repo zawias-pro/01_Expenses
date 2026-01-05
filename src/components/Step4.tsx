@@ -56,25 +56,29 @@ const Step4 = ({ summaries, onBack }: {
 
   if (chartData.length === 0) {
     return (
-      <div>
-        <h2>Cumulative Bar Chart</h2>
+      <div className="section">
+        <h2 className="section-header">Cumulative Bar Chart</h2>
         <p>No data available</p>
-        <div style={{ marginTop: '1rem' }}>
-          <button onClick={onBack}>Back</button>
-        </div>
+        {onBack && (
+          <div className="action-buttons">
+            <button className="btn btn-outline" onClick={onBack}>Back</button>
+          </div>
+        )}
       </div>
     )
   }
 
   return (
-    <div>
-      <h2>Cumulative Bar Chart</h2>
-      <p>Expense trends by category over time</p>
+    <div className="section">
+      <h2 className="section-header">Cumulative Bar Chart</h2>
+      <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+        Expense trends by category over time
+      </p>
 
-      <div style={{ width: '100%', height: '400px' }}>
+      <div className="chart-container">
         <ResponsiveContainer width="100%" height={400}>
           <BarChart data={chartData}>
-            <CartesianGrid />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
             <XAxis dataKey="month" angle={-45} textAnchor="end" height={80} interval={0} />
             <YAxis tickFormatter={(value: number) => formatPolishNumber(value)} />
             <Tooltip formatter={(value: number) => formatPolishNumber(value)} />

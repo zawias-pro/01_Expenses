@@ -335,44 +335,43 @@ const App = () => {
   }
 
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+    <div className="app-container">
       {/* Sidebar */}
-      <div style={{
-        width: '250px',
-        overflowY: 'auto',
-        display: 'flex',
-        flexDirection: 'column'
-      }}>
-        <div>
+      <div className="sidebar">
+        <div className="sidebar-header">
           <h1>Expense Analyzer</h1>
-          <button onClick={handleClear}>
+          <button className="btn btn-danger" onClick={handleClear}>
             Clear & Start Over
           </button>
         </div>
 
-        <nav style={{ display: 'flex', flexDirection: 'column' }}>
-          <button onClick={() => { setView('csv') }}>
+        <nav className="sidebar-nav">
+          <button className="sidebar-btn" onClick={() => { setView('csv') }}>
             CSV Input & Preview
           </button>
           <button 
+            className="sidebar-btn"
             onClick={() => { setView('categories') }}
             disabled={!csvAccepted}
           >
             Custom Categories
           </button>
           <button 
+            className="sidebar-btn"
             onClick={() => { setView('transactions') }}
             disabled={!csvAccepted}
           >
             Transactions Table
           </button>
           <button
+            className="sidebar-btn"
             onClick={() => { setView('summary') }}
             disabled={!csvAccepted || summaries === null || summaries.length === 0}
           >
             Data by Period
           </button>
           <button
+            className="sidebar-btn"
             onClick={() => { setView('chart') }}
             disabled={!csvAccepted || summaries === null || summaries.length === 0}
           >
@@ -382,7 +381,7 @@ const App = () => {
       </div>
 
       {/* Main Content */}
-      <div style={{ flex: 1, overflowY: 'auto' }}>
+      <div className="main-content">
         {view === 'csv' && (
           <Step1
             csvContent={csvContent}
