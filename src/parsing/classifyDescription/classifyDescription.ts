@@ -1,13 +1,15 @@
 /**
  * Example:
- * Input: "BIEDRONKA purchase", { "biedronka": "grocery", "transfer": "transfers" }
+ * Input: "BIEDRONKA purchase", { "grocery": ["biedronka"], "transfers": ["transfer"] }
  * Output: "grocery"
  */
-const classifyDescription = (description: string, rules: Record<string, string>): string => {
+const classifyDescription = (description: string, rules: Record<string, string[]>): string => {
   const desc = description.toLowerCase()
-  for (const [keyword, category] of Object.entries(rules)) {
-    if (desc.includes(keyword.toLowerCase())) {
-      return category
+  for (const [category, keywords] of Object.entries(rules)) {
+    for (const keyword of keywords) {
+      if (desc.includes(keyword.toLowerCase())) {
+        return category
+      }
     }
   }
   return 'others'

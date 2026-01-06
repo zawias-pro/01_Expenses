@@ -1,10 +1,10 @@
 /**
  * Example:
  * Input: "walmart;grocery\nvodafone;mobile\ntransfer;transfers"
- * Output: { "walmart": "grocery", "vodafone": "mobile", "transfer": "transfers" }
+ * Output: { "grocery": ["walmart"], "mobile": ["vodafone"], "transfers": ["transfer"] }
  */
-const parseRules = (content: string): Record<string, string> => {
-  const rules: Record<string, string> = {}
+const parseRules = (content: string): Record<string, string[]> => {
+  const rules: Record<string, string[]> = {}
   const lines = content.split('\n')
   for (const line of lines) {
     const parts = line.split(';')
@@ -12,7 +12,10 @@ const parseRules = (content: string): Record<string, string> => {
       const keyword = parts[0].trim()
       const category = parts[1].trim()
       if (keyword && category) {
-        rules[keyword] = category
+        if (!rules[category]) {
+          rules[category] = []
+        }
+        rules[category].push(keyword)
       }
     }
   }

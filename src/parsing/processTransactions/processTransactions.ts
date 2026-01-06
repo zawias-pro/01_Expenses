@@ -13,7 +13,7 @@ import { getYearFromDate } from '../getYearFromDate/getYearFromDate.ts'
  *   { year: 2025, month: 12, totalExpenses: 50, totalIncome: 0, balance: -50, categories: { "others": 50 } }
  * ]
  */
-const processTransactions = (transactions: Transaction[], rules: Record<string, string>): MonthlySummary[] => {
+const processTransactions = (transactions: Transaction[], rules: Record<string, string[]>): MonthlySummary[] => {
   const monthlyData: Record<string, { expenses: number; income: number; categories: Record<string, number> }> = {}
 
   transactions.forEach(t => {

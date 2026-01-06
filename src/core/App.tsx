@@ -150,7 +150,7 @@ type View = 'csv' | 'categories' | 'transactions' | 'summary' | 'chart'
 type SavedData = {
   transactions: Transaction[]
   view: View
-  customRules: Record<string, string>
+  customRules: Record<string, string[]>
   csvAccepted: boolean
   selectedMonth: { year: number; month: number } | null
   dateIndex: number
@@ -172,9 +172,27 @@ const loadSavedData = (): SavedData | null => {
           typeof parsed.view === 'string' &&
           typeof parsed.customRules === 'object' &&
           typeof parsed.csvAccepted === 'boolean') {
+        // Migrate old customRules format if needed
+        let migratedCustomRules: Record<string, string[]> = {}
+        if (parsed.customRules) {
+          const oldRules = parsed.customRules as Record<string, string | string[]>
+          for (const [key, value] of Object.entries(oldRules)) {
+            if (Array.isArray(value)) {
+              migratedCustomRules[key] = value
+            } else {
+              // Old format: keyword -> category, convert to category -> [keyword]
+              const category = value as string
+              if (!migratedCustomRules[category]) {
+                migratedCustomRules[category] = []
+              }
+              migratedCustomRules[category].push(key)
+            }
+          }
+        }
         // Provide defaults for column indices if not present (backward compatibility)
         return {
           ...parsed,
+          customRules: migratedCustomRules,
           dateIndex: typeof parsed.dateIndex === 'number' ? parsed.dateIndex : 0,
           descriptionIndex: typeof parsed.descriptionIndex === 'number' ? parsed.descriptionIndex : 1,
           amountIndex: typeof parsed.amountIndex === 'number' ? parsed.amountIndex : 4,
@@ -240,8 +258,26 @@ const App = () => {
   const [selectedMonth, setSelectedMonth] = useState<{ year: number; month: number } | null>(() => {
     return initialData?.selectedMonth ?? null
   })
-  const [customRules, setCustomRules] = useState<Record<string, string>>(() => {
-    return initialData?.customRules ?? {}
+  const [customRules, setCustomRules] = useState<Record<string, string[]>>(() => {
+    // Migrate old format if needed
+    if (initialData?.customRules) {
+      const oldRules = initialData.customRules as Record<string, string | string[]>
+      const migrated: Record<string, string[]> = {}
+      for (const [key, value] of Object.entries(oldRules)) {
+        if (Array.isArray(value)) {
+          migrated[key] = value
+        } else {
+          // Old format: keyword -> category, convert to category -> [keyword]
+          const category = value as string
+          if (!migrated[category]) {
+            migrated[category] = []
+          }
+          migrated[category].push(key)
+        }
+      }
+      return migrated
+    }
+    return {}
   })
   const [onlyShowOthers, setOnlyShowOthers] = useState<boolean>(() => {
     return initialData?.onlyShowOthers ?? false
@@ -251,7 +287,21 @@ const App = () => {
   })
 
   // Merge base rules with custom rules (memoized to prevent infinite loops)
-  const allRules = useMemo(() => ({ ...RULES, ...customRules }), [customRules])
+  // Merge arrays for each category
+  const allRules = useMemo(() => {
+    const merged: Record<string, string[]> = { ...RULES }
+    for (const [category, keywords] of Object.entries(customRules)) {
+      if (merged[category]) {
+        // Merge arrays, avoiding duplicates
+        const existing = new Set(merged[category])
+        keywords.forEach(k => existing.add(k))
+        merged[category] = Array.from(existing)
+      } else {
+        merged[category] = [...keywords]
+      }
+    }
+    return merged
+  }, [customRules])
   const categories = useMemo(() => getCategories(allRules), [allRules])
 
   // Reset view to CSV if CSV is not accepted
@@ -393,14 +443,21 @@ const App = () => {
     setTransactions(prev => prev.map(t => t.id === id ? { ...t, overrideMode } : t))
   }
 
-  const handleAddRule = (keyword: string, category: string) => {
-    setCustomRules(prev => ({ ...prev, [keyword]: category }))
+  const handleUpdateCategory = (category: string, keywords: string[]) => {
+    setCustomRules(prev => {
+      const filtered = keywords.filter(k => k.trim()).map(k => k.trim())
+      if (filtered.length === 0) {
+        // Remove category if no keywords
+        const { [category]: _, ...rest } = prev
+        return rest
+      }
+      return { ...prev, [category]: filtered }
+    })
   }
 
-  const handleRemoveRule = (keyword: string) => {
+  const handleRemoveCategory = (category: string) => {
     setCustomRules(prev => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { [keyword]: _, ...rest } = prev
+      const { [category]: _, ...rest } = prev
       return rest
     })
   }
@@ -430,7 +487,7 @@ const App = () => {
             onClick={() => { setView('categories') }}
             disabled={!csvAccepted}
           >
-            Custom Categories
+            Categories
           </button>
           <button 
             className="sidebar-btn"
@@ -480,10 +537,9 @@ const App = () => {
         {view === 'categories' && (
           <Categories
             rules={allRules}
-            baseRules={RULES}
             customRules={customRules}
-            onAddRule={handleAddRule}
-            onRemoveRule={handleRemoveRule}
+            onUpdateCategory={handleUpdateCategory}
+            onRemoveCategory={handleRemoveCategory}
           />
         )}
 

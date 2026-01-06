@@ -31,7 +31,7 @@ const CSVInputPreview = ({
   onFillExample: () => void
   onCsvAccept: () => void
   csvAccepted: boolean
-  rules: Record<string, string>
+  rules: Record<string, string[]>
 }) => {
   // Parse preview transactions from first 3 rows and classify categories
   const getPreviewTransactions = (): Transaction[] => {
