@@ -143,78 +143,106 @@ invalid-date;"INVALID DATE TRANSACTION";"MojBank 1234 ... 5678";"Bez kategorii";
 
 const RULES = parseRules(rulesContent)
 
-const STORAGE_KEYS = {
-  csv: 'expense-analyzer-csv',
-  delimiter: 'expense-analyzer-delimiter',
-  transactions: 'expense-analyzer-transactions',
-  view: 'expense-analyzer-view',
-  customRules: 'expense-analyzer-custom-rules',
-  csvAccepted: 'expense-analyzer-csv-accepted',
-}
+const STORAGE_KEY = 'expense-analyzer-data'
 
 type View = 'csv' | 'categories' | 'transactions' | 'summary' | 'chart'
 
+type SavedData = {
+  transactions: Transaction[]
+  view: View
+  customRules: Record<string, string>
+  csvAccepted: boolean
+  selectedMonth: { year: number; month: number } | null
+  dateIndex: number
+  descriptionIndex: number
+  amountIndex: number
+}
+
+const loadSavedData = (): SavedData | null => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (!saved) return null
+    const parsed = JSON.parse(saved)
+    // Validate that it has the expected structure
+    if (typeof parsed === 'object' && parsed !== null) {
+      // Check for required fields (allow partial data for migration)
+      if (Array.isArray(parsed.transactions) && 
+          typeof parsed.view === 'string' &&
+          typeof parsed.customRules === 'object' &&
+          typeof parsed.csvAccepted === 'boolean') {
+        // Provide defaults for column indices if not present (backward compatibility)
+        return {
+          ...parsed,
+          dateIndex: typeof parsed.dateIndex === 'number' ? parsed.dateIndex : 0,
+          descriptionIndex: typeof parsed.descriptionIndex === 'number' ? parsed.descriptionIndex : 1,
+          amountIndex: typeof parsed.amountIndex === 'number' ? parsed.amountIndex : 4,
+        } as SavedData
+      }
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+const saveData = (data: SavedData): void => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+  } catch (error) {
+    console.error('Failed to save data:', error)
+  }
+}
+
+// Cache for initial data load (only loaded once per app lifecycle)
+let cachedInitialData: SavedData | null | undefined = undefined
+
+const getInitialData = (): SavedData | null => {
+  if (cachedInitialData === undefined) {
+    cachedInitialData = loadSavedData()
+  }
+  return cachedInitialData
+}
+
 const App = () => {
+  // Load saved data only once on initialization
+  const initialData = getInitialData()
+  
   const [csvAccepted, setCsvAccepted] = useState<boolean>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.csvAccepted)
-    return saved === 'true'
+    return initialData?.csvAccepted ?? false
   })
   const [view, setView] = useState<View>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.view) as View|null
-    const csvAcceptedSaved = localStorage.getItem(STORAGE_KEYS.csvAccepted) === 'true'
     // Always start on CSV page if CSV is not accepted
-    if (!csvAcceptedSaved) {
+    if (!initialData?.csvAccepted) {
       return 'csv' as const
     }
-    return saved || 'csv' as const
+    return initialData?.view || 'csv'
   })
-  const [csvContent, setCsvContent] = useState<string>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.csv)
-    return saved || ''
+  // CSV content is ephemeral - not saved to localStorage
+  const [csvContent, setCsvContent] = useState<string>('')
+  const [delimiter, setDelimiter] = useState<string>(';')
+  const [dateIndex, setDateIndex] = useState<number>(() => {
+    return initialData?.dateIndex ?? 0
   })
-  const [delimiter, setDelimiter] = useState<string>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.delimiter)
-    return saved || ';'
+  const [descriptionIndex, setDescriptionIndex] = useState<number>(() => {
+    return initialData?.descriptionIndex ?? 1
+  })
+  const [amountIndex, setAmountIndex] = useState<number>(() => {
+    return initialData?.amountIndex ?? 4
   })
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.transactions)
-    return saved ? (JSON.parse(saved) as Transaction[]) : []
+    return initialData?.transactions ?? []
   })
   const [summaries, setSummaries] = useState<MonthlySummary[] | null>(null)
-  const [selectedMonth, setSelectedMonth] = useState<{ year: number; month: number } | null>(null)
+  const [selectedMonth, setSelectedMonth] = useState<{ year: number; month: number } | null>(() => {
+    return initialData?.selectedMonth ?? null
+  })
   const [customRules, setCustomRules] = useState<Record<string, string>>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.customRules)
-    return saved ? (JSON.parse(saved) as Record<string, string>) : {}
+    return initialData?.customRules ?? {}
   })
 
   // Merge base rules with custom rules (memoized to prevent infinite loops)
   const allRules = useMemo(() => ({ ...RULES, ...customRules }), [customRules])
   const categories = useMemo(() => getCategories(allRules), [allRules])
-
-  // Save to localStorage whenever data changes
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.csv, csvContent)
-  }, [csvContent])
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.delimiter, delimiter)
-  }, [delimiter])
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.transactions, JSON.stringify(transactions))
-  }, [transactions])
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.view, view)
-  }, [view])
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.customRules, JSON.stringify(customRules))
-  }, [customRules])
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.csvAccepted, csvAccepted.toString())
-  }, [csvAccepted])
 
   // Reset view to CSV if CSV is not accepted
   useEffect(() => {
@@ -250,9 +278,21 @@ const App = () => {
       if (activeTransactions.length > 0) {
         const result = processTransactions(activeTransactions, allRules)
         setSummaries(result)
-        // Set selected month to the first available month if not set
-        if (result.length > 0 && selectedMonth === null) {
-          setSelectedMonth({ year: result[0].year, month: result[0].month })
+        // Validate or set selected month
+        if (result.length > 0) {
+          if (selectedMonth === null) {
+            // Set to first available month if not set
+            setSelectedMonth({ year: result[0].year, month: result[0].month })
+          } else {
+            // Validate that the selected month exists in the summaries
+            const monthExists = result.some(
+              s => s.year === selectedMonth.year && s.month === selectedMonth.month
+            )
+            if (!monthExists) {
+              // If selected month doesn't exist, set to first available
+              setSelectedMonth({ year: result[0].year, month: result[0].month })
+            }
+          }
         }
       } else {
         // All transactions are excluded
@@ -265,20 +305,37 @@ const App = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactions, allRules])
 
+  const handleSave = () => {
+    const dataToSave: SavedData = {
+      transactions,
+      view,
+      customRules,
+      csvAccepted,
+      selectedMonth,
+      dateIndex,
+      descriptionIndex,
+      amountIndex,
+    }
+    saveData(dataToSave)
+  }
+
   const handleClear = () => {
-    localStorage.removeItem(STORAGE_KEYS.csv)
-    localStorage.removeItem(STORAGE_KEYS.delimiter)
-    localStorage.removeItem(STORAGE_KEYS.transactions)
-    localStorage.removeItem(STORAGE_KEYS.view)
-    localStorage.removeItem(STORAGE_KEYS.customRules)
-    localStorage.removeItem(STORAGE_KEYS.csvAccepted)
+    // Clear all localStorage data
+    localStorage.removeItem(STORAGE_KEY)
+    // Reset cache so next mount loads fresh
+    cachedInitialData = null
+    // Reset all state
     setCsvContent('')
     setDelimiter(';')
+    setDateIndex(0)
+    setDescriptionIndex(1)
+    setAmountIndex(4)
     setTransactions([])
     setSummaries(null)
     setCustomRules({})
     setCsvAccepted(false)
     setView('csv')
+    setSelectedMonth(null)
   }
 
   const handleCsvAccept = () => {
@@ -294,7 +351,7 @@ const App = () => {
     if (csvContent.trim()) {
       const lines = csvContent.split('\n').filter(l => l.trim())
       if (lines.length > 0) {
-        const parsed = lines.map(line => parseCSVLine(line, delimiter))
+        const parsed = lines.map(line => parseCSVLine(line, delimiter, dateIndex, descriptionIndex, amountIndex))
         const classified = parsed.map(t => ({
           ...t,
           category: classifyDescription(t.description, allRules)
@@ -304,7 +361,7 @@ const App = () => {
     }
     // Don't clear transactions when csvContent is empty - let user keep their data
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [csvContent, delimiter])
+  }, [csvContent, delimiter, dateIndex, descriptionIndex, amountIndex])
 
   const handleUpdateExcluded = (id: string, excluded: boolean) => {
     setTransactions(prev => prev.map(t => t.id === id ? { ...t, excluded } : t))
@@ -340,9 +397,14 @@ const App = () => {
       <div className="sidebar">
         <div className="sidebar-header">
           <h1>Expense Analyzer</h1>
-          <button className="btn btn-danger" onClick={handleClear}>
-            Clear & Start Over
-          </button>
+          <div style={{ display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
+            <button className="btn btn-primary" onClick={handleSave}>
+              Save
+            </button>
+            <button className="btn btn-danger" onClick={handleClear}>
+              Clear & Start Over
+            </button>
+          </div>
         </div>
 
         <nav className="sidebar-nav">
@@ -386,8 +448,14 @@ const App = () => {
           <CSVInputPreview
             csvContent={csvContent}
             delimiter={delimiter}
+            dateIndex={dateIndex}
+            descriptionIndex={descriptionIndex}
+            amountIndex={amountIndex}
             onCsvChange={setCsvContent}
             onDelimiterChange={setDelimiter}
+            onDateIndexChange={setDateIndex}
+            onDescriptionIndexChange={setDescriptionIndex}
+            onAmountIndexChange={setAmountIndex}
             onFillExample={handleFillExample}
             onCsvAccept={handleCsvAccept}
             csvAccepted={csvAccepted}

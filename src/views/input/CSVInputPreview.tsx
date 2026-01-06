@@ -2,11 +2,32 @@ import { parseCSVLine } from '../../parsing/parseCSVLine/parseCSVLine.ts'
 import { classifyDescription } from '../../parsing/classifyDescription/classifyDescription.ts'
 import type { Transaction } from '../../parsing/types.ts'
 
-const CSVInputPreview = ({ csvContent, delimiter, onCsvChange, onDelimiterChange, onFillExample, onCsvAccept, csvAccepted, rules }: {
+const CSVInputPreview = ({ 
+  csvContent, 
+  delimiter, 
+  dateIndex,
+  descriptionIndex,
+  amountIndex,
+  onCsvChange, 
+  onDelimiterChange,
+  onDateIndexChange,
+  onDescriptionIndexChange,
+  onAmountIndexChange,
+  onFillExample, 
+  onCsvAccept, 
+  csvAccepted, 
+  rules 
+}: {
   csvContent: string
   delimiter: string
+  dateIndex: number
+  descriptionIndex: number
+  amountIndex: number
   onCsvChange: (content: string) => void
   onDelimiterChange: (delimiter: string) => void
+  onDateIndexChange: (index: number) => void
+  onDescriptionIndexChange: (index: number) => void
+  onAmountIndexChange: (index: number) => void
   onFillExample: () => void
   onCsvAccept: () => void
   csvAccepted: boolean
@@ -18,7 +39,7 @@ const CSVInputPreview = ({ csvContent, delimiter, onCsvChange, onDelimiterChange
 
     const lines = csvContent.split('\n').filter(line => line.trim())
     return lines.slice(0, 3).map(line => {
-      const parsed = parseCSVLine(line, delimiter)
+      const parsed = parseCSVLine(line, delimiter, dateIndex, descriptionIndex, amountIndex)
       return {
         ...parsed,
         category: classifyDescription(parsed.description, rules)
@@ -52,21 +73,67 @@ const CSVInputPreview = ({ csvContent, delimiter, onCsvChange, onDelimiterChange
       <h2 className="section-header">CSV Input & Preview</h2>
 
       <div className="form-group">
-        <label htmlFor="delimiter-select" className="form-label">
-          CSV Delimiter:
-        </label>
-        <select
-          id="delimiter-select"
-          className="form-select"
-          value={delimiter}
-          onChange={e => { onDelimiterChange(e.target.value) }}
-          disabled={csvAccepted}
-        >
-          <option value=";">Semicolon (;)</option>
-          <option value=",">Comma (,)</option>
-          <option value="\t">Tab</option>
-          <option value="|">Pipe (|)</option>
-        </select>
+        <div className="form-group-row">
+          <div className="form-group">
+            <label htmlFor="delimiter-select" className="form-label">
+              CSV Delimiter:
+            </label>
+            <select
+              id="delimiter-select"
+              className="form-select"
+              value={delimiter}
+              onChange={e => { onDelimiterChange(e.target.value) }}
+              disabled={csvAccepted}
+            >
+              <option value=";">Semicolon (;)</option>
+              <option value=",">Comma (,)</option>
+              <option value="\t">Tab</option>
+              <option value="|">Pipe (|)</option>
+            </select>
+          </div>
+          <div className="form-group-small">
+            <label htmlFor="date-index" className="form-label">
+              Date Column:
+            </label>
+            <input
+              id="date-index"
+              type="number"
+              className="form-input"
+              value={dateIndex}
+              onChange={e => { onDateIndexChange(parseInt(e.target.value) || 0) }}
+              min="0"
+              disabled={csvAccepted}
+            />
+          </div>
+          <div className="form-group-small">
+            <label htmlFor="description-index" className="form-label">
+              Description Column:
+            </label>
+            <input
+              id="description-index"
+              type="number"
+              className="form-input"
+              value={descriptionIndex}
+              onChange={e => { onDescriptionIndexChange(parseInt(e.target.value) || 0) }}
+              min="0"
+              disabled={csvAccepted}
+            />
+          </div>
+          <div className="form-group-small">
+            <label htmlFor="amount-index" className="form-label">
+              Amount Column:
+            </label>
+            <input
+              id="amount-index"
+              type="number"
+              className="form-input"
+              value={amountIndex}
+              onChange={e => { onAmountIndexChange(parseInt(e.target.value) || 0) }}
+              min="0"
+              disabled={csvAccepted}
+            />
+          </div>
+        </div>
       </div>
 
       <div className="form-group">

@@ -17,28 +17,33 @@ import { validateTransaction } from '../validateTransaction/validateTransaction.
  *   overridden: false
  * }
  */
-const parseCSVLine = (line: string, delimiter: string = ';'): Transaction => {
-  // Simple CSV parser for the specific format:
-  // 2025-12-12;"Description";"Account";"Category";-5 000,00 PLN;;
-  // Note: Account field is ignored and not parsed
+const parseCSVLine = (
+  line: string, 
+  delimiter: string = ';',
+  dateIndex: number = 0,
+  descriptionIndex: number = 1,
+  amountIndex: number = 4
+): Transaction => {
+  // Simple CSV parser with configurable column indices
   const parts = line.split(delimiter)
   const clean = (s: string) => s.replace(/^"|"$/g, '').trim()
 
   // Handle cases where we don't have enough parts
-  const date = parts.length > 0 ? clean(parts[0]) : ''
-  const description = parts.length > 1 ? clean(parts[1]) : ''
+  const date = parts.length > dateIndex ? clean(parts[dateIndex]) : ''
+  const description = parts.length > descriptionIndex ? clean(parts[descriptionIndex]) : ''
   // Account field is ignored - always set to empty string
   const account = ''
   // Category from CSV is ignored - always default to "others"
   const category = 'others'
-  const amount = parts.length > 4 ? clean(parts[4]) : ''
+  const amount = parts.length > amountIndex ? clean(parts[amountIndex]) : ''
 
   // Check for insufficient parts
   let validation = validateTransaction(date, description, category, amount, line)
 
   // Additional validation for insufficient CSV parts
-  if (parts.length < 5 && line.trim()) {
-    validation = { isValid: false, error: `Insufficient CSV columns (expected 5, got ${parts.length.toString()})` }
+  const maxIndex = Math.max(dateIndex, descriptionIndex, amountIndex)
+  if (parts.length <= maxIndex && line.trim()) {
+    validation = { isValid: false, error: `Insufficient CSV columns (need at least ${maxIndex + 1}, got ${parts.length.toString()})` }
   }
 
   return {
