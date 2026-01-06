@@ -15,6 +15,7 @@ const Categories = ({
 }) => {
   const [newKeyword, setNewKeyword] = useState('')
   const [newCategory, setNewCategory] = useState('')
+  const [showExportModal, setShowExportModal] = useState(false)
 
   const handleAddRuleClick = () => {
     if (newKeyword.trim() && newCategory.trim()) {
@@ -27,9 +28,40 @@ const Categories = ({
   const isBaseRule = (keyword: string) => keyword in baseRules
   const isCustomRule = (keyword: string) => keyword in customRules
 
+  const exportRules = (): string => {
+    // Sort rules alphabetically by keyword
+    const sortedRules = Object.entries(rules).sort(([a], [b]) => a.localeCompare(b))
+    return sortedRules.map(([pattern, category]) => `${pattern};${category}`).join('\n')
+  }
+
+  const handleCopyToClipboard = () => {
+    const text = exportRules()
+    navigator.clipboard.writeText(text).then(() => {
+      alert('Categories copied to clipboard!')
+    }).catch(() => {
+      // Fallback for older browsers
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textarea)
+      alert('Categories copied to clipboard!')
+    })
+  }
+
   return (
-    <div className="section">
-      <h2 className="section-header">Custom Categories</h2>
+    <>
+      <div className="section">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <h2 className="section-header" style={{ margin: 0 }}>Custom Categories</h2>
+          <button
+            className="btn btn-outline"
+            onClick={() => { setShowExportModal(true) }}
+          >
+            Export
+          </button>
+        </div>
       
       <div>
         <h3 className="section-subheader">Expense Categories</h3>
@@ -121,7 +153,50 @@ const Categories = ({
           </div>
         </div>
       </div>
-    </div>
+      </div>
+
+      {showExportModal && (
+        <div className="modal-overlay" onClick={() => { setShowExportModal(false) }}>
+          <div className="modal" onClick={e => { e.stopPropagation() }}>
+            <div className="modal-header">
+              <h3 className="modal-title">Export Categories</h3>
+              <button
+                className="modal-close"
+                onClick={() => { setShowExportModal(false) }}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <p style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--text-secondary)' }}>
+                All categories (built-in + custom) in export format:
+              </p>
+              <textarea
+                className="form-textarea modal-textarea"
+                value={exportRules()}
+                readOnly
+                onClick={e => { (e.target as HTMLTextAreaElement).select() }}
+              />
+            </div>
+            <div className="modal-footer">
+              <button
+                className="btn btn-primary"
+                onClick={handleCopyToClipboard}
+              >
+                Copy to Clipboard
+              </button>
+              <button
+                className="btn btn-outline"
+                onClick={() => { setShowExportModal(false) }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 
