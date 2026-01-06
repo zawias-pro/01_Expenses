@@ -156,6 +156,7 @@ type SavedData = {
   dateIndex: number
   descriptionIndex: number
   amountIndex: number
+  onlyShowOthers: boolean
 }
 
 const loadSavedData = (): SavedData | null => {
@@ -176,6 +177,7 @@ const loadSavedData = (): SavedData | null => {
           dateIndex: typeof parsed.dateIndex === 'number' ? parsed.dateIndex : 0,
           descriptionIndex: typeof parsed.descriptionIndex === 'number' ? parsed.descriptionIndex : 1,
           amountIndex: typeof parsed.amountIndex === 'number' ? parsed.amountIndex : 4,
+          onlyShowOthers: typeof parsed.onlyShowOthers === 'boolean' ? parsed.onlyShowOthers : false,
         } as SavedData
       }
     }
@@ -238,6 +240,9 @@ const App = () => {
   })
   const [customRules, setCustomRules] = useState<Record<string, string>>(() => {
     return initialData?.customRules ?? {}
+  })
+  const [onlyShowOthers, setOnlyShowOthers] = useState<boolean>(() => {
+    return initialData?.onlyShowOthers ?? false
   })
 
   // Merge base rules with custom rules (memoized to prevent infinite loops)
@@ -315,6 +320,7 @@ const App = () => {
       dateIndex,
       descriptionIndex,
       amountIndex,
+      onlyShowOthers,
     }
     saveData(dataToSave)
   }
@@ -336,6 +342,7 @@ const App = () => {
     setCsvAccepted(false)
     setView('csv')
     setSelectedMonth(null)
+    setOnlyShowOthers(false)
   }
 
   const handleCsvAccept = () => {
@@ -477,6 +484,8 @@ const App = () => {
           <TransactionsTable
             transactions={transactions}
             categories={categories}
+            onlyShowOthers={onlyShowOthers}
+            onOnlyShowOthersChange={setOnlyShowOthers}
             onExcludedChange={handleUpdateExcluded}
             onCategoryChange={handleCategoryChange}
             onDateChange={handleDateChange}

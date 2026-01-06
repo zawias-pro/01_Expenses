@@ -1,9 +1,10 @@
-import { useState } from 'react'
 import type { Transaction } from '../../parsing/types.ts'
 
 const TransactionsTable = ({
    transactions,
    categories,
+   onlyShowOthers,
+   onOnlyShowOthersChange,
    onExcludedChange,
    onCategoryChange,
    onDateChange,
@@ -11,12 +12,13 @@ const TransactionsTable = ({
 }: {
   transactions: Transaction[]
   categories: string[]
+  onlyShowOthers: boolean
+  onOnlyShowOthersChange: (value: boolean) => void
   onExcludedChange: (id: string, excluded: boolean) => void
   onCategoryChange: (id: string, category: string) => void
   onDateChange: (id: string, date: string) => void
   onOverrideModeChange: (id: string, overrideMode: boolean) => void
 }) => {
-  const [onlyShowOthers, setOnlyShowOthers] = useState(false)
 
   // Filter transactions based on the "only show others" filter
   const filteredTransactions = onlyShowOthers
@@ -33,7 +35,7 @@ const TransactionsTable = ({
             type="checkbox"
             className="form-checkbox"
             checked={onlyShowOthers}
-            onChange={e => { setOnlyShowOthers(e.target.checked) }}
+            onChange={e => { onOnlyShowOthersChange(e.target.checked) }}
           />
           Only show "others" category
         </label>
