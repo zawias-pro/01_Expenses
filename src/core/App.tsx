@@ -157,6 +157,7 @@ type SavedData = {
   descriptionIndex: number
   amountIndex: number
   onlyShowOthers: boolean
+  amountSortDirection: 'asc' | 'desc' | null
 }
 
 const loadSavedData = (): SavedData | null => {
@@ -178,6 +179,7 @@ const loadSavedData = (): SavedData | null => {
           descriptionIndex: typeof parsed.descriptionIndex === 'number' ? parsed.descriptionIndex : 1,
           amountIndex: typeof parsed.amountIndex === 'number' ? parsed.amountIndex : 4,
           onlyShowOthers: typeof parsed.onlyShowOthers === 'boolean' ? parsed.onlyShowOthers : false,
+          amountSortDirection: parsed.amountSortDirection === 'asc' || parsed.amountSortDirection === 'desc' ? parsed.amountSortDirection : null,
         } as SavedData
       }
     }
@@ -243,6 +245,9 @@ const App = () => {
   })
   const [onlyShowOthers, setOnlyShowOthers] = useState<boolean>(() => {
     return initialData?.onlyShowOthers ?? false
+  })
+  const [amountSortDirection, setAmountSortDirection] = useState<'asc' | 'desc' | null>(() => {
+    return initialData?.amountSortDirection ?? null
   })
 
   // Merge base rules with custom rules (memoized to prevent infinite loops)
@@ -321,6 +326,7 @@ const App = () => {
       descriptionIndex,
       amountIndex,
       onlyShowOthers,
+      amountSortDirection,
     }
     saveData(dataToSave)
   }
@@ -343,6 +349,7 @@ const App = () => {
     setView('csv')
     setSelectedMonth(null)
     setOnlyShowOthers(false)
+    setAmountSortDirection(null)
   }
 
   const handleCsvAccept = () => {
@@ -486,6 +493,8 @@ const App = () => {
             categories={categories}
             onlyShowOthers={onlyShowOthers}
             onOnlyShowOthersChange={setOnlyShowOthers}
+            amountSortDirection={amountSortDirection}
+            onAmountSortDirectionChange={setAmountSortDirection}
             onExcludedChange={handleUpdateExcluded}
             onCategoryChange={handleCategoryChange}
             onDateChange={handleDateChange}

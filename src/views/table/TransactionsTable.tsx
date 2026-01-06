@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import type { Transaction } from '../../parsing/types.ts'
 
 const TransactionsTable = ({
@@ -5,6 +6,8 @@ const TransactionsTable = ({
    categories,
    onlyShowOthers,
    onOnlyShowOthersChange,
+   amountSortDirection,
+   onAmountSortDirectionChange,
    onExcludedChange,
    onCategoryChange,
    onDateChange,
@@ -14,16 +17,54 @@ const TransactionsTable = ({
   categories: string[]
   onlyShowOthers: boolean
   onOnlyShowOthersChange: (value: boolean) => void
+  amountSortDirection: 'asc' | 'desc' | null
+  onAmountSortDirectionChange: (direction: 'asc' | 'desc' | null) => void
   onExcludedChange: (id: string, excluded: boolean) => void
   onCategoryChange: (id: string, category: string) => void
   onDateChange: (id: string, date: string) => void
   onOverrideModeChange: (id: string, overrideMode: boolean) => void
 }) => {
 
+  // Parse amount string to number for sorting
+  const parseAmount = (amountStr: string): number => {
+    if (!amountStr || !amountStr.trim()) return 0
+    // Remove currency symbols, spaces, and commas, then parse
+    const cleaned = amountStr.replace(/[^\d.-]/g, '').replace(',', '.')
+    const parsed = parseFloat(cleaned)
+    return isNaN(parsed) ? 0 : parsed
+  }
+
   // Filter transactions based on the "only show others" filter
-  const filteredTransactions = onlyShowOthers
-    ? transactions.filter(t => t.category === 'others')
-    : transactions
+  const filteredTransactions = useMemo(() => {
+    let filtered = onlyShowOthers
+      ? transactions.filter(t => t.category === 'others')
+      : transactions
+
+    // Sort by amount if sort direction is set
+    if (amountSortDirection) {
+      filtered = [...filtered].sort((a, b) => {
+        const amountA = parseAmount(a.amount)
+        const amountB = parseAmount(b.amount)
+        if (amountSortDirection === 'asc') {
+          return amountA - amountB
+        } else {
+          return amountB - amountA
+        }
+      })
+    }
+
+    return filtered
+  }, [transactions, onlyShowOthers, amountSortDirection])
+
+  const handleSortByAmount = () => {
+    if (amountSortDirection === null) {
+      onAmountSortDirectionChange('asc')
+    } else if (amountSortDirection === 'asc') {
+      onAmountSortDirectionChange('desc')
+    } else {
+      onAmountSortDirectionChange(null)
+    }
+  }
 
   return (
     <div className="section">
@@ -55,7 +96,15 @@ const TransactionsTable = ({
               <th>Date</th>
               <th>Description</th>
               <th>Category</th>
-              <th>Amount</th>
+              <th 
+                className="sortable-header"
+                onClick={handleSortByAmount}
+                style={{ cursor: 'pointer', userSelect: 'none' }}
+              >
+                Amount
+                {amountSortDirection === 'asc' && ' ↑'}
+                {amountSortDirection === 'desc' && ' ↓'}
+              </th>
               <th>Status</th>
             </tr>
           </thead>

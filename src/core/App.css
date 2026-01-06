@@ -301,6 +301,15 @@ body {
   border-bottom: 2px solid var(--border-color);
 }
 
+.table th.sortable-header {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.table th.sortable-header:hover {
+  background-color: var(--border-color);
+  color: var(--text-primary);
+}
+
 .table td {
   padding: 0.875rem 1rem;
   border-bottom: 1px solid var(--border-color);
