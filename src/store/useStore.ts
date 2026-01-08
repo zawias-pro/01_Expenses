@@ -90,24 +90,6 @@ interface AppState {
   reclassifyTransactions: () => void
 }
 
-// Helper to migrate old customRules format
-const migrateCustomRules = (rules: Record<string, string | string[]>): Record<string, string[]> => {
-  const migrated: Record<string, string[]> = {}
-  for (const [key, value] of Object.entries(rules)) {
-    if (Array.isArray(value)) {
-      migrated[key] = value
-    } else {
-      // Old format: keyword -> category, convert to category -> [keyword]
-      const category = value
-      if (!(category in migrated)) {
-        migrated[category] = []
-      }
-      migrated[category].push(key)
-    }
-  }
-  return migrated
-}
-
 const initialState = {
   transactions: [],
   view: 'csv' as View,
@@ -307,55 +289,6 @@ const useStore = create<AppState>()(
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
-          // Migrate old customRules format if needed
-          if (state.customRules) {
-            const oldRules = state.customRules as Record<string, string | string[]>
-            const hasOldFormat = Object.values(oldRules).some(
-              (v) => typeof v === 'string'
-            )
-            if (hasOldFormat) {
-              state.customRules = migrateCustomRules(oldRules)
-            }
-          }
-          
-          // Provide defaults for new fields if not present (backward compatibility)
-          if (state.selectionType === undefined) {
-            state.selectionType = 'month'
-          }
-          if (state.selectedYear === undefined) {
-            state.selectedYear = null
-          }
-          if (state.activeTab === undefined) {
-            state.activeTab = 'expenses'
-          }
-          if (state.treatLowValueAsOthers === undefined) {
-            state.treatLowValueAsOthers = true
-          }
-          if (state.lowValueThreshold === undefined) {
-            state.lowValueThreshold = 100
-          }
-          if (state.mergeSmallCategories === undefined) {
-            state.mergeSmallCategories = true
-          }
-          if (state.categoryThresholdPercent === undefined) {
-            state.categoryThresholdPercent = 1
-          }
-          if (state.showExportModal === undefined) {
-            state.showExportModal = false
-          }
-          if (state.editingCategory === undefined) {
-            state.editingCategory = null
-          }
-          if (state.editingKeywords === undefined) {
-            state.editingKeywords = ''
-          }
-          if (state.newCategory === undefined) {
-            state.newCategory = ''
-          }
-          if (state.newKeywords === undefined) {
-            state.newKeywords = ''
-          }
-          
           // Reset view to CSV if CSV is not accepted
           if (!state.csvAccepted && state.view !== 'csv') {
             state.view = 'csv'
@@ -447,7 +380,7 @@ const importState = (jsonString: string): boolean => {
       return false
     }
     
-    // Validate required fields
+    // Validate all required fields
     if (!Array.isArray(data.transactions)) {
       return false
     }
@@ -457,46 +390,94 @@ const importState = (jsonString: string): boolean => {
     if (typeof data.customRules !== 'object' || data.customRules === null) {
       return false
     }
+    // Validate customRules format (must be Record<string, string[]>)
+    for (const value of Object.values(data.customRules)) {
+      if (!Array.isArray(value) || !value.every((v) => typeof v === 'string')) {
+        return false
+      }
+    }
     if (typeof data.csvAccepted !== 'boolean') {
       return false
     }
+    if (typeof data.dateIndex !== 'number') {
+      return false
+    }
+    if (typeof data.descriptionIndex !== 'number') {
+      return false
+    }
+    if (typeof data.amountIndex !== 'number') {
+      return false
+    }
+    if (typeof data.onlyShowOthers !== 'boolean') {
+      return false
+    }
+    if (data.amountSortDirection !== null && data.amountSortDirection !== 'asc' && data.amountSortDirection !== 'desc') {
+      return false
+    }
+    if (data.selectionType !== 'month' && data.selectionType !== 'year' && data.selectionType !== 'all') {
+      return false
+    }
+    if (data.selectedYear !== null && typeof data.selectedYear !== 'number') {
+      return false
+    }
+    if (data.selectedMonth !== null && (typeof data.selectedMonth !== 'object' || typeof data.selectedMonth.year !== 'number' || typeof data.selectedMonth.month !== 'number')) {
+      return false
+    }
+    if (data.activeTab !== 'expenses' && data.activeTab !== 'chart' && data.activeTab !== 'categories') {
+      return false
+    }
+    if (typeof data.treatLowValueAsOthers !== 'boolean') {
+      return false
+    }
+    if (typeof data.lowValueThreshold !== 'number') {
+      return false
+    }
+    if (typeof data.mergeSmallCategories !== 'boolean') {
+      return false
+    }
+    if (typeof data.categoryThresholdPercent !== 'number') {
+      return false
+    }
+    if (typeof data.showExportModal !== 'boolean') {
+      return false
+    }
+    if (data.editingCategory !== null && typeof data.editingCategory !== 'string') {
+      return false
+    }
+    if (typeof data.editingKeywords !== 'string') {
+      return false
+    }
+    if (typeof data.newCategory !== 'string') {
+      return false
+    }
+    if (typeof data.newKeywords !== 'string') {
+      return false
+    }
     
-    // Migrate customRules if needed
-    const customRules = migrateCustomRules(
-      data.customRules as Record<string, string | string[]>
-    )
-    
-    // Import state with defaults for missing fields
+    // Import state - all fields are validated and required
     useStore.setState({
       transactions: data.transactions,
-      view: data.view || 'csv',
-      customRules,
+      view: data.view,
+      customRules: data.customRules as Record<string, string[]>,
       csvAccepted: data.csvAccepted,
-      selectedMonth: data.selectedMonth ?? null,
-      dateIndex: typeof data.dateIndex === 'number' ? data.dateIndex : 0,
-      descriptionIndex: typeof data.descriptionIndex === 'number' ? data.descriptionIndex : 1,
-      amountIndex: typeof data.amountIndex === 'number' ? data.amountIndex : 4,
-      onlyShowOthers: typeof data.onlyShowOthers === 'boolean' ? data.onlyShowOthers : false,
-      amountSortDirection:
-        data.amountSortDirection === 'asc' || data.amountSortDirection === 'desc'
-          ? data.amountSortDirection
-          : null,
-      selectionType: data.selectionType || 'month',
-      selectedYear: data.selectedYear ?? null,
-      activeTab: data.activeTab || 'expenses',
-      treatLowValueAsOthers:
-        typeof data.treatLowValueAsOthers === 'boolean' ? data.treatLowValueAsOthers : true,
-      lowValueThreshold:
-        typeof data.lowValueThreshold === 'number' ? data.lowValueThreshold : 100,
-      mergeSmallCategories:
-        typeof data.mergeSmallCategories === 'boolean' ? data.mergeSmallCategories : true,
-      categoryThresholdPercent:
-        typeof data.categoryThresholdPercent === 'number' ? data.categoryThresholdPercent : 1,
-      showExportModal: typeof data.showExportModal === 'boolean' ? data.showExportModal : false,
-      editingCategory: data.editingCategory ?? null,
-      editingKeywords: data.editingKeywords || '',
-      newCategory: data.newCategory || '',
-      newKeywords: data.newKeywords || '',
+      selectedMonth: data.selectedMonth,
+      dateIndex: data.dateIndex,
+      descriptionIndex: data.descriptionIndex,
+      amountIndex: data.amountIndex,
+      onlyShowOthers: data.onlyShowOthers,
+      amountSortDirection: data.amountSortDirection,
+      selectionType: data.selectionType,
+      selectedYear: data.selectedYear,
+      activeTab: data.activeTab,
+      treatLowValueAsOthers: data.treatLowValueAsOthers,
+      lowValueThreshold: data.lowValueThreshold,
+      mergeSmallCategories: data.mergeSmallCategories,
+      categoryThresholdPercent: data.categoryThresholdPercent,
+      showExportModal: data.showExportModal,
+      editingCategory: data.editingCategory,
+      editingKeywords: data.editingKeywords,
+      newCategory: data.newCategory,
+      newKeywords: data.newKeywords,
     })
     
     // Re-classify transactions after import
