@@ -562,6 +562,7 @@ const App = () => {
           <DataByPeriod
             summaries={summaries}
             selectedMonth={selectedMonth}
+            transactions={transactions}
             onSelectionChange={(type, year, month) => {
               if (type === 'month' && year && month) {
                 setSelectedMonth({ year, month })

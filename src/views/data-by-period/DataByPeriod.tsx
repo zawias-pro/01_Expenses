@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import {
   BarChart,
   Bar,
@@ -9,10 +9,13 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts'
-import type { MonthlySummary } from '../../parsing/types.ts'
+import type { MonthlySummary, Transaction } from '../../parsing/types.ts'
 import { aggregateByYear } from '../../parsing/aggregateByYear/aggregateByYear.ts'
 import { aggregateAllData } from '../../parsing/aggregateAllData/aggregateAllData.ts'
 import { formatPolishNumber } from '../../parsing/formatPolishNumber/formatPolishNumber.ts'
+import { parsePolishAmount } from '../../parsing/parsePolishAmount/parsePolishAmount.ts'
+import { getYearFromDate } from '../../parsing/getYearFromDate/getYearFromDate.ts'
+import { getMonthFromDate } from '../../parsing/getMonthFromDate/getMonthFromDate.ts'
 
 const CategoryBarChart = ({ categories }: { categories: Record<string, number> }) => {
   const categoryEntries = Object.entries(categories)
@@ -58,9 +61,10 @@ const monthNames = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ]
 
-const DataByPeriod = ({ summaries, selectedMonth, onSelectionChange }: {
+const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChange }: {
   summaries: MonthlySummary[] 
   selectedMonth: { year: number; month: number }
+  transactions: Transaction[]
   onSelectionChange: (type: SelectionType, year?: number, month?: number) => void
   onBack?: () => void
   onNext?: () => void
@@ -131,6 +135,50 @@ const DataByPeriod = ({ summaries, selectedMonth, onSelectionChange }: {
     label: `${monthNames[s.month - 1]} ${s.year.toString()}`
   }))
 
+  // Get top 10 expenses for the selected period
+  const topExpenses = useMemo(() => {
+    // Filter transactions for the selected period
+    let periodTransactions = transactions.filter(t => !t.excluded && t.isValid)
+    
+    if (selectionType === 'month') {
+      periodTransactions = periodTransactions.filter(t => {
+        try {
+          const year = getYearFromDate(t.date)
+          const month = getMonthFromDate(t.date)
+          return year === selectedMonth.year && month === selectedMonth.month
+        } catch {
+          return false
+        }
+      })
+    } else if (selectionType === 'year' && selectedYear !== null) {
+      periodTransactions = periodTransactions.filter(t => {
+        try {
+          const year = getYearFromDate(t.date)
+          return year === selectedYear
+        } catch {
+          return false
+        }
+      })
+    }
+    // For 'all', we already have all transactions filtered
+
+    // Filter to expenses only (negative amounts) and sort by absolute amount
+    const expenses = periodTransactions
+      .map(t => {
+        try {
+          const amount = parsePolishAmount(t.amount)
+          return { ...t, parsedAmount: amount }
+        } catch {
+          return null
+        }
+      })
+      .filter((t): t is Transaction & { parsedAmount: number } => t !== null && t.parsedAmount < 0)
+      .sort((a, b) => Math.abs(b.parsedAmount) - Math.abs(a.parsedAmount))
+      .slice(0, 10)
+
+    return expenses
+  }, [transactions, selectionType, selectedMonth, selectedYear])
+
   return (
     <div className="section">
       <h2 className="section-header">Data Aggregated by Period</h2>
@@ -186,28 +234,23 @@ const DataByPeriod = ({ summaries, selectedMonth, onSelectionChange }: {
         <div>
           <h3 className="section-subheader">{getDisplayTitle()}</h3>
           
-          <div className="summary-stats">
-            <div className="summary-stat">
-              <div className="summary-stat-label">Total Expenses</div>
-              <div className="summary-stat-value" style={{ color: 'var(--danger-color)' }}>
-                {formatPolishNumber(displaySummary.totalExpenses)}
-              </div>
-            </div>
-            <div className="summary-stat">
-              <div className="summary-stat-label">Total Income</div>
-              <div className="summary-stat-value" style={{ color: 'var(--secondary-color)' }}>
-                {formatPolishNumber(displaySummary.totalIncome)}
-              </div>
-            </div>
-            <div className="summary-stat">
-              <div className="summary-stat-label">Balance</div>
-              <div className="summary-stat-value" style={{ 
-                color: displaySummary.balance >= 0 ? 'var(--secondary-color)' : 'var(--danger-color)' 
-              }}>
-                {formatPolishNumber(displaySummary.balance)}
-              </div>
-            </div>
-          </div>
+          <h4 className="section-subheader">Top 10 Expenses:</h4>
+          {topExpenses.length > 0 ? (
+            <ul className="category-list">
+              {topExpenses.map((expense, index) => (
+                <li key={expense.id}>
+                  <span>
+                    {index + 1}. {expense.description} ({expense.category})
+                  </span>
+                  <strong style={{ color: 'var(--danger-color)' }}>
+                    {expense.amount}
+                  </strong>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No expenses found for this period.</p>
+          )}
           
           <h4 className="section-subheader">Categories:</h4>
           <div className="chart-container">
