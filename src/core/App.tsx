@@ -5,6 +5,7 @@ import { processTransactions } from '../parsing/processTransactions/processTrans
 import { parseRules } from '../parsing/parseRules/parseRules.ts'
 import { getCategories } from '../parsing/getCategories/getCategories.ts'
 import { classifyDescription } from '../parsing/classifyDescription/classifyDescription.ts'
+import { parsePolishAmount } from '../parsing/parsePolishAmount/parsePolishAmount.ts'
 import type { Transaction, MonthlySummary } from '../parsing/types.ts'
 import { CSVInputPreview } from '../views/input/CSVInputPreview.tsx'
 import { TransactionsTable } from '../views/table/TransactionsTable.tsx'
@@ -416,10 +417,28 @@ const App = () => {
       const lines = csvContent.split('\n').filter(l => l.trim())
       if (lines.length > 0) {
         const parsed = lines.map(line => parseCSVLine(line, delimiter, dateIndex, descriptionIndex, amountIndex))
-        const classified = parsed.map(t => ({
-          ...t,
-          category: classifyDescription(t.description, allRules)
-        }))
+        const classified = parsed.map(t => {
+          const category = classifyDescription(t.description, allRules)
+          // Automatically exclude income transactions (positive amounts)
+          // but keep them valid so the checkbox can be unchecked later
+          let excluded = t.excluded // Keep excluded state for invalid transactions
+          if (t.isValid) {
+            try {
+              const amount = parsePolishAmount(t.amount)
+              if (amount > 0) {
+                // This is an income transaction, exclude it by default
+                excluded = true
+              }
+            } catch {
+              // If parsing fails, keep the original excluded state
+            }
+          }
+          return {
+            ...t,
+            category,
+            excluded
+          }
+        })
         setTransactions(classified)
       }
     }
