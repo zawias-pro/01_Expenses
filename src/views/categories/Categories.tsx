@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useStore } from '../../store/useStore.ts'
 
 const Categories = ({
   rules,
@@ -11,11 +11,19 @@ const Categories = ({
   onUpdateCategory: (category: string, keywords: string[]) => void
   onRemoveCategory: (category: string) => void
 }) => {
-  const [showExportModal, setShowExportModal] = useState(false)
-  const [editingCategory, setEditingCategory] = useState<string | null>(null)
-  const [editingKeywords, setEditingKeywords] = useState<string>('')
-  const [newCategory, setNewCategory] = useState('')
-  const [newKeywords, setNewKeywords] = useState('')
+  // Store state
+  const showExportModal = useStore((state) => state.showExportModal)
+  const editingCategory = useStore((state) => state.editingCategory)
+  const editingKeywords = useStore((state) => state.editingKeywords)
+  const newCategory = useStore((state) => state.newCategory)
+  const newKeywords = useStore((state) => state.newKeywords)
+  
+  // Store actions
+  const setShowExportModal = useStore((state) => state.setShowExportModal)
+  const setEditingCategory = useStore((state) => state.setEditingCategory)
+  const setEditingKeywords = useStore((state) => state.setEditingKeywords)
+  const setNewCategory = useStore((state) => state.setNewCategory)
+  const setNewKeywords = useStore((state) => state.setNewKeywords)
 
   const handleStartEdit = (category: string, keywords: string[]) => {
     setEditingCategory(category)

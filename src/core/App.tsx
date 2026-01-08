@@ -1,18 +1,21 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import './App.css'
 import { parseCSVLine } from '../parsing/parseCSVLine/parseCSVLine.ts'
-import { processTransactions } from '../parsing/processTransactions/processTransactions.ts'
-import { parseRules } from '../parsing/parseRules/parseRules.ts'
-import { getCategories } from '../parsing/getCategories/getCategories.ts'
 import { classifyDescription } from '../parsing/classifyDescription/classifyDescription.ts'
 import { parsePolishAmount } from '../parsing/parsePolishAmount/parsePolishAmount.ts'
-import type { Transaction, MonthlySummary } from '../parsing/types.ts'
 import { CSVInputPreview } from '../views/input/CSVInputPreview.tsx'
 import { TransactionsTable } from '../views/table/TransactionsTable.tsx'
 import { DataByPeriod } from '../views/data-by-period/DataByPeriod.tsx'
 import { CumulativeBarChart } from '../views/data-cumulative/CumulativeBarChart.tsx'
 import { Categories } from '../views/categories/Categories.tsx'
-import rulesContent from '../rules.csv?raw'
+import {
+  useStore,
+  useAllRules,
+  useCategories,
+  useSummaries,
+  exportState,
+  importState,
+} from '../store/useStore.ts'
 
 const INITIAL_CSV = `2025-12-12;"JAN ADAM KOWALSKI, CZYNSZ NAJMU                                                                         PRZELEW ZEWNĘTRZNY WYCHODZĄCY                                                     74899274659992743764666621  ";"MojBank 1234 ... 5678";"Czynsz i wynajem";-5 000,00 PLN;;
 2025-12-01;"BIEDRONKA SPÓŁKA Z O.O.                                                                                  ZAKUP PRZY UŻYCIU KARTY                                                             12345678901234567890123456  ";"MojBank 1234 ... 5678";"Żywność i napoje";-89,50 PLN;;
@@ -142,265 +145,75 @@ const INITIAL_CSV = `2025-12-12;"JAN ADAM KOWALSKI, CZYNSZ NAJMU                
 2024-10-27;"PRZELEW NA PREZENTY                                                                              PRZELEW ZEWNĘTRZNY WYCHODZĄCY                                                     89012345678901234567890123  ";"MojBank 1234 ... 5678";"Przelew własny";-160,00 PLN;;
 invalid-date;"INVALID DATE TRANSACTION";"MojBank 1234 ... 5678";"Bez kategorii";-100,00 PLN;;`
 
-const RULES = parseRules(rulesContent)
-
-const STORAGE_KEY = 'expense-analyzer-data'
-
-type View = 'csv' | 'categories' | 'transactions' | 'summary' | 'chart'
-
-type SavedData = {
-  transactions: Transaction[]
-  view: View
-  customRules: Record<string, string[]>
-  csvAccepted: boolean
-  selectedMonth: { year: number; month: number } | null
-  dateIndex: number
-  descriptionIndex: number
-  amountIndex: number
-  onlyShowOthers: boolean
-  amountSortDirection: 'asc' | 'desc' | null
-}
-
-const loadSavedData = (): SavedData | null => {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (!saved) return null
-    const parsed = JSON.parse(saved)
-    // Validate that it has the expected structure
-    if (typeof parsed === 'object' && parsed !== null) {
-      // Check for required fields (allow partial data for migration)
-      if (Array.isArray(parsed.transactions) && 
-          typeof parsed.view === 'string' &&
-          typeof parsed.customRules === 'object' &&
-          typeof parsed.csvAccepted === 'boolean') {
-        // Migrate old customRules format if needed
-        let migratedCustomRules: Record<string, string[]> = {}
-        if (parsed.customRules) {
-          const oldRules = parsed.customRules as Record<string, string | string[]>
-          for (const [key, value] of Object.entries(oldRules)) {
-            if (Array.isArray(value)) {
-              migratedCustomRules[key] = value
-            } else {
-              // Old format: keyword -> category, convert to category -> [keyword]
-              const category = value as string
-              if (!migratedCustomRules[category]) {
-                migratedCustomRules[category] = []
-              }
-              migratedCustomRules[category].push(key)
-            }
-          }
-        }
-        // Provide defaults for column indices if not present (backward compatibility)
-        return {
-          ...parsed,
-          customRules: migratedCustomRules,
-          dateIndex: typeof parsed.dateIndex === 'number' ? parsed.dateIndex : 0,
-          descriptionIndex: typeof parsed.descriptionIndex === 'number' ? parsed.descriptionIndex : 1,
-          amountIndex: typeof parsed.amountIndex === 'number' ? parsed.amountIndex : 4,
-          onlyShowOthers: typeof parsed.onlyShowOthers === 'boolean' ? parsed.onlyShowOthers : false,
-          amountSortDirection: parsed.amountSortDirection === 'asc' || parsed.amountSortDirection === 'desc' ? parsed.amountSortDirection : null,
-        } as SavedData
-      }
-    }
-    return null
-  } catch {
-    return null
-  }
-}
-
-const saveData = (data: SavedData): void => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-  } catch (error) {
-    console.error('Failed to save data:', error)
-  }
-}
-
-// Cache for initial data load (only loaded once per app lifecycle)
-let cachedInitialData: SavedData | null | undefined = undefined
-
-const getInitialData = (): SavedData | null => {
-  if (cachedInitialData === undefined) {
-    cachedInitialData = loadSavedData()
-  }
-  return cachedInitialData
-}
 
 const App = () => {
-  // Load saved data only once on initialization
-  const initialData = getInitialData()
+  // Store state
+  const view = useStore((state) => state.view)
+  const csvAccepted = useStore((state) => state.csvAccepted)
+  const csvContent = useStore((state) => state.csvContent)
+  const delimiter = useStore((state) => state.delimiter)
+  const dateIndex = useStore((state) => state.dateIndex)
+  const descriptionIndex = useStore((state) => state.descriptionIndex)
+  const amountIndex = useStore((state) => state.amountIndex)
+  const transactions = useStore((state) => state.transactions)
+  const selectedMonth = useStore((state) => state.selectedMonth)
+  const customRules = useStore((state) => state.customRules)
+  const onlyShowOthers = useStore((state) => state.onlyShowOthers)
+  const amountSortDirection = useStore((state) => state.amountSortDirection)
   
-  const [csvAccepted, setCsvAccepted] = useState<boolean>(() => {
-    return initialData?.csvAccepted ?? false
-  })
-  const [view, setView] = useState<View>(() => {
-    // Always start on CSV page if CSV is not accepted
-    if (!initialData?.csvAccepted) {
-      return 'csv' as const
-    }
-    return initialData?.view || 'csv'
-  })
-  // CSV content is ephemeral - not saved to localStorage
-  const [csvContent, setCsvContent] = useState<string>('')
-  const [delimiter, setDelimiter] = useState<string>(';')
-  const [dateIndex, setDateIndex] = useState<number>(() => {
-    return initialData?.dateIndex ?? 0
-  })
-  const [descriptionIndex, setDescriptionIndex] = useState<number>(() => {
-    return initialData?.descriptionIndex ?? 1
-  })
-  const [amountIndex, setAmountIndex] = useState<number>(() => {
-    return initialData?.amountIndex ?? 4
-  })
-  const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    return initialData?.transactions ?? []
-  })
-  const [summaries, setSummaries] = useState<MonthlySummary[] | null>(null)
-  const [selectedMonth, setSelectedMonth] = useState<{ year: number; month: number } | null>(() => {
-    return initialData?.selectedMonth ?? null
-  })
-  const [customRules, setCustomRules] = useState<Record<string, string[]>>(() => {
-    // Migrate old format if needed
-    if (initialData?.customRules) {
-      const oldRules = initialData.customRules as Record<string, string | string[]>
-      const migrated: Record<string, string[]> = {}
-      for (const [key, value] of Object.entries(oldRules)) {
-        if (Array.isArray(value)) {
-          migrated[key] = value
-        } else {
-          // Old format: keyword -> category, convert to category -> [keyword]
-          const category = value as string
-          if (!migrated[category]) {
-            migrated[category] = []
-          }
-          migrated[category].push(key)
-        }
-      }
-      return migrated
-    }
-    return {}
-  })
-  const [onlyShowOthers, setOnlyShowOthers] = useState<boolean>(() => {
-    return initialData?.onlyShowOthers ?? false
-  })
-  const [amountSortDirection, setAmountSortDirection] = useState<'asc' | 'desc' | null>(() => {
-    return initialData?.amountSortDirection ?? null
-  })
-
-  // Merge base rules with custom rules (memoized to prevent infinite loops)
-  // Merge arrays for each category
-  const allRules = useMemo(() => {
-    const merged: Record<string, string[]> = { ...RULES }
-    for (const [category, keywords] of Object.entries(customRules)) {
-      if (merged[category]) {
-        // Merge arrays, avoiding duplicates
-        const existing = new Set(merged[category])
-        keywords.forEach(k => existing.add(k))
-        merged[category] = Array.from(existing)
+  // Store actions
+  const setView = useStore((state) => state.setView)
+  const setCsvAccepted = useStore((state) => state.setCsvAccepted)
+  const setCsvContent = useStore((state) => state.setCsvContent)
+  const setDelimiter = useStore((state) => state.setDelimiter)
+  const setDateIndex = useStore((state) => state.setDateIndex)
+  const setDescriptionIndex = useStore((state) => state.setDescriptionIndex)
+  const setAmountIndex = useStore((state) => state.setAmountIndex)
+  const setTransactions = useStore((state) => state.setTransactions)
+  const setSelectedMonth = useStore((state) => state.setSelectedMonth)
+  const setOnlyShowOthers = useStore((state) => state.setOnlyShowOthers)
+  const setAmountSortDirection = useStore((state) => state.setAmountSortDirection)
+  const updateTransactionExcluded = useStore((state) => state.updateTransactionExcluded)
+  const updateTransactionCategory = useStore((state) => state.updateTransactionCategory)
+  const updateTransactionDate = useStore((state) => state.updateTransactionDate)
+  const updateTransactionOverrideMode = useStore((state) => state.updateTransactionOverrideMode)
+  const updateCategory = useStore((state) => state.updateCategory)
+  const removeCategory = useStore((state) => state.removeCategory)
+  const clearAll = useStore((state) => state.clearAll)
+  
+  // Computed values
+  const allRules = useAllRules()
+  const categories = useCategories()
+  const summaries = useSummaries()
+  
+  // Validate selectedMonth when summaries change
+  useEffect(() => {
+    if (summaries && summaries.length > 0) {
+      if (selectedMonth === null) {
+        // Set to first available month if not set
+        setSelectedMonth({ year: summaries[0].year, month: summaries[0].month })
       } else {
-        merged[category] = [...keywords]
+        // Validate that the selected month exists in the summaries
+        const monthExists = summaries.some(
+          (s) => s.year === selectedMonth.year && s.month === selectedMonth.month
+        )
+        if (!monthExists) {
+          // If selected month doesn't exist, set to first available
+          setSelectedMonth({ year: summaries[0].year, month: summaries[0].month })
+        }
       }
-    }
-    return merged
-  }, [customRules])
-  const categories = useMemo(() => getCategories(allRules), [allRules])
-
-  // Reset view to CSV if CSV is not accepted
-  useEffect(() => {
-    if (!csvAccepted && view !== 'csv') {
-      setView('csv')
-    }
-  }, [csvAccepted, view])
-
-  // Re-classify transactions when rules change (only for non-overridden transactions)
-  useEffect(() => {
-    if (transactions.length > 0) {
-      setTransactions(prev => prev.map(t => {
-        if (t.overridden) {
-          return t // Keep overridden categories
-        }
-        const newCategory = classifyDescription(t.description, allRules)
-        if (t.category === newCategory) {
-          return t // No change needed
-        }
-        return {
-          ...t,
-          category: newCategory
-        }
-      }))
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [customRules])
-
-  // Recalculate summaries when transactions or rules change
-  useEffect(() => {
-    if (transactions.length > 0) {
-      const activeTransactions = transactions.filter(t => !t.excluded)
-      if (activeTransactions.length > 0) {
-        const result = processTransactions(activeTransactions, allRules)
-        setSummaries(result)
-        // Validate or set selected month
-        if (result.length > 0) {
-          if (selectedMonth === null) {
-            // Set to first available month if not set
-            setSelectedMonth({ year: result[0].year, month: result[0].month })
-          } else {
-            // Validate that the selected month exists in the summaries
-            const monthExists = result.some(
-              s => s.year === selectedMonth.year && s.month === selectedMonth.month
-            )
-            if (!monthExists) {
-              // If selected month doesn't exist, set to first available
-              setSelectedMonth({ year: result[0].year, month: result[0].month })
-            }
-          }
-        }
-      } else {
-        // All transactions are excluded
-        setSummaries([])
-      }
-    } else {
-      setSummaries(null)
+    } else if (summaries === null || summaries.length === 0) {
       setSelectedMonth(null)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transactions, allRules])
+  }, [summaries, selectedMonth, setSelectedMonth])
 
   const handleSave = () => {
-    const dataToSave: SavedData = {
-      transactions,
-      view,
-      customRules,
-      csvAccepted,
-      selectedMonth,
-      dateIndex,
-      descriptionIndex,
-      amountIndex,
-      onlyShowOthers,
-      amountSortDirection,
-    }
-    saveData(dataToSave)
+    // Zustand persist middleware handles saving automatically
+    // This button can remain for user feedback, but persistence is automatic
   }
 
   const handleClear = () => {
-    // Clear all localStorage data
-    localStorage.removeItem(STORAGE_KEY)
-    // Reset cache so next mount loads fresh
-    cachedInitialData = null
-    // Reset all state
-    setCsvContent('')
-    setDelimiter(';')
-    setDateIndex(0)
-    setDescriptionIndex(1)
-    setAmountIndex(4)
-    setTransactions([])
-    setSummaries(null)
-    setCustomRules({})
-    setCsvAccepted(false)
-    setView('csv')
-    setSelectedMonth(null)
-    setOnlyShowOthers(false)
-    setAmountSortDirection(null)
+    clearAll()
   }
 
   const handleCsvAccept = () => {
@@ -411,13 +224,53 @@ const App = () => {
     setCsvContent(INITIAL_CSV)
   }
 
+  const handleExport = () => {
+    const jsonString = exportState()
+    const blob = new Blob([jsonString], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `expense-analyzer-state-${new Date().toISOString().split('T')[0]}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  const handleImport = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'application/json'
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (!file) return
+      
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        const jsonString = event.target?.result as string
+        if (jsonString) {
+          const success = importState(jsonString)
+          if (success) {
+            alert('State imported successfully!')
+          } else {
+            alert('Failed to import state. Please check the file format.')
+          }
+        }
+      }
+      reader.readAsText(file)
+    }
+    input.click()
+  }
+
   // Auto-parse CSV when content changes
   useEffect(() => {
     if (csvContent.trim()) {
-      const lines = csvContent.split('\n').filter(l => l.trim())
+      const lines = csvContent.split('\n').filter((l) => l.trim())
       if (lines.length > 0) {
-        const parsed = lines.map(line => parseCSVLine(line, delimiter, dateIndex, descriptionIndex, amountIndex))
-        const classified = parsed.map(t => {
+        const parsed = lines.map((line) =>
+          parseCSVLine(line, delimiter, dateIndex, descriptionIndex, amountIndex)
+        )
+        const classified = parsed.map((t) => {
           const category = classifyDescription(t.description, allRules)
           // Automatically exclude income transactions (positive amounts)
           // but keep them valid so the checkbox can be unchecked later
@@ -436,7 +289,7 @@ const App = () => {
           return {
             ...t,
             category,
-            excluded
+            excluded,
           }
         })
         setTransactions(classified)
@@ -445,41 +298,6 @@ const App = () => {
     // Don't clear transactions when csvContent is empty - let user keep their data
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [csvContent, delimiter, dateIndex, descriptionIndex, amountIndex])
-
-  const handleUpdateExcluded = (id: string, excluded: boolean) => {
-    setTransactions(prev => prev.map(t => t.id === id ? { ...t, excluded } : t))
-  }
-
-  const handleCategoryChange = (id: string, category: string) => {
-    setTransactions(prev => prev.map(t => t.id === id ? { ...t, category, overridden: true } : t))
-  }
-
-  const handleDateChange = (id: string, date: string) => {
-    setTransactions(prev => prev.map(t => t.id === id ? { ...t, date, overridden: true } : t))
-  }
-
-  const handleOverrideModeChange = (id: string, overrideMode: boolean) => {
-    setTransactions(prev => prev.map(t => t.id === id ? { ...t, overrideMode } : t))
-  }
-
-  const handleUpdateCategory = (category: string, keywords: string[]) => {
-    setCustomRules(prev => {
-      const filtered = keywords.filter(k => k.trim()).map(k => k.trim())
-      if (filtered.length === 0) {
-        // Remove category if no keywords
-        const { [category]: _, ...rest } = prev
-        return rest
-      }
-      return { ...prev, [category]: filtered }
-    })
-  }
-
-  const handleRemoveCategory = (category: string) => {
-    setCustomRules(prev => {
-      const { [category]: _, ...rest } = prev
-      return rest
-    })
-  }
 
   return (
     <div className="app-container">
@@ -490,6 +308,12 @@ const App = () => {
           <div style={{ display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
             <button className="btn btn-primary" onClick={handleSave}>
               Save
+            </button>
+            <button className="btn btn-secondary" onClick={handleExport}>
+              Export State
+            </button>
+            <button className="btn btn-secondary" onClick={handleImport}>
+              Import State
             </button>
             <button className="btn btn-danger" onClick={handleClear}>
               Clear & Start Over
@@ -557,8 +381,8 @@ const App = () => {
           <Categories
             rules={allRules}
             customRules={customRules}
-            onUpdateCategory={handleUpdateCategory}
-            onRemoveCategory={handleRemoveCategory}
+            onUpdateCategory={updateCategory}
+            onRemoveCategory={removeCategory}
           />
         )}
 
@@ -570,10 +394,10 @@ const App = () => {
             onOnlyShowOthersChange={setOnlyShowOthers}
             amountSortDirection={amountSortDirection}
             onAmountSortDirectionChange={setAmountSortDirection}
-            onExcludedChange={handleUpdateExcluded}
-            onCategoryChange={handleCategoryChange}
-            onDateChange={handleDateChange}
-            onOverrideModeChange={handleOverrideModeChange}
+            onExcludedChange={updateTransactionExcluded}
+            onCategoryChange={updateTransactionCategory}
+            onDateChange={updateTransactionDate}
+            onOverrideModeChange={updateTransactionOverrideMode}
           />
         )}
 

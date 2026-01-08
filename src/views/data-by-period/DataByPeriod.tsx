@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 import {
   BarChart,
   Bar,
@@ -16,6 +16,7 @@ import { formatPolishNumber } from '../../parsing/formatPolishNumber/formatPolis
 import { parsePolishAmount } from '../../parsing/parsePolishAmount/parsePolishAmount.ts'
 import { getYearFromDate } from '../../parsing/getYearFromDate/getYearFromDate.ts'
 import { getMonthFromDate } from '../../parsing/getMonthFromDate/getMonthFromDate.ts'
+import { useStore } from '../../store/useStore.ts'
 
 const CategoryBarChart = ({ categories }: { categories: Record<string, number> }) => {
   const categoryEntries = Object.entries(categories)
@@ -54,30 +55,44 @@ const CategoryBarChart = ({ categories }: { categories: Record<string, number> }
   )
 }
 
-type SelectionType = 'month' | 'year' | 'all'
-
 const monthNames = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'
 ]
 
-type TabType = 'expenses' | 'chart' | 'categories'
-
 const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChange }: {
   summaries: MonthlySummary[] 
   selectedMonth: { year: number; month: number }
   transactions: Transaction[]
-  onSelectionChange: (type: SelectionType, year?: number, month?: number) => void
+  onSelectionChange: (type: 'month' | 'year' | 'all', year?: number, month?: number) => void
   onBack?: () => void
   onNext?: () => void
 }) => {
-  const [selectionType, setSelectionType] = useState<SelectionType>('month')
-  const [selectedYear, setSelectedYear] = useState<number | null>(selectedMonth.year)
-  const [activeTab, setActiveTab] = useState<TabType>('expenses')
-  const [treatLowValueAsOthers, setTreatLowValueAsOthers] = useState<boolean>(true)
-  const [lowValueThreshold, setLowValueThreshold] = useState<number>(100)
-  const [mergeSmallCategories, setMergeSmallCategories] = useState<boolean>(true)
-  const [categoryThresholdPercent, setCategoryThresholdPercent] = useState<number>(1)
+  // Store state
+  const selectionType = useStore((state) => state.selectionType)
+  const selectedYear = useStore((state) => state.selectedYear)
+  const activeTab = useStore((state) => state.activeTab)
+  const treatLowValueAsOthers = useStore((state) => state.treatLowValueAsOthers)
+  const lowValueThreshold = useStore((state) => state.lowValueThreshold)
+  const mergeSmallCategories = useStore((state) => state.mergeSmallCategories)
+  const categoryThresholdPercent = useStore((state) => state.categoryThresholdPercent)
+  
+  // Store actions
+  const setSelectionType = useStore((state) => state.setSelectionType)
+  const setSelectedYear = useStore((state) => state.setSelectedYear)
+  const setActiveTab = useStore((state) => state.setActiveTab)
+  const setTreatLowValueAsOthers = useStore((state) => state.setTreatLowValueAsOthers)
+  const setLowValueThreshold = useStore((state) => state.setLowValueThreshold)
+  const setMergeSmallCategories = useStore((state) => state.setMergeSmallCategories)
+  const setCategoryThresholdPercent = useStore((state) => state.setCategoryThresholdPercent)
+  const setSelectedMonth = useStore((state) => state.setSelectedMonth)
+  
+  // Initialize selectedYear from selectedMonth if not set
+  useEffect(() => {
+    if (selectedYear === null && selectedMonth) {
+      setSelectedYear(selectedMonth.year)
+    }
+  }, [selectedMonth, selectedYear, setSelectedYear])
 
   const yearlySummaries = aggregateByYear(summaries)
   const allDataSummary = aggregateAllData(summaries)
@@ -85,7 +100,7 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
   const availableYears = Array.from(new Set(summaries.map(s => s.year))).sort()
 
   const handleSelectionTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newType = event.target.value as SelectionType
+    const newType = event.target.value as 'month' | 'year' | 'all'
     setSelectionType(newType)
 
     if (newType === 'all') {
@@ -108,6 +123,7 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
   const handleMonthChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const [year, month] = event.target.value.split('-').map(Number)
     setSelectedYear(year)
+    setSelectedMonth({ year, month })
     onSelectionChange('month', year, month)
   }
 
