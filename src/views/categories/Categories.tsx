@@ -64,22 +64,6 @@ const Categories = ({
     return lines.sort().join('\n')
   }
 
-  const handleCopyToClipboard = () => {
-    const text = exportRules()
-    navigator.clipboard.writeText(text).then(() => {
-      alert('Categories copied to clipboard!')
-    }).catch(() => {
-      // Fallback for older browsers
-      const textarea = document.createElement('textarea')
-      textarea.value = text
-      document.body.appendChild(textarea)
-      textarea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textarea)
-      alert('Categories copied to clipboard!')
-    })
-  }
-
   const categoryNames = Object.keys(rules).sort()
 
   return (
@@ -254,12 +238,6 @@ const Categories = ({
               />
             </div>
             <div className="modal-footer">
-              <button
-                className="btn btn-primary"
-                onClick={handleCopyToClipboard}
-              >
-                Copy to Clipboard
-              </button>
               <button
                 className="btn btn-outline"
                 onClick={() => { setShowExportModal(false) }}

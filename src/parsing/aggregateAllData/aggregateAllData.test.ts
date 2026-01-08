@@ -15,6 +15,6 @@ test('aggregateAllData - aggregates all monthly summaries', () => {
   assert.strictEqual(result.totalExpenses, 2300)
   assert.strictEqual(result.totalIncome, 4700)
   assert.strictEqual(result.balance, 2400)
-  assert.strictEqual(result.categories.cat1, 2100)
-  assert.strictEqual(result.categories.cat2, 200)
+  assert.strictEqual(result.categories["cat1"], 2100)
+  assert.strictEqual(result.categories["cat2"], 200)
 })

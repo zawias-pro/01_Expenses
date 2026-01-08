@@ -89,7 +89,7 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
   
   // Initialize selectedYear from selectedMonth if not set
   useEffect(() => {
-    if (selectedYear === null && selectedMonth) {
+    if (selectedYear === null) {
       setSelectedYear(selectedMonth.year)
     }
   }, [selectedMonth, selectedYear, setSelectedYear])

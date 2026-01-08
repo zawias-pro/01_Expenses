@@ -373,92 +373,12 @@ const exportState = (): string => {
 
 const importState = (jsonString: string): boolean => {
   try {
-    const data = JSON.parse(jsonString)
-    
-    // Validate structure
-    if (typeof data !== 'object' || data === null) {
-      return false
-    }
-    
-    // Validate all required fields
-    if (!Array.isArray(data.transactions)) {
-      return false
-    }
-    if (typeof data.view !== 'string') {
-      return false
-    }
-    if (typeof data.customRules !== 'object' || data.customRules === null) {
-      return false
-    }
-    // Validate customRules format (must be Record<string, string[]>)
-    for (const value of Object.values(data.customRules)) {
-      if (!Array.isArray(value) || !value.every((v) => typeof v === 'string')) {
-        return false
-      }
-    }
-    if (typeof data.csvAccepted !== 'boolean') {
-      return false
-    }
-    if (typeof data.dateIndex !== 'number') {
-      return false
-    }
-    if (typeof data.descriptionIndex !== 'number') {
-      return false
-    }
-    if (typeof data.amountIndex !== 'number') {
-      return false
-    }
-    if (typeof data.onlyShowOthers !== 'boolean') {
-      return false
-    }
-    if (data.amountSortDirection !== null && data.amountSortDirection !== 'asc' && data.amountSortDirection !== 'desc') {
-      return false
-    }
-    if (data.selectionType !== 'month' && data.selectionType !== 'year' && data.selectionType !== 'all') {
-      return false
-    }
-    if (data.selectedYear !== null && typeof data.selectedYear !== 'number') {
-      return false
-    }
-    if (data.selectedMonth !== null && (typeof data.selectedMonth !== 'object' || typeof data.selectedMonth.year !== 'number' || typeof data.selectedMonth.month !== 'number')) {
-      return false
-    }
-    if (data.activeTab !== 'expenses' && data.activeTab !== 'chart' && data.activeTab !== 'categories') {
-      return false
-    }
-    if (typeof data.treatLowValueAsOthers !== 'boolean') {
-      return false
-    }
-    if (typeof data.lowValueThreshold !== 'number') {
-      return false
-    }
-    if (typeof data.mergeSmallCategories !== 'boolean') {
-      return false
-    }
-    if (typeof data.categoryThresholdPercent !== 'number') {
-      return false
-    }
-    if (typeof data.showExportModal !== 'boolean') {
-      return false
-    }
-    if (data.editingCategory !== null && typeof data.editingCategory !== 'string') {
-      return false
-    }
-    if (typeof data.editingKeywords !== 'string') {
-      return false
-    }
-    if (typeof data.newCategory !== 'string') {
-      return false
-    }
-    if (typeof data.newKeywords !== 'string') {
-      return false
-    }
-    
-    // Import state - all fields are validated and required
+    const data = JSON.parse(jsonString) as AppState
+
     useStore.setState({
       transactions: data.transactions,
       view: data.view,
-      customRules: data.customRules as Record<string, string[]>,
+      customRules: data.customRules,
       csvAccepted: data.csvAccepted,
       selectedMonth: data.selectedMonth,
       dateIndex: data.dateIndex,
