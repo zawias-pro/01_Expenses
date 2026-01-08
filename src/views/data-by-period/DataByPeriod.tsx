@@ -74,6 +74,10 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
   const [selectionType, setSelectionType] = useState<SelectionType>('month')
   const [selectedYear, setSelectedYear] = useState<number | null>(selectedMonth.year)
   const [activeTab, setActiveTab] = useState<TabType>('expenses')
+  const [treatLowValueAsOthers, setTreatLowValueAsOthers] = useState<boolean>(true)
+  const [lowValueThreshold, setLowValueThreshold] = useState<number>(100)
+  const [mergeSmallCategories, setMergeSmallCategories] = useState<boolean>(true)
+  const [categoryThresholdPercent, setCategoryThresholdPercent] = useState<number>(1)
 
   const yearlySummaries = aggregateByYear(summaries)
   const allDataSummary = aggregateAllData(summaries)
@@ -137,6 +141,109 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
     value: `${s.year.toString()}-${s.month.toString()}`,
     label: `${monthNames[s.month - 1]} ${s.year.toString()}`
   }))
+
+  // Process categories with low-value threshold and/or category percentage threshold if enabled
+  const processedCategories = useMemo(() => {
+    if (!displaySummary) {
+      return {}
+    }
+
+    // Start with original categories or process with low-value threshold
+    let categories: Record<string, number>
+    
+    if (treatLowValueAsOthers) {
+      // Get transactions for the selected period
+      let periodTransactions = transactions.filter(t => !t.excluded && t.isValid)
+      
+      if (selectionType === 'month') {
+        periodTransactions = periodTransactions.filter(t => {
+          try {
+            const year = getYearFromDate(t.date)
+            const month = getMonthFromDate(t.date)
+            return year === selectedMonth.year && month === selectedMonth.month
+          } catch {
+            return false
+          }
+        })
+      } else if (selectionType === 'year' && selectedYear !== null) {
+        periodTransactions = periodTransactions.filter(t => {
+          try {
+            const year = getYearFromDate(t.date)
+            return year === selectedYear
+          } catch {
+            return false
+          }
+        })
+      }
+      // For 'all', we already have all transactions filtered
+
+      // Re-aggregate categories, treating low-value expenses as "others"
+      const processed: Record<string, number> = {}
+      
+      periodTransactions.forEach(t => {
+        try {
+          const amount = parsePolishAmount(t.amount)
+          if (amount < 0) {
+            // This is an expense
+            const absAmount = Math.abs(amount)
+            let category = t.category
+            
+            // If the expense is below threshold, treat it as "others"
+            if (absAmount < lowValueThreshold) {
+              category = 'others'
+            }
+            
+            processed[category] = (processed[category] || 0) + absAmount
+          }
+        } catch {
+          // Skip invalid transactions
+        }
+      })
+      
+      categories = processed
+    } else {
+      // Use original categories
+      categories = { ...displaySummary.categories }
+    }
+
+    // Apply category percentage threshold if enabled
+    if (mergeSmallCategories) {
+      // Calculate total expenses
+      const totalExpenses = Object.values(categories).reduce((sum, amount) => sum + amount, 0)
+      
+      if (totalExpenses > 0) {
+        const merged: Record<string, number> = {}
+        let othersAmount = categories['others'] || 0
+        
+        // Process each category
+        Object.entries(categories).forEach(([category, amount]) => {
+          if (category === 'others') {
+            // Don't process "others" itself, we'll add it at the end
+            return
+          }
+          
+          const percentage = (amount / totalExpenses) * 100
+          
+          if (percentage < categoryThresholdPercent) {
+            // Merge into "others"
+            othersAmount += amount
+          } else {
+            // Keep as separate category
+            merged[category] = amount
+          }
+        })
+        
+        // Add "others" category (including merged small categories)
+        if (othersAmount > 0) {
+          merged['others'] = othersAmount
+        }
+        
+        categories = merged
+      }
+    }
+
+    return categories
+  }, [displaySummary, treatLowValueAsOthers, lowValueThreshold, mergeSmallCategories, categoryThresholdPercent, transactions, selectionType, selectedMonth, selectedYear])
 
   // Get top 10 expenses for the selected period
   const topExpenses = useMemo(() => {
@@ -237,6 +344,72 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
         <div>
           <h3 className="section-subheader">{getDisplayTitle()}</h3>
           
+          {/* Category processing controls */}
+          <div style={{ marginBottom: '1.5rem' }}>
+            {/* Low-value threshold controls */}
+            <div className="filter-controls" style={{ marginBottom: '0.75rem' }}>
+              <label className="filter-label">
+                <input
+                  type="checkbox"
+                  className="form-checkbox"
+                  checked={treatLowValueAsOthers}
+                  onChange={e => setTreatLowValueAsOthers(e.target.checked)}
+                />
+                Treat low-value expenses as "others"
+              </label>
+              {treatLowValueAsOthers && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <label htmlFor="low-value-threshold" className="form-label" style={{ margin: 0 }}>
+                    Threshold:
+                  </label>
+                  <input
+                    id="low-value-threshold"
+                    type="number"
+                    className="form-input"
+                    style={{ width: '120px' }}
+                    min="0"
+                    step="0.01"
+                    value={lowValueThreshold}
+                    onChange={e => setLowValueThreshold(parseFloat(e.target.value) || 0)}
+                  />
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>PLN</span>
+                </div>
+              )}
+            </div>
+            
+            {/* Category percentage threshold controls */}
+            <div className="filter-controls">
+              <label className="filter-label">
+                <input
+                  type="checkbox"
+                  className="form-checkbox"
+                  checked={mergeSmallCategories}
+                  onChange={e => setMergeSmallCategories(e.target.checked)}
+                />
+                Merge small categories into "others"
+              </label>
+              {mergeSmallCategories && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <label htmlFor="category-threshold" className="form-label" style={{ margin: 0 }}>
+                    Category threshold:
+                  </label>
+                  <input
+                    id="category-threshold"
+                    type="number"
+                    className="form-input"
+                    style={{ width: '120px' }}
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    value={categoryThresholdPercent}
+                    onChange={e => setCategoryThresholdPercent(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))}
+                  />
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>%</span>
+                </div>
+              )}
+            </div>
+          </div>
+          
           {/* Tab Navigation */}
           <div className="tabs">
             <button
@@ -282,14 +455,14 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
           {/* Tab Content: Chart */}
           <div className={`tab-content ${activeTab === 'chart' ? 'active' : ''}`}>
             <div className="chart-container">
-              <CategoryBarChart categories={displaySummary.categories} />
+              <CategoryBarChart categories={processedCategories} />
             </div>
           </div>
           
           {/* Tab Content: Categories */}
           <div className={`tab-content ${activeTab === 'categories' ? 'active' : ''}`}>
             <ul className="category-list">
-              {Object.entries(displaySummary.categories)
+              {Object.entries(processedCategories)
                 .sort(([, a], [, b]) => b - a)
                 .map(([cat, amount]) => (
                 <li key={cat}>
