@@ -61,6 +61,8 @@ const monthNames = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ]
 
+type TabType = 'expenses' | 'chart' | 'categories'
+
 const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChange }: {
   summaries: MonthlySummary[] 
   selectedMonth: { year: number; month: number }
@@ -71,6 +73,7 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
 }) => {
   const [selectionType, setSelectionType] = useState<SelectionType>('month')
   const [selectedYear, setSelectedYear] = useState<number | null>(selectedMonth.year)
+  const [activeTab, setActiveTab] = useState<TabType>('expenses')
 
   const yearlySummaries = aggregateByYear(summaries)
   const allDataSummary = aggregateAllData(summaries)
@@ -234,39 +237,68 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
         <div>
           <h3 className="section-subheader">{getDisplayTitle()}</h3>
           
-          <h4 className="section-subheader">Top 10 Expenses:</h4>
-          {topExpenses.length > 0 ? (
+          {/* Tab Navigation */}
+          <div className="tabs">
+            <button
+              className={`tab ${activeTab === 'expenses' ? 'active' : ''}`}
+              onClick={() => setActiveTab('expenses')}
+            >
+              Top 10 Expenses
+            </button>
+            <button
+              className={`tab ${activeTab === 'chart' ? 'active' : ''}`}
+              onClick={() => setActiveTab('chart')}
+            >
+              Category Chart
+            </button>
+            <button
+              className={`tab ${activeTab === 'categories' ? 'active' : ''}`}
+              onClick={() => setActiveTab('categories')}
+            >
+              Categories
+            </button>
+          </div>
+          
+          {/* Tab Content: Top 10 Expenses */}
+          <div className={`tab-content ${activeTab === 'expenses' ? 'active' : ''}`}>
+            {topExpenses.length > 0 ? (
+              <ul className="category-list">
+                {topExpenses.map((expense, index) => (
+                  <li key={expense.id}>
+                    <span>
+                      {index + 1}. {expense.description} ({expense.category})
+                    </span>
+                    <strong style={{ color: 'var(--danger-color)' }}>
+                      {expense.amount}
+                    </strong>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No expenses found for this period.</p>
+            )}
+          </div>
+          
+          {/* Tab Content: Chart */}
+          <div className={`tab-content ${activeTab === 'chart' ? 'active' : ''}`}>
+            <div className="chart-container">
+              <CategoryBarChart categories={displaySummary.categories} />
+            </div>
+          </div>
+          
+          {/* Tab Content: Categories */}
+          <div className={`tab-content ${activeTab === 'categories' ? 'active' : ''}`}>
             <ul className="category-list">
-              {topExpenses.map((expense, index) => (
-                <li key={expense.id}>
-                  <span>
-                    {index + 1}. {expense.description} ({expense.category})
-                  </span>
-                  <strong style={{ color: 'var(--danger-color)' }}>
-                    {expense.amount}
-                  </strong>
+              {Object.entries(displaySummary.categories)
+                .sort(([, a], [, b]) => b - a)
+                .map(([cat, amount]) => (
+                <li key={cat}>
+                  <span>{cat}</span>
+                  <strong>{formatPolishNumber(amount)}</strong>
                 </li>
               ))}
             </ul>
-          ) : (
-            <p>No expenses found for this period.</p>
-          )}
-          
-          <h4 className="section-subheader">Categories:</h4>
-          <div className="chart-container">
-            <CategoryBarChart categories={displaySummary.categories} />
           </div>
-          
-          <ul className="category-list">
-            {Object.entries(displaySummary.categories)
-              .sort(([, a], [, b]) => b - a)
-              .map(([cat, amount]) => (
-              <li key={cat}>
-                <span>{cat}</span>
-                <strong>{formatPolishNumber(amount)}</strong>
-              </li>
-            ))}
-          </ul>
         </div>
       )}
 
