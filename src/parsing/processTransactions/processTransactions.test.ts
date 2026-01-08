@@ -42,7 +42,7 @@ test('processTransactions - processes transactions correctly', () => {
       overrideMode: false,
     },
   ]
-  const rules = { 'test': 'test-category' }
+  const rules = { 'test-category': ['test'] }
   const result = processTransactions(transactions, rules)
 
   assert(result.length === 2)
@@ -138,7 +138,7 @@ test('processTransactions - classifies categories from description and respects 
       overrideMode: false,
     },
   ]
-  const rules = { 'biedronka': 'grocery' }
+  const rules = { 'grocery': ['biedronka'] }
   const result = processTransactions(transactions, rules)
 
   assert(result.length === 1)

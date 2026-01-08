@@ -108,7 +108,7 @@ const Categories = ({
               </thead>
               <tbody>
                 {categoryNames.map(category => {
-                  const keywords = rules[category] || []
+                  const keywords = rules[category]
                   const isEditing = editingCategory === category
                   const isCustom = category in customRules
                   

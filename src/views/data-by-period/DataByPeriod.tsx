@@ -369,7 +369,7 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
                   type="checkbox"
                   className="form-checkbox"
                   checked={treatLowValueAsOthers}
-                  onChange={e => setTreatLowValueAsOthers(e.target.checked)}
+                  onChange={e => { setTreatLowValueAsOthers(e.target.checked) }}
                 />
                 Treat low-value expenses as "others"
               </label>
@@ -386,7 +386,7 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
                     min="0"
                     step="0.01"
                     value={lowValueThreshold}
-                    onChange={e => setLowValueThreshold(parseFloat(e.target.value) || 0)}
+                    onChange={e => { setLowValueThreshold(parseFloat(e.target.value) || 0) }}
                   />
                   <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>PLN</span>
                 </div>
@@ -400,7 +400,7 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
                   type="checkbox"
                   className="form-checkbox"
                   checked={mergeSmallCategories}
-                  onChange={e => setMergeSmallCategories(e.target.checked)}
+                  onChange={e => { setMergeSmallCategories(e.target.checked) }}
                 />
                 Merge small categories into "others"
               </label>
@@ -418,7 +418,7 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
                     max="100"
                     step="0.1"
                     value={categoryThresholdPercent}
-                    onChange={e => setCategoryThresholdPercent(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))}
+                    onChange={e => { setCategoryThresholdPercent(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0))) }}
                   />
                   <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>%</span>
                 </div>
@@ -430,19 +430,19 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
           <div className="tabs">
             <button
               className={`tab ${activeTab === 'expenses' ? 'active' : ''}`}
-              onClick={() => setActiveTab('expenses')}
+              onClick={() => { setActiveTab('expenses') }}
             >
               Top 10 Expenses
             </button>
             <button
               className={`tab ${activeTab === 'chart' ? 'active' : ''}`}
-              onClick={() => setActiveTab('chart')}
+              onClick={() => { setActiveTab('chart') }}
             >
               Category Chart
             </button>
             <button
               className={`tab ${activeTab === 'categories' ? 'active' : ''}`}
-              onClick={() => setActiveTab('categories')}
+              onClick={() => { setActiveTab('categories') }}
             >
               Categories
             </button>

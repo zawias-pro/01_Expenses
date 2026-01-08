@@ -10,9 +10,9 @@ import rulesContent from '../rules.csv?raw'
 const RULES = parseRules(rulesContent)
 const STORAGE_KEY = 'expense-analyzer-data'
 
-export type View = 'csv' | 'categories' | 'transactions' | 'summary' | 'chart'
-export type SelectionType = 'month' | 'year' | 'all'
-export type TabType = 'expenses' | 'chart' | 'categories'
+type View = 'csv' | 'categories' | 'transactions' | 'summary' | 'chart'
+type SelectionType = 'month' | 'year' | 'all'
+type TabType = 'expenses' | 'chart' | 'categories'
 
 interface AppState {
   // App-level state
@@ -98,8 +98,8 @@ const migrateCustomRules = (rules: Record<string, string | string[]>): Record<st
       migrated[key] = value
     } else {
       // Old format: keyword -> category, convert to category -> [keyword]
-      const category = value as string
-      if (!migrated[category]) {
+      const category = value
+      if (!(category in migrated)) {
         migrated[category] = []
       }
       migrated[category].push(key)
@@ -135,7 +135,7 @@ const initialState = {
   newKeywords: '',
 }
 
-export const useStore = create<AppState>()(
+const useStore = create<AppState>()(
   persist(
     (set, get) => ({
       ...initialState,
@@ -208,7 +208,9 @@ export const useStore = create<AppState>()(
           const filtered = keywords.filter((k) => k.trim()).map((k) => k.trim())
           if (filtered.length === 0) {
             // Remove category if no keywords
-            const { [category]: _, ...rest } = state.customRules
+            const rest = Object.fromEntries(
+              Object.entries(state.customRules).filter(([key]) => key !== category)
+            )
             return { customRules: rest }
           }
           return {
@@ -221,7 +223,9 @@ export const useStore = create<AppState>()(
       
       removeCategory: (category) => {
         set((state) => {
-          const { [category]: _, ...rest } = state.customRules
+          const rest = Object.fromEntries(
+            Object.entries(state.customRules).filter(([key]) => key !== category)
+          )
           return { customRules: rest }
         })
         // Re-classify transactions when rules change
@@ -363,7 +367,7 @@ export const useStore = create<AppState>()(
 )
 
 // Computed selectors
-export const computeAllRules = (customRules: Record<string, string[]>): Record<string, string[]> => {
+const computeAllRules = (customRules: Record<string, string[]>): Record<string, string[]> => {
   const merged: Record<string, string[]> = { ...RULES }
   for (const [category, keywords] of Object.entries(customRules)) {
     if (merged[category]) {
@@ -378,17 +382,17 @@ export const computeAllRules = (customRules: Record<string, string[]>): Record<s
   return merged
 }
 
-export const useAllRules = () => {
+const useAllRules = () => {
   const customRules = useStore((state) => state.customRules)
   return computeAllRules(customRules)
 }
 
-export const useCategories = () => {
+const useCategories = () => {
   const allRules = useAllRules()
   return getCategories(allRules)
 }
 
-export const useSummaries = (): MonthlySummary[] | null => {
+const useSummaries = (): MonthlySummary[] | null => {
   const transactions = useStore((state) => state.transactions)
   const allRules = useAllRules()
   
@@ -405,7 +409,7 @@ export const useSummaries = (): MonthlySummary[] | null => {
 }
 
 // Export/Import functions
-export const exportState = (): string => {
+const exportState = (): string => {
   const state = useStore.getState()
   const exportData = {
     transactions: state.transactions,
@@ -434,7 +438,7 @@ export const exportState = (): string => {
   return JSON.stringify(exportData, null, 2)
 }
 
-export const importState = (jsonString: string): boolean => {
+const importState = (jsonString: string): boolean => {
   try {
     const data = JSON.parse(jsonString)
     
@@ -504,3 +508,5 @@ export const importState = (jsonString: string): boolean => {
   }
 }
 
+export type { View, SelectionType, TabType }
+export { useStore, computeAllRules, useAllRules, useCategories, useSummaries, exportState, importState }

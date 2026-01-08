@@ -43,7 +43,7 @@ const parseCSVLine = (
   // Additional validation for insufficient CSV parts
   const maxIndex = Math.max(dateIndex, descriptionIndex, amountIndex)
   if (parts.length <= maxIndex && line.trim()) {
-    validation = { isValid: false, error: `Insufficient CSV columns (need at least ${maxIndex + 1}, got ${parts.length.toString()})` }
+    validation = { isValid: false, error: `Insufficient CSV columns (need at least ${(maxIndex + 1).toString()}, got ${parts.length.toString()})` }
   }
 
   return {

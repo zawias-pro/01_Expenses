@@ -12,7 +12,7 @@ const parseRules = (content: string): Record<string, string[]> => {
       const keyword = parts[0].trim()
       const category = parts[1].trim()
       if (keyword && category) {
-        if (!rules[category]) {
+        if (!(category in rules)) {
           rules[category] = []
         }
         rules[category].push(keyword)
