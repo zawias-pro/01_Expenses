@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   BarChart,
   Bar,
@@ -20,11 +21,14 @@ const CumulativeBarChart = ({ summaries, onBack }: {
   summaries: MonthlySummary[]
   onBack?: () => void
 }) => {
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  
   // Collect all unique categories across all months
   const allCategories = new Set<string>()
   summaries.forEach(summary => {
     Object.keys(summary.categories).forEach(cat => allCategories.add(cat))
   })
+  const categoriesList = Array.from(allCategories).sort()
 
   // Sort summaries by year and month
   const sortedSummaries = [...summaries].sort((a, b) => {
@@ -48,8 +52,13 @@ const CumulativeBarChart = ({ summaries, onBack }: {
     return dataPoint
   })
 
+  // Filter categories based on selection
+  const filteredCategories = selectedCategory 
+    ? [selectedCategory].filter(cat => allCategories.has(cat))
+    : Array.from(allCategories)
+
   // Generate distinct colors for each category
-  const categoryColors = Array.from(allCategories).map((category, index) => {
+  const categoryColors = filteredCategories.map((category, index) => {
     const hue = (index * 137.5) % 360
     return { category, color: `hsl(${hue.toString()}, 70%, 50%)` }
   })
@@ -71,9 +80,27 @@ const CumulativeBarChart = ({ summaries, onBack }: {
   return (
     <div className="section">
       <h2 className="section-header">Cumulative Bar Chart</h2>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+      <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>
         Expense trends by category over time
       </p>
+
+      {/* Category Filter */}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>
+          Filter by Category:
+        </label>
+        <select
+          className="form-select"
+          value={selectedCategory || ''}
+          onChange={e => setSelectedCategory(e.target.value || null)}
+          style={{ fontSize: '0.875rem', padding: '0.375rem', minWidth: '200px' }}
+        >
+          <option value="">All categories</option>
+          {categoriesList.map(cat => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
+      </div>
 
       <div className="chart-container">
         <ResponsiveContainer width="100%" height={400}>
