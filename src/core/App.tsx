@@ -4,7 +4,6 @@ import { parseCSVLine } from '../parsing/parseCSVLine/parseCSVLine.ts'
 import { classifyDescription } from '../parsing/classifyDescription/classifyDescription.ts'
 import { parsePolishAmount } from '../parsing/parsePolishAmount/parsePolishAmount.ts'
 import { hashTransaction } from '../parsing/hashTransaction/hashTransaction.ts'
-import type { Transaction } from '../parsing/types.ts'
 import { CSVInputPreview } from '../views/input/CSVInputPreview.tsx'
 import { TransactionsTable } from '../views/table/TransactionsTable.tsx'
 import { DataByPeriod } from '../views/data-by-period/DataByPeriod.tsx'
@@ -231,15 +230,20 @@ const App = () => {
     const lines = csvContent.split('\n').filter((l) => l.trim())
     if (lines.length === 0) return
     
-    const parsed = lines.map((line) =>
-      parseCSVLine(line, delimiter, dateIndex, descriptionIndex, amountIndex)
-    )
+    // Parse all lines and track which line index they came from
+    const parsedWithIndex = lines.map((line, index) => ({
+      transaction: parseCSVLine(line, delimiter, dateIndex, descriptionIndex, amountIndex),
+      originalLine: line,
+      lineIndex: index
+    }))
+    
     // Filter out invalid transactions first
-    const validTransactions = parsed.filter(t => t.isValid)
-    const invalidCount = parsed.length - validTransactions.length
+    const validWithIndex = parsedWithIndex.filter(item => item.transaction.isValid)
+    const invalidCount = parsedWithIndex.length - validWithIndex.length
     
     // Only process valid transactions
-    const classified = validTransactions.map((t) => {
+    const classified = validWithIndex.map((item) => {
+      const t = item.transaction
       const category = classifyDescription(t.description, allRules)
       // Automatically exclude income transactions (positive amounts)
       // but keep them valid so the checkbox can be unchecked later
@@ -254,9 +258,13 @@ const App = () => {
         // If parsing fails, don't exclude (shouldn't happen for valid transactions)
       }
       return {
-        ...t,
-        category,
-        excluded,
+        transaction: {
+          ...t,
+          category,
+          excluded,
+        },
+        originalLine: item.originalLine,
+        lineIndex: item.lineIndex
       }
     })
     
@@ -274,15 +282,15 @@ const App = () => {
       }
       return t.hash
     }))
-    const duplicates: Transaction[] = []
-    const unique: Transaction[] = []
+    const duplicates: typeof classified = []
+    const unique: typeof classified = []
     
-    classified.forEach(t => {
-      if (existingHashes.has(t.hash)) {
-        duplicates.push(t)
+    classified.forEach(item => {
+      if (existingHashes.has(item.transaction.hash)) {
+        duplicates.push(item)
       } else {
-        unique.push(t)
-        existingHashes.add(t.hash)
+        unique.push(item)
+        existingHashes.add(item.transaction.hash)
       }
     })
     
@@ -306,11 +314,16 @@ const App = () => {
     
     // Only append unique transactions
     if (unique.length > 0) {
-      setTransactions([...transactions, ...unique])
+      setTransactions([...transactions, ...unique.map(item => item.transaction)])
     }
     
-    // Clear the textarea
-    setCsvContent('')
+    // Remove only successfully added lines (valid and unique) from textarea
+    // Keep invalid and duplicate lines
+    const linesToRemove = new Set(unique.map(item => item.lineIndex))
+    const remainingLines = lines.filter((_, index) => !linesToRemove.has(index))
+    
+    // Update textarea with remaining lines
+    setCsvContent(remainingLines.join('\n'))
   }
 
   const handleFillExample = () => {
