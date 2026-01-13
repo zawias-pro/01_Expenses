@@ -31,6 +31,15 @@ interface AppState {
   csvContent: string // Ephemeral - not persisted
   delimiter: string // Ephemeral - not persisted
   
+  // TransactionsTable filters and sorting
+  searchQuery: string
+  selectedCategory: string | null
+  selectedMonthFilter: string | null // Format: "YYYY-MM"
+  amountFilterType: 'none' | 'less' | 'greater' | null
+  amountFilterValue: number | null
+  sortColumn: 'date' | 'description' | 'category' | 'amount' | null
+  sortDirection: 'asc' | 'desc' | null
+  
   // DataByPeriod UI state
   selectionType: SelectionType
   selectedYear: number | null
@@ -65,6 +74,15 @@ interface AppState {
   updateTransactionCategory: (id: string, category: string) => void
   updateTransactionDate: (id: string, date: string) => void
   updateTransactionOverrideMode: (id: string, overrideMode: boolean) => void
+  removeTransaction: (id: string) => void
+  
+  // TransactionsTable filters and sorting
+  setSearchQuery: (query: string) => void
+  setSelectedCategory: (category: string | null) => void
+  setSelectedMonthFilter: (month: string | null) => void
+  setAmountFilter: (type: 'none' | 'less' | 'greater' | null, value: number | null) => void
+  setSortColumn: (column: 'date' | 'description' | 'category' | 'amount' | null) => void
+  setSortDirection: (direction: 'asc' | 'desc' | null) => void
   
   // Category actions
   updateCategory: (category: string, keywords: string[]) => void
@@ -103,6 +121,13 @@ const initialState = {
   amountSortDirection: null as 'asc' | 'desc' | null,
   csvContent: '',
   delimiter: ';',
+  searchQuery: '',
+  selectedCategory: null,
+  selectedMonthFilter: null,
+  amountFilterType: null,
+  amountFilterValue: null,
+  sortColumn: null,
+  sortDirection: null,
   selectionType: 'month' as SelectionType,
   selectedYear: null,
   activeTab: 'expenses' as TabType,
@@ -178,6 +203,19 @@ const useStore = create<AppState>()(
           ),
         }))
       },
+      
+      removeTransaction: (id) => {
+        set((state) => ({
+          transactions: state.transactions.filter((t) => t.id !== id),
+        }))
+      },
+      
+      setSearchQuery: (query) => set({ searchQuery: query }),
+      setSelectedCategory: (category) => set({ selectedCategory: category }),
+      setSelectedMonthFilter: (month) => set({ selectedMonthFilter: month }),
+      setAmountFilter: (type, value) => set({ amountFilterType: type, amountFilterValue: value }),
+      setSortColumn: (column) => set({ sortColumn: column }),
+      setSortDirection: (direction) => set({ sortDirection: direction }),
       
       updateCategory: (category, keywords) => {
         set((state) => {
@@ -267,6 +305,13 @@ const useStore = create<AppState>()(
         amountIndex: state.amountIndex,
         onlyShowOthers: state.onlyShowOthers,
         amountSortDirection: state.amountSortDirection,
+        searchQuery: state.searchQuery,
+        selectedCategory: state.selectedCategory,
+        selectedMonthFilter: state.selectedMonthFilter,
+        amountFilterType: state.amountFilterType,
+        amountFilterValue: state.amountFilterValue,
+        sortColumn: state.sortColumn,
+        sortDirection: state.sortDirection,
         selectionType: state.selectionType,
         selectedYear: state.selectedYear,
         activeTab: state.activeTab,
@@ -342,6 +387,13 @@ const exportState = (): string => {
     amountIndex: state.amountIndex,
     onlyShowOthers: state.onlyShowOthers,
     amountSortDirection: state.amountSortDirection,
+    searchQuery: state.searchQuery,
+    selectedCategory: state.selectedCategory,
+    selectedMonthFilter: state.selectedMonthFilter,
+    amountFilterType: state.amountFilterType,
+    amountFilterValue: state.amountFilterValue,
+    sortColumn: state.sortColumn,
+    sortDirection: state.sortDirection,
     selectionType: state.selectionType,
     selectedYear: state.selectedYear,
     activeTab: state.activeTab,
@@ -370,10 +422,17 @@ const importState = (jsonString: string): boolean => {
       dateIndex: data.dateIndex,
       descriptionIndex: data.descriptionIndex,
       amountIndex: data.amountIndex,
-      onlyShowOthers: data.onlyShowOthers,
-      amountSortDirection: data.amountSortDirection,
-      selectionType: data.selectionType,
-      selectedYear: data.selectedYear,
+    onlyShowOthers: data.onlyShowOthers,
+    amountSortDirection: data.amountSortDirection,
+    searchQuery: data.searchQuery || '',
+    selectedCategory: data.selectedCategory || null,
+    selectedMonthFilter: data.selectedMonthFilter || null,
+    amountFilterType: data.amountFilterType || null,
+    amountFilterValue: data.amountFilterValue || null,
+    sortColumn: data.sortColumn || null,
+    sortDirection: data.sortDirection || null,
+    selectionType: data.selectionType,
+    selectedYear: data.selectedYear,
       activeTab: data.activeTab,
       treatLowValueAsOthers: data.treatLowValueAsOthers,
       lowValueThreshold: data.lowValueThreshold,

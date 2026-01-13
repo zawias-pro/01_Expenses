@@ -158,8 +158,13 @@ const App = () => {
   const transactions = useStore((state) => state.transactions)
   const selectedMonth = useStore((state) => state.selectedMonth)
   const customRules = useStore((state) => state.customRules)
-  const onlyShowOthers = useStore((state) => state.onlyShowOthers)
-  const amountSortDirection = useStore((state) => state.amountSortDirection)
+  const searchQuery = useStore((state) => state.searchQuery)
+  const selectedCategory = useStore((state) => state.selectedCategory)
+  const selectedMonthFilter = useStore((state) => state.selectedMonthFilter)
+  const amountFilterType = useStore((state) => state.amountFilterType)
+  const amountFilterValue = useStore((state) => state.amountFilterValue)
+  const sortColumn = useStore((state) => state.sortColumn)
+  const sortDirection = useStore((state) => state.sortDirection)
   
   // Store actions
   const setView = useStore((state) => state.setView)
@@ -170,12 +175,17 @@ const App = () => {
   const setAmountIndex = useStore((state) => state.setAmountIndex)
   const setTransactions = useStore((state) => state.setTransactions)
   const setSelectedMonth = useStore((state) => state.setSelectedMonth)
-  const setOnlyShowOthers = useStore((state) => state.setOnlyShowOthers)
-  const setAmountSortDirection = useStore((state) => state.setAmountSortDirection)
   const updateTransactionExcluded = useStore((state) => state.updateTransactionExcluded)
   const updateTransactionCategory = useStore((state) => state.updateTransactionCategory)
   const updateTransactionDate = useStore((state) => state.updateTransactionDate)
   const updateTransactionOverrideMode = useStore((state) => state.updateTransactionOverrideMode)
+  const removeTransaction = useStore((state) => state.removeTransaction)
+  const setSearchQuery = useStore((state) => state.setSearchQuery)
+  const setSelectedCategory = useStore((state) => state.setSelectedCategory)
+  const setSelectedMonthFilter = useStore((state) => state.setSelectedMonthFilter)
+  const setAmountFilter = useStore((state) => state.setAmountFilter)
+  const setSortColumn = useStore((state) => state.setSortColumn)
+  const setSortDirection = useStore((state) => state.setSortDirection)
   const updateCategory = useStore((state) => state.updateCategory)
   const removeCategory = useStore((state) => state.removeCategory)
   const clearAll = useStore((state) => state.clearAll)
@@ -436,14 +446,26 @@ const App = () => {
           <TransactionsTable
             transactions={transactions}
             categories={categories}
-            onlyShowOthers={onlyShowOthers}
-            onOnlyShowOthersChange={setOnlyShowOthers}
-            amountSortDirection={amountSortDirection}
-            onAmountSortDirectionChange={setAmountSortDirection}
             onExcludedChange={updateTransactionExcluded}
             onCategoryChange={updateTransactionCategory}
             onDateChange={updateTransactionDate}
             onOverrideModeChange={updateTransactionOverrideMode}
+            onRemoveTransaction={removeTransaction}
+            searchQuery={searchQuery}
+            onSearchQueryChange={setSearchQuery}
+            selectedCategory={selectedCategory}
+            onSelectedCategoryChange={setSelectedCategory}
+            selectedMonthFilter={selectedMonthFilter}
+            onSelectedMonthFilterChange={setSelectedMonthFilter}
+            amountFilterType={amountFilterType}
+            amountFilterValue={amountFilterValue}
+            onAmountFilterChange={setAmountFilter}
+            sortColumn={sortColumn}
+            sortDirection={sortDirection}
+            onSortChange={(column, direction) => {
+              setSortColumn(column)
+              setSortDirection(direction)
+            }}
           />
         )}
 

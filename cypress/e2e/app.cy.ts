@@ -354,4 +354,177 @@ describe('Expense Analyzer App', () => {
     cy.contains('button', 'Cumulative Bar Chart').should('not.be.disabled').click()
     cy.contains('Cumulative Bar Chart').should('be.visible')
   })
+
+  it('should search transactions in the table', () => {
+    cy.visit('/')
+    cy.contains('Fill with Example Data').click()
+    cy.wait(500)
+    cy.contains('button', 'Add transactions').click()
+    cy.wait(500)
+    cy.contains('button', 'Transactions Table').should('not.be.disabled').click()
+    cy.contains('Transactions Table').should('be.visible')
+    
+    // Search for a specific transaction
+    cy.get('input[placeholder="Search transactions..."]').type('BIEDRONKA')
+    cy.wait(300)
+    cy.get('table tbody tr').should('have.length.at.least', 1)
+    cy.get('table tbody tr').first().should('contain', 'BIEDRONKA')
+    
+    // Clear search
+    cy.get('input[placeholder="Search transactions..."]').clear()
+    cy.wait(300)
+    cy.get('table tbody tr').should('have.length.at.least', 10)
+  })
+
+  it('should filter transactions by category', () => {
+    cy.visit('/')
+    cy.contains('Fill with Example Data').click()
+    cy.wait(500)
+    cy.contains('button', 'Add transactions').click()
+    cy.wait(500)
+    cy.contains('button', 'Transactions Table').should('not.be.disabled').click()
+    cy.contains('Transactions Table').should('be.visible')
+    
+    // Filter by category
+    cy.contains('label', 'Category:').parent().find('select').select('Żywność i napoje')
+    cy.wait(300)
+    cy.get('table tbody tr').each(($row) => {
+      cy.wrap($row).find('td').eq(4).should('contain', 'Żywność i napoje')
+    })
+    
+    // Clear filter
+    cy.contains('label', 'Category:').parent().find('select').select('All categories')
+    cy.wait(300)
+  })
+
+  it('should filter transactions by month', () => {
+    cy.visit('/')
+    cy.contains('Fill with Example Data').click()
+    cy.wait(500)
+    cy.contains('button', 'Add transactions').click()
+    cy.wait(500)
+    cy.contains('button', 'Transactions Table').should('not.be.disabled').click()
+    cy.contains('Transactions Table').should('be.visible')
+    
+    // Filter by month
+    cy.contains('label', 'Month:').parent().find('select').then(($select) => {
+      const options = Array.from($select[0].options).map(opt => opt.text)
+      if (options.length > 1) {
+        cy.wrap($select).select(1) // Select first available month
+        cy.wait(300)
+        cy.get('table tbody tr').should('have.length.at.least', 1)
+      }
+    })
+    
+    // Clear filter
+    cy.contains('label', 'Month:').parent().find('select').select('All months')
+    cy.wait(300)
+  })
+
+  it('should filter transactions by amount', () => {
+    cy.visit('/')
+    cy.contains('Fill with Example Data').click()
+    cy.wait(500)
+    cy.contains('button', 'Add transactions').click()
+    cy.wait(500)
+    cy.contains('button', 'Transactions Table').should('not.be.disabled').click()
+    cy.contains('Transactions Table').should('be.visible')
+    
+    // Filter by amount less than
+    cy.contains('label', 'Amount:').parent().find('select').select('Less than')
+    cy.contains('label', 'Amount:').parent().find('input[type="number"]').type('100')
+    cy.contains('label', 'Amount:').parent().find('button').contains('Apply').click()
+    cy.wait(300)
+    cy.get('table tbody tr').should('have.length.at.least', 1)
+    
+    // Clear filter
+    cy.contains('label', 'Amount:').parent().find('select').select('None')
+    cy.wait(300)
+  })
+
+  it('should sort transactions by all columns', () => {
+    cy.visit('/')
+    cy.contains('Fill with Example Data').click()
+    cy.wait(500)
+    cy.contains('button', 'Add transactions').click()
+    cy.wait(500)
+    cy.contains('button', 'Transactions Table').should('not.be.disabled').click()
+    cy.contains('Transactions Table').should('be.visible')
+    
+    // Sort by date
+    cy.contains('th', 'Date').click()
+    cy.wait(300)
+    cy.get('table tbody tr').first().find('td').eq(2).invoke('text').then((firstDate) => {
+      cy.get('table tbody tr').eq(1).find('td').eq(2).invoke('text').then((secondDate) => {
+        expect(firstDate <= secondDate).to.be.true
+      })
+    })
+    
+    // Sort by description
+    cy.contains('th', 'Description').click()
+    cy.wait(300)
+    
+    // Sort by category
+    cy.contains('th', 'Category').click()
+    cy.wait(300)
+    
+    // Sort by amount
+    cy.contains('th', 'Amount').click()
+    cy.wait(300)
+  })
+
+  it('should remove a transaction with confirmation', () => {
+    cy.visit('/')
+    cy.contains('Fill with Example Data').click()
+    cy.wait(500)
+    cy.contains('button', 'Add transactions').click()
+    cy.wait(500)
+    cy.contains('button', 'Transactions Table').should('not.be.disabled').click()
+    cy.contains('Transactions Table').should('be.visible')
+    
+    // Get initial count
+    cy.get('table tbody tr').then(($rows) => {
+      const initialCount = $rows.length
+      
+      // Click remove button on first row
+      cy.get('table tbody tr').first().find('button').contains('🗑️').click()
+      
+      // Confirm deletion
+      cy.on('window:confirm', (text) => {
+        expect(text).to.include('Are you sure you want to remove')
+        return true
+      })
+      
+      cy.wait(300)
+      
+      // Verify count decreased
+      cy.get('table tbody tr').should('have.length', initialCount - 1)
+    })
+  })
+
+  it('should cancel transaction removal', () => {
+    cy.visit('/')
+    cy.contains('Fill with Example Data').click()
+    cy.wait(500)
+    cy.contains('button', 'Add transactions').click()
+    cy.wait(500)
+    cy.contains('button', 'Transactions Table').should('not.be.disabled').click()
+    cy.contains('Transactions Table').should('be.visible')
+    
+    // Get initial count
+    cy.get('table tbody tr').then(($rows) => {
+      const initialCount = $rows.length
+      
+      // Click remove button on first row
+      cy.get('table tbody tr').first().find('button').contains('🗑️').click()
+      
+      // Cancel deletion
+      cy.on('window:confirm', () => false)
+      
+      cy.wait(300)
+      
+      // Verify count unchanged
+      cy.get('table tbody tr').should('have.length', initialCount)
+    })
+  })
 })
