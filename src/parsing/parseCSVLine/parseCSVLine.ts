@@ -1,5 +1,6 @@
 import type { Transaction } from '../types.ts'
 import { validateTransaction } from '../validateTransaction/validateTransaction.ts'
+import { hashTransaction } from '../hashTransaction/hashTransaction.ts'
 
 /**
  * Example:
@@ -46,8 +47,11 @@ const parseCSVLine = (
     validation = { isValid: false, error: `Insufficient CSV columns (need at least ${(maxIndex + 1).toString()}, got ${parts.length.toString()})` }
   }
 
+  const hash = hashTransaction(date, description, amount)
+
   return {
     id: Math.random().toString(36).substring(2, 11),
+    hash,
     date,
     description,
     account,

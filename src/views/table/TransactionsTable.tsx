@@ -93,6 +93,7 @@ const TransactionsTable = ({
             <tr>
               <th>Exclude</th>
               <th>Override</th>
+              <th>Hash</th>
               <th>Date</th>
               <th>Description</th>
               <th>Category</th>
@@ -128,6 +129,18 @@ const TransactionsTable = ({
                     onChange={e => { onOverrideModeChange(t.id, e.target.checked) }}
                     disabled={!t.isValid}
                   />
+                </td>
+                <td>
+                  <code style={{ 
+                    fontSize: '0.75rem', 
+                    fontFamily: 'monospace',
+                    color: '#666',
+                    backgroundColor: '#f5f5f5',
+                    padding: '2px 4px',
+                    borderRadius: '2px'
+                  }}>
+                    {t.hash || 'N/A'}
+                  </code>
                 </td>
                 <td>
                   {t.overrideMode ? (

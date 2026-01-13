@@ -91,3 +91,17 @@ test('parseCSVLine - initializes overrideMode to false for invalid transactions'
   assert.strictEqual(result.overrideMode, false)
   assert.strictEqual(result.isValid, false)
 })
+
+test('parseCSVLine - generates hash for transactions', () => {
+  const line = '2025-12-12;"Description";"Account";"Category";-5 000,00 PLN;;'
+  const result = parseCSVLine(line, ';')
+  assert(typeof result.hash === 'string')
+  assert.strictEqual(result.hash.length, 16)
+  // Same input should produce same hash
+  const result2 = parseCSVLine(line, ';')
+  assert.strictEqual(result.hash, result2.hash)
+  // Different input should produce different hash
+  const line2 = '2025-12-13;"Description";"Account";"Category";-5 000,00 PLN;;'
+  const result3 = parseCSVLine(line2, ';')
+  assert.notStrictEqual(result.hash, result3.hash)
+})

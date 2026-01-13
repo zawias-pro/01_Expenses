@@ -3,6 +3,8 @@ import './App.css'
 import { parseCSVLine } from '../parsing/parseCSVLine/parseCSVLine.ts'
 import { classifyDescription } from '../parsing/classifyDescription/classifyDescription.ts'
 import { parsePolishAmount } from '../parsing/parsePolishAmount/parsePolishAmount.ts'
+import { hashTransaction } from '../parsing/hashTransaction/hashTransaction.ts'
+import type { Transaction } from '../parsing/types.ts'
 import { CSVInputPreview } from '../views/input/CSVInputPreview.tsx'
 import { TransactionsTable } from '../views/table/TransactionsTable.tsx'
 import { DataByPeriod } from '../views/data-by-period/DataByPeriod.tsx'
@@ -245,8 +247,42 @@ const App = () => {
       }
     })
     
-    // Append new transactions to existing ones
-    setTransactions([...transactions, ...classified])
+    // Check for duplicates by hash
+    // Generate hashes for existing transactions that don't have them (in-memory only)
+    const existingHashes = new Set(transactions.map(t => {
+      if (!t.hash) {
+        // Generate hash on the fly for existing transactions without hash
+        return hashTransaction(t.date, t.description, t.amount)
+      }
+      return t.hash
+    }))
+    const duplicates: Transaction[] = []
+    const unique: Transaction[] = []
+    
+    classified.forEach(t => {
+      if (existingHashes.has(t.hash)) {
+        duplicates.push(t)
+      } else {
+        unique.push(t)
+        existingHashes.add(t.hash)
+      }
+    })
+    
+    // Show alert if duplicates were found
+    if (duplicates.length > 0) {
+      const duplicateCount = duplicates.length
+      const uniqueCount = unique.length
+      window.alert(
+        `Found ${duplicateCount} duplicate transaction(s) that were not added.\n\n` +
+        `Added: ${uniqueCount} unique transaction(s)\n` +
+        `Skipped: ${duplicateCount} duplicate(s)`
+      )
+    }
+    
+    // Only append unique transactions
+    if (unique.length > 0) {
+      setTransactions([...transactions, ...unique])
+    }
     
     // Clear the textarea
     setCsvContent('')

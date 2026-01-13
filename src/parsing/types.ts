@@ -1,5 +1,6 @@
 interface Transaction {
   id: string
+  hash: string
   date: string
   description: string
   account: string
