@@ -531,7 +531,12 @@ const TransactionsTable = ({
                     style={{ width: '14px', height: '14px' }}
                   />
                 </td>
-                <td style={{ padding: '0.375rem' }}>
+                <td style={{ 
+                  padding: '0.375rem', 
+                  textDecoration: t.excluded ? 'line-through' : 'none',
+                  color: t.excluded ? '#999' : 'inherit',
+                  opacity: t.excluded ? 0.6 : 1
+                }}>
                   {t.overrideMode ? (
                     <input
                       type="text"
@@ -544,8 +549,18 @@ const TransactionsTable = ({
                     <span>{t.date}</span>
                   )}
                 </td>
-                <td style={{ padding: '0.375rem' }}>{t.description}</td>
-                <td style={{ padding: '0.375rem' }}>
+                <td style={{ 
+                  padding: '0.375rem', 
+                  textDecoration: t.excluded ? 'line-through' : 'none',
+                  color: t.excluded ? '#999' : 'inherit',
+                  opacity: t.excluded ? 0.6 : 1
+                }}>{t.description}</td>
+                <td style={{ 
+                  padding: '0.375rem', 
+                  textDecoration: t.excluded ? 'line-through' : 'none',
+                  color: t.excluded ? '#999' : 'inherit',
+                  opacity: t.excluded ? 0.6 : 1
+                }}>
                   {t.overrideMode ? (
                     <select
                       className="form-select"
@@ -580,8 +595,18 @@ const TransactionsTable = ({
                     </div>
                   )}
                 </td>
-                <td style={{ padding: '0.375rem' }}>{t.amount}</td>
-                <td style={{ padding: '0.375rem' }}>
+                <td style={{ 
+                  padding: '0.375rem', 
+                  textDecoration: t.excluded ? 'line-through' : 'none',
+                  color: t.excluded ? '#999' : 'inherit',
+                  opacity: t.excluded ? 0.6 : 1
+                }}>{t.amount}</td>
+                <td style={{ 
+                  padding: '0.375rem', 
+                  textDecoration: t.excluded ? 'line-through' : 'none',
+                  color: t.excluded ? '#999' : 'inherit',
+                  opacity: t.excluded ? 0.6 : 1
+                }}>
                   <code style={{ 
                     fontSize: '0.6875rem', 
                     fontFamily: 'monospace',
