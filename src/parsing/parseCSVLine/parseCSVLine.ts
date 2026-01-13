@@ -31,12 +31,18 @@ const parseCSVLine = (
 
   // Handle cases where we don't have enough parts
   const date = parts.length > dateIndex ? clean(parts[dateIndex]) : ''
-  const description = parts.length > descriptionIndex ? clean(parts[descriptionIndex]) : ''
+  let description = parts.length > descriptionIndex ? clean(parts[descriptionIndex]) : ''
+  // Remove multiple whitespaces (spaces, tabs, newlines) and replace with single space
+  // This must be done BEFORE calculating the hash to ensure consistent hashing
+  description = description.replace(/\s+/g, ' ').trim()
   // Account field is ignored - always set to empty string
   const account = ''
   // Category from CSV is ignored - always default to "others"
   const category = 'others'
   const amount = parts.length > amountIndex ? clean(parts[amountIndex]) : ''
+
+  // Calculate hash using normalized description (before validation)
+  const hash = hashTransaction(date, description, amount)
 
   // Check for insufficient parts
   let validation = validateTransaction(date, description, category, amount, line)
@@ -46,8 +52,6 @@ const parseCSVLine = (
   if (parts.length <= maxIndex && line.trim()) {
     validation = { isValid: false, error: `Insufficient CSV columns (need at least ${(maxIndex + 1).toString()}, got ${parts.length.toString()})` }
   }
-
-  const hash = hashTransaction(date, description, amount)
 
   return {
     id: Math.random().toString(36).substring(2, 11),
