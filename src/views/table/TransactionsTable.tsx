@@ -106,7 +106,6 @@ const TransactionsTable = ({
                 {amountSortDirection === 'asc' && ' ↑'}
                 {amountSortDirection === 'desc' && ' ↓'}
               </th>
-              <th>Status</th>
             </tr>
           </thead>
           <tbody>
@@ -118,7 +117,6 @@ const TransactionsTable = ({
                     className="form-checkbox"
                     checked={t.excluded}
                     onChange={e => { onExcludedChange(t.id, e.target.checked) }}
-                    disabled={!t.isValid}
                   />
                 </td>
                 <td>
@@ -127,7 +125,6 @@ const TransactionsTable = ({
                     className="form-checkbox"
                     checked={t.overrideMode}
                     onChange={e => { onOverrideModeChange(t.id, e.target.checked) }}
-                    disabled={!t.isValid}
                   />
                 </td>
                 <td>
@@ -150,7 +147,6 @@ const TransactionsTable = ({
                       style={{ width: '120px' }}
                       value={t.date}
                       onChange={e => { onDateChange(t.id, e.target.value) }}
-                      disabled={!t.isValid}
                     />
                   ) : (
                     <span>{t.date}</span>
@@ -164,7 +160,6 @@ const TransactionsTable = ({
                       style={{ minWidth: '150px' }}
                       value={t.category}
                       onChange={e => { onCategoryChange(t.id, e.target.value) }}
-                      disabled={!t.isValid}
                     >
                       {categories.map(cat => (
                         <option key={cat} value={cat}>{cat}</option>
@@ -175,20 +170,6 @@ const TransactionsTable = ({
                   )}
                 </td>
                 <td>{t.amount}</td>
-                <td>
-                  {t.isValid ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                      <span className="status-badge status-valid">✓ Valid</span>
-                      {t.overridden && (
-                        <span className="status-badge status-warning">⚠ Overridden</span>
-                      )}
-                    </div>
-                  ) : (
-                    <span className="status-badge status-error">
-                      ✗ Error: {t.validationError}
-                    </span>
-                  )}
-                </td>
               </tr>
             ))}
           </tbody>

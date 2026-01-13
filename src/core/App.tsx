@@ -224,21 +224,24 @@ const App = () => {
     const parsed = lines.map((line) =>
       parseCSVLine(line, delimiter, dateIndex, descriptionIndex, amountIndex)
     )
-    const classified = parsed.map((t) => {
+    // Filter out invalid transactions first
+    const validTransactions = parsed.filter(t => t.isValid)
+    const invalidCount = parsed.length - validTransactions.length
+    
+    // Only process valid transactions
+    const classified = validTransactions.map((t) => {
       const category = classifyDescription(t.description, allRules)
       // Automatically exclude income transactions (positive amounts)
       // but keep them valid so the checkbox can be unchecked later
-      let excluded = t.excluded // Keep excluded state for invalid transactions
-      if (t.isValid) {
-        try {
-          const amount = parsePolishAmount(t.amount)
-          if (amount > 0) {
-            // This is an income transaction, exclude it by default
-            excluded = true
-          }
-        } catch {
-          // If parsing fails, keep the original excluded state
+      let excluded = false
+      try {
+        const amount = parsePolishAmount(t.amount)
+        if (amount > 0) {
+          // This is an income transaction, exclude it by default
+          excluded = true
         }
+      } catch {
+        // If parsing fails, don't exclude (shouldn't happen for valid transactions)
       }
       return {
         ...t,
@@ -246,6 +249,11 @@ const App = () => {
         excluded,
       }
     })
+    
+    // If no valid transactions, don't proceed
+    if (classified.length === 0) {
+      return
+    }
     
     // Check for duplicates by hash
     // Generate hashes for existing transactions that don't have them (in-memory only)
@@ -268,15 +276,22 @@ const App = () => {
       }
     })
     
-    // Show alert if duplicates were found
+    // Show alert if invalid transactions or duplicates were found
+    const messages: string[] = []
+    if (invalidCount > 0) {
+      messages.push(`Found ${invalidCount} invalid transaction(s) that were not added.`)
+    }
     if (duplicates.length > 0) {
-      const duplicateCount = duplicates.length
+      messages.push(`Found ${duplicates.length} duplicate transaction(s) that were not added.`)
+    }
+    if (messages.length > 0) {
       const uniqueCount = unique.length
-      window.alert(
-        `Found ${duplicateCount} duplicate transaction(s) that were not added.\n\n` +
-        `Added: ${uniqueCount} unique transaction(s)\n` +
-        `Skipped: ${duplicateCount} duplicate(s)`
-      )
+      if (uniqueCount > 0) {
+        messages.push(`Added: ${uniqueCount} valid transaction(s)`)
+      } else {
+        messages.push(`No transactions were added. Please fix errors in the CSV preview.`)
+      }
+      window.alert(messages.join('\n\n'))
     }
     
     // Only append unique transactions
