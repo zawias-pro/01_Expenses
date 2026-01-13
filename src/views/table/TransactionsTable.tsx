@@ -4,6 +4,8 @@ import { getYearFromDate } from '../../parsing/getYearFromDate/getYearFromDate.t
 import { getMonthFromDate } from '../../parsing/getMonthFromDate/getMonthFromDate.ts'
 import { parsePolishAmount } from '../../parsing/parsePolishAmount/parsePolishAmount.ts'
 
+type BulkAction = 'delete' | 'exclude' | 'unexclude' | 'setCategory' | null
+
 const TransactionsTable = ({
    transactions,
    categories,
@@ -46,6 +48,9 @@ const TransactionsTable = ({
   onSortChange: (column: 'date' | 'description' | 'category' | 'amount' | null, direction: 'asc' | 'desc' | null) => void
 }) => {
   const [amountFilterInput, setAmountFilterInput] = useState<string>('')
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [bulkAction, setBulkAction] = useState<BulkAction>(null)
+  const [bulkCategory, setBulkCategory] = useState<string>('')
 
   // Parse amount string to number
   const parseAmount = (amountStr: string): number => {
@@ -178,6 +183,58 @@ const TransactionsTable = ({
     return ''
   }
 
+  // Select all visible transactions
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(filteredAndSortedTransactions.map(t => t.id)))
+    } else {
+      setSelectedIds(new Set())
+    }
+  }
+
+  // Toggle individual selection
+  const handleToggleSelect = (id: string) => {
+    const newSelected = new Set(selectedIds)
+    if (newSelected.has(id)) {
+      newSelected.delete(id)
+    } else {
+      newSelected.add(id)
+    }
+    setSelectedIds(newSelected)
+  }
+
+  // Check if all visible are selected
+  const allSelected = filteredAndSortedTransactions.length > 0 && 
+    filteredAndSortedTransactions.every(t => selectedIds.has(t.id))
+  const someSelected = filteredAndSortedTransactions.some(t => selectedIds.has(t.id))
+
+  // Apply bulk actions
+  const handleApplyBulkAction = () => {
+    if (selectedIds.size === 0) return
+
+    if (bulkAction === 'delete') {
+      const count = selectedIds.size
+      if (window.confirm(`Are you sure you want to remove ${count} transaction(s)?`)) {
+        selectedIds.forEach(id => onRemoveTransaction(id))
+        setSelectedIds(new Set())
+        setBulkAction(null)
+      }
+    } else if (bulkAction === 'exclude') {
+      selectedIds.forEach(id => onExcludedChange(id, true))
+      setSelectedIds(new Set())
+      setBulkAction(null)
+    } else if (bulkAction === 'unexclude') {
+      selectedIds.forEach(id => onExcludedChange(id, false))
+      setSelectedIds(new Set())
+      setBulkAction(null)
+    } else if (bulkAction === 'setCategory' && bulkCategory) {
+      selectedIds.forEach(id => onCategoryChange(id, bulkCategory))
+      setSelectedIds(new Set())
+      setBulkAction(null)
+      setBulkCategory('')
+    }
+  }
+
   return (
     <div className="section">
       <h2 className="section-header">Transactions Table</h2>
@@ -288,8 +345,74 @@ const TransactionsTable = ({
         </div>
       </div>
 
-      <div style={{ marginBottom: '0.5rem', fontSize: '0.875rem', color: '#666' }}>
-        Showing {filteredAndSortedTransactions.length} of {transactions.length} transactions
+      <div style={{ 
+        marginBottom: '0.5rem', 
+        fontSize: '0.875rem', 
+        color: '#666',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '0.5rem'
+      }}>
+        <span>Showing {filteredAndSortedTransactions.length} of {transactions.length} transactions</span>
+        {someSelected && (
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.875rem', flexWrap: 'wrap' }}>
+            <span style={{ fontWeight: '500' }}>{selectedIds.size} selected</span>
+            <select
+              className="form-select"
+              value={bulkAction || ''}
+              onChange={e => {
+                const action = e.target.value as BulkAction
+                setBulkAction(action)
+                if (action !== 'setCategory') {
+                  setBulkCategory('')
+                }
+              }}
+              style={{ fontSize: '0.875rem', padding: '0.375rem' }}
+            >
+              <option value="">Choose action...</option>
+              <option value="exclude">Exclude</option>
+              <option value="unexclude">Include</option>
+              <option value="setCategory">Set Category</option>
+              <option value="delete">Delete</option>
+            </select>
+            {bulkAction === 'setCategory' && (
+              <select
+                className="form-select"
+                value={bulkCategory}
+                onChange={e => setBulkCategory(e.target.value)}
+                style={{ fontSize: '0.875rem', padding: '0.375rem', minWidth: '150px' }}
+              >
+                <option value="">Select category...</option>
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            )}
+            {bulkAction && (
+              <button
+                className="btn btn-primary"
+                onClick={handleApplyBulkAction}
+                disabled={bulkAction === 'setCategory' && !bulkCategory}
+                style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
+              >
+                Apply
+              </button>
+            )}
+            <button
+              className="btn btn-outline"
+              onClick={() => {
+                setSelectedIds(new Set())
+                setBulkAction(null)
+                setBulkCategory('')
+              }}
+              style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
+            >
+              Clear
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Compact Table */}
@@ -297,8 +420,19 @@ const TransactionsTable = ({
         <table className="table" style={{ fontSize: '0.8125rem' }}>
           <thead>
             <tr>
-              <th style={{ padding: '0.375rem', fontSize: '0.8125rem' }}>Exclude</th>
-              <th style={{ padding: '0.375rem', fontSize: '0.8125rem' }}>Override</th>
+              <th style={{ padding: '0.375rem', fontSize: '0.8125rem', width: '30px' }}>
+                <input
+                  type="checkbox"
+                  className="form-checkbox"
+                  checked={allSelected}
+                  ref={(input) => {
+                    if (input) input.indeterminate = someSelected && !allSelected
+                  }}
+                  onChange={e => handleSelectAll(e.target.checked)}
+                  style={{ width: '14px', height: '14px' }}
+                  title="Select all"
+                />
+              </th>
               <th 
                 style={{ padding: '0.375rem', fontSize: '0.8125rem', cursor: 'pointer', userSelect: 'none' }}
                 onClick={() => handleSort('date')}
@@ -324,6 +458,8 @@ const TransactionsTable = ({
                 Amount{getSortIndicator('amount')}
               </th>
               <th style={{ padding: '0.375rem', fontSize: '0.8125rem' }}>Hash</th>
+              <th style={{ padding: '0.375rem', fontSize: '0.8125rem' }}>Exclude</th>
+              <th style={{ padding: '0.375rem', fontSize: '0.8125rem' }}>Override</th>
               <th style={{ padding: '0.375rem', fontSize: '0.8125rem', width: '40px' }}>Remove</th>
             </tr>
           </thead>
@@ -334,17 +470,8 @@ const TransactionsTable = ({
                   <input
                     type="checkbox"
                     className="form-checkbox"
-                    checked={t.excluded}
-                    onChange={e => { onExcludedChange(t.id, e.target.checked) }}
-                    style={{ width: '14px', height: '14px' }}
-                  />
-                </td>
-                <td style={{ padding: '0.375rem' }}>
-                  <input
-                    type="checkbox"
-                    className="form-checkbox"
-                    checked={t.overrideMode}
-                    onChange={e => { onOverrideModeChange(t.id, e.target.checked) }}
+                    checked={selectedIds.has(t.id)}
+                    onChange={() => handleToggleSelect(t.id)}
                     style={{ width: '14px', height: '14px' }}
                   />
                 </td>
@@ -390,6 +517,24 @@ const TransactionsTable = ({
                   }}>
                     {t.hash || 'N/A'}
                   </code>
+                </td>
+                <td style={{ padding: '0.375rem' }}>
+                  <input
+                    type="checkbox"
+                    className="form-checkbox"
+                    checked={t.excluded}
+                    onChange={e => { onExcludedChange(t.id, e.target.checked) }}
+                    style={{ width: '14px', height: '14px' }}
+                  />
+                </td>
+                <td style={{ padding: '0.375rem' }}>
+                  <input
+                    type="checkbox"
+                    className="form-checkbox"
+                    checked={t.overrideMode}
+                    onChange={e => { onOverrideModeChange(t.id, e.target.checked) }}
+                    style={{ width: '14px', height: '14px' }}
+                  />
                 </td>
                 <td style={{ padding: '0.375rem', textAlign: 'center' }}>
                   <button
