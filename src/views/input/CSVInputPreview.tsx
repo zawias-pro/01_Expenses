@@ -15,7 +15,6 @@ const CSVInputPreview = ({
   onAmountIndexChange,
   onFillExample, 
   onCsvAccept, 
-  csvAccepted, 
   rules 
 }: {
   csvContent: string
@@ -30,7 +29,6 @@ const CSVInputPreview = ({
   onAmountIndexChange: (index: number) => void
   onFillExample: () => void
   onCsvAccept: () => void
-  csvAccepted: boolean
   rules: Record<string, string[]>
 }) => {
   // Parse preview transactions from first 3 rows and classify categories
@@ -49,28 +47,28 @@ const CSVInputPreview = ({
 
   const previewTransactions = getPreviewTransactions()
 
-  const handleConfirm = () => {
+  const handleAddTransactions = () => {
     const hasErrors = getPreviewTransactions().some(t => !t.isValid)
     
     if (hasErrors) {
-      alert('Please fix all errors in the CSV before confirming. Check the preview for details.')
+      alert('Please fix all errors in the CSV before adding transactions. Check the preview for details.')
       return
     }
 
     if (csvContent.trim().length === 0) {
-      alert('Please paste CSV data before confirming.')
+      alert('Please paste CSV data before adding transactions.')
       return
     }
 
-    const confirmed = window.confirm('Are you sure you want to accept this CSV? Once accepted, the CSV cannot be modified later.')
-    if (confirmed) {
-      onCsvAccept()
-    }
+    onCsvAccept()
   }
 
   return (
     <div className="section">
-      <h2 className="section-header">CSV Input & Preview</h2>
+      <h2 className="section-header">CSV Input</h2>
+      <p style={{ marginBottom: '1rem', color: '#666' }}>
+        Paste CSV data below to add transactions to your existing data. Transactions will be appended, not replaced.
+      </p>
 
       <div className="form-group">
         <div className="form-group-row">
@@ -83,7 +81,6 @@ const CSVInputPreview = ({
               className="form-select"
               value={delimiter}
               onChange={e => { onDelimiterChange(e.target.value) }}
-              disabled={csvAccepted}
             >
               <option value=";">Semicolon (;)</option>
               <option value=",">Comma (,)</option>
@@ -102,7 +99,6 @@ const CSVInputPreview = ({
               value={dateIndex}
               onChange={e => { onDateIndexChange(parseInt(e.target.value) || 0) }}
               min="0"
-              disabled={csvAccepted}
             />
           </div>
           <div className="form-group-small">
@@ -116,7 +112,6 @@ const CSVInputPreview = ({
               value={descriptionIndex}
               onChange={e => { onDescriptionIndexChange(parseInt(e.target.value) || 0) }}
               min="0"
-              disabled={csvAccepted}
             />
           </div>
           <div className="form-group-small">
@@ -130,7 +125,6 @@ const CSVInputPreview = ({
               value={amountIndex}
               onChange={e => { onAmountIndexChange(parseInt(e.target.value) || 0) }}
               min="0"
-              disabled={csvAccepted}
             />
           </div>
         </div>
@@ -143,7 +137,6 @@ const CSVInputPreview = ({
           onChange={e => { onCsvChange(e.target.value) }}
           rows={10}
           placeholder="Paste your CSV data here..."
-          readOnly={csvAccepted}
         />
       </div>
 
@@ -196,24 +189,17 @@ const CSVInputPreview = ({
       )}
 
       <div className="action-buttons">
-        <button className="btn btn-outline" onClick={onFillExample} disabled={csvAccepted}>
+        <button className="btn btn-outline" onClick={onFillExample}>
           Fill with Example Data
         </button>
-        {!csvAccepted && (
-          <button 
-            className="btn btn-primary"
-            onClick={handleConfirm}
-            disabled={csvContent.trim().length === 0}
-          >
-            Confirm CSV
-          </button>
-        )}
+        <button 
+          className="btn btn-primary"
+          onClick={handleAddTransactions}
+          disabled={csvContent.trim().length === 0}
+        >
+          Add transactions
+        </button>
       </div>
-      {csvAccepted && (
-        <div className="alert alert-success">
-          ✓ CSV has been accepted and cannot be modified. Use "Clear & Start Over" to reset.
-        </div>
-      )}
     </div>
   ) 
 }

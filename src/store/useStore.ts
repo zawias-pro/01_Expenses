@@ -19,7 +19,6 @@ interface AppState {
   transactions: Transaction[]
   view: View
   customRules: Record<string, string[]>
-  csvAccepted: boolean
   selectedMonth: { year: number; month: number } | null
   dateIndex: number
   descriptionIndex: number
@@ -47,7 +46,6 @@ interface AppState {
   
   // Actions
   setView: (view: View) => void
-  setCsvAccepted: (accepted: boolean) => void
   setCsvContent: (content: string) => void
   setDelimiter: (delimiter: string) => void
   setDateIndex: (index: number) => void
@@ -94,7 +92,6 @@ const initialState = {
   transactions: [],
   view: 'csv' as View,
   customRules: {},
-  csvAccepted: false,
   selectedMonth: null,
   dateIndex: 0,
   descriptionIndex: 1,
@@ -123,19 +120,8 @@ const useStore = create<AppState>()(
       ...initialState,
       
       setView: (view) => {
-        // Reset view to CSV if CSV is not accepted
-        if (!get().csvAccepted && view !== 'csv') {
-          return
-        }
+        // Allow navigation to any view
         set({ view })
-      },
-      
-      setCsvAccepted: (accepted) => {
-        set({ csvAccepted: accepted })
-        // Reset view to CSV if CSV is not accepted
-        if (!accepted) {
-          set({ view: 'csv' })
-        }
       },
       
       setCsvContent: (content) => set({ csvContent: content }),
@@ -267,7 +253,6 @@ const useStore = create<AppState>()(
         transactions: state.transactions,
         view: state.view,
         customRules: state.customRules,
-        csvAccepted: state.csvAccepted,
         selectedMonth: state.selectedMonth,
         dateIndex: state.dateIndex,
         descriptionIndex: state.descriptionIndex,
@@ -287,13 +272,8 @@ const useStore = create<AppState>()(
         newCategory: state.newCategory,
         newKeywords: state.newKeywords,
       }),
-      onRehydrateStorage: () => (state) => {
-        if (state) {
-          // Reset view to CSV if CSV is not accepted
-          if (!state.csvAccepted && state.view !== 'csv') {
-            state.view = 'csv'
-          }
-        }
+      onRehydrateStorage: () => () => {
+        // No restrictions on view restoration
       },
     }
   )
@@ -348,7 +328,6 @@ const exportState = (): string => {
     transactions: state.transactions,
     view: state.view,
     customRules: state.customRules,
-    csvAccepted: state.csvAccepted,
     selectedMonth: state.selectedMonth,
     dateIndex: state.dateIndex,
     descriptionIndex: state.descriptionIndex,
@@ -379,7 +358,6 @@ const importState = (jsonString: string): boolean => {
       transactions: data.transactions,
       view: data.view,
       customRules: data.customRules,
-      csvAccepted: data.csvAccepted,
       selectedMonth: data.selectedMonth,
       dateIndex: data.dateIndex,
       descriptionIndex: data.descriptionIndex,

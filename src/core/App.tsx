@@ -148,7 +148,6 @@ invalid-date;"INVALID DATE TRANSACTION";"MojBank 1234 ... 5678";"Bez kategorii";
 const App = () => {
   // Store state
   const view = useStore((state) => state.view)
-  const csvAccepted = useStore((state) => state.csvAccepted)
   const csvContent = useStore((state) => state.csvContent)
   const delimiter = useStore((state) => state.delimiter)
   const dateIndex = useStore((state) => state.dateIndex)
@@ -162,7 +161,6 @@ const App = () => {
   
   // Store actions
   const setView = useStore((state) => state.setView)
-  const setCsvAccepted = useStore((state) => state.setCsvAccepted)
   const setCsvContent = useStore((state) => state.setCsvContent)
   const setDelimiter = useStore((state) => state.setDelimiter)
   const setDateIndex = useStore((state) => state.setDateIndex)
@@ -216,7 +214,42 @@ const App = () => {
   }
 
   const handleCsvAccept = () => {
-    setCsvAccepted(true)
+    if (!csvContent.trim()) return
+    
+    const lines = csvContent.split('\n').filter((l) => l.trim())
+    if (lines.length === 0) return
+    
+    const parsed = lines.map((line) =>
+      parseCSVLine(line, delimiter, dateIndex, descriptionIndex, amountIndex)
+    )
+    const classified = parsed.map((t) => {
+      const category = classifyDescription(t.description, allRules)
+      // Automatically exclude income transactions (positive amounts)
+      // but keep them valid so the checkbox can be unchecked later
+      let excluded = t.excluded // Keep excluded state for invalid transactions
+      if (t.isValid) {
+        try {
+          const amount = parsePolishAmount(t.amount)
+          if (amount > 0) {
+            // This is an income transaction, exclude it by default
+            excluded = true
+          }
+        } catch {
+          // If parsing fails, keep the original excluded state
+        }
+      }
+      return {
+        ...t,
+        category,
+        excluded,
+      }
+    })
+    
+    // Append new transactions to existing ones
+    setTransactions([...transactions, ...classified])
+    
+    // Clear the textarea
+    setCsvContent('')
   }
 
   const handleFillExample = () => {
@@ -261,42 +294,6 @@ const App = () => {
     input.click()
   }
 
-  // Auto-parse CSV when content changes
-  useEffect(() => {
-    if (csvContent.trim()) {
-      const lines = csvContent.split('\n').filter((l) => l.trim())
-      if (lines.length > 0) {
-        const parsed = lines.map((line) =>
-          parseCSVLine(line, delimiter, dateIndex, descriptionIndex, amountIndex)
-        )
-        const classified = parsed.map((t) => {
-          const category = classifyDescription(t.description, allRules)
-          // Automatically exclude income transactions (positive amounts)
-          // but keep them valid so the checkbox can be unchecked later
-          let excluded = t.excluded // Keep excluded state for invalid transactions
-          if (t.isValid) {
-            try {
-              const amount = parsePolishAmount(t.amount)
-              if (amount > 0) {
-                // This is an income transaction, exclude it by default
-                excluded = true
-              }
-            } catch {
-              // If parsing fails, keep the original excluded state
-            }
-          }
-          return {
-            ...t,
-            category,
-            excluded,
-          }
-        })
-        setTransactions(classified)
-      }
-    }
-    // Don't clear transactions when csvContent is empty - let user keep their data
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [csvContent, delimiter, dateIndex, descriptionIndex, amountIndex])
 
   return (
     <div className="app-container">
@@ -322,33 +319,33 @@ const App = () => {
 
         <nav className="sidebar-nav">
           <button className="sidebar-btn" onClick={() => { setView('csv') }}>
-            CSV Input & Preview
+            CSV Input
           </button>
           <button 
             className="sidebar-btn"
             onClick={() => { setView('categories') }}
-            disabled={!csvAccepted}
+            disabled={transactions.length === 0}
           >
             Categories
           </button>
           <button 
             className="sidebar-btn"
             onClick={() => { setView('transactions') }}
-            disabled={!csvAccepted}
+            disabled={transactions.length === 0}
           >
             Transactions Table
           </button>
           <button
             className="sidebar-btn"
             onClick={() => { setView('summary') }}
-            disabled={!csvAccepted || summaries === null || summaries.length === 0}
+            disabled={transactions.length === 0 || summaries === null || summaries.length === 0}
           >
             Data by Period
           </button>
           <button
             className="sidebar-btn"
             onClick={() => { setView('chart') }}
-            disabled={!csvAccepted || summaries === null || summaries.length === 0}
+            disabled={transactions.length === 0 || summaries === null || summaries.length === 0}
           >
             Cumulative Bar Chart
           </button>
@@ -371,7 +368,6 @@ const App = () => {
             onAmountIndexChange={setAmountIndex}
             onFillExample={handleFillExample}
             onCsvAccept={handleCsvAccept}
-            csvAccepted={csvAccepted}
             rules={allRules}
           />
         )}
