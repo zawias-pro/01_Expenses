@@ -26,6 +26,7 @@ const TransactionsTable = ({
    sortColumn,
    sortDirection,
    onSortChange,
+   onUpdateCategory,
 }: {
   transactions: Transaction[]
   categories: string[]
@@ -46,11 +47,16 @@ const TransactionsTable = ({
   sortColumn: 'date' | 'description' | 'category' | 'amount' | null
   sortDirection: 'asc' | 'desc' | null
   onSortChange: (column: 'date' | 'description' | 'category' | 'amount' | null, direction: 'asc' | 'desc' | null) => void
+  onUpdateCategory: (category: string, keywords: string[]) => void
 }) => {
   const [amountFilterInput, setAmountFilterInput] = useState<string>('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [bulkAction, setBulkAction] = useState<BulkAction>(null)
   const [bulkCategory, setBulkCategory] = useState<string>('')
+  const [quickAddTransactionId, setQuickAddTransactionId] = useState<string | null>(null)
+  const [quickAddSelectedCategory, setQuickAddSelectedCategory] = useState<string>('new')
+  const [quickAddCustomCategory, setQuickAddCustomCategory] = useState<string>('')
+  const [quickAddKeyword, setQuickAddKeyword] = useState<string>('')
 
   // Parse amount string to number
   const parseAmount = (amountStr: string): number => {
@@ -233,6 +239,56 @@ const TransactionsTable = ({
       setBulkAction(null)
       setBulkCategory('')
     }
+  }
+
+  const handleQuickAddCategory = (transactionId: string, description: string) => {
+    setQuickAddTransactionId(transactionId)
+    setQuickAddSelectedCategory('new')
+    setQuickAddCustomCategory('')
+    // Pre-fill keyword with the full transaction description
+    setQuickAddKeyword(description)
+  }
+
+  const handleSaveQuickAdd = () => {
+    if (!quickAddTransactionId) return
+    
+    const transaction = transactions.find(t => t.id === quickAddTransactionId)
+    if (!transaction) return
+
+    let categoryName = ''
+    if (quickAddSelectedCategory === 'new') {
+      if (!quickAddCustomCategory.trim()) {
+        alert('Please enter a category name')
+        return
+      }
+      categoryName = quickAddCustomCategory.trim()
+    } else {
+      categoryName = quickAddSelectedCategory
+    }
+
+    if (!quickAddKeyword.trim()) {
+      alert('Please enter at least one keyword')
+      return
+    }
+
+    const keywords = quickAddKeyword.split(',').map(k => k.trim()).filter(k => k)
+    onUpdateCategory(categoryName, keywords)
+    
+    // Update the transaction's category
+    onCategoryChange(quickAddTransactionId, categoryName)
+    
+    // Close the modal
+    setQuickAddTransactionId(null)
+    setQuickAddSelectedCategory('new')
+    setQuickAddCustomCategory('')
+    setQuickAddKeyword('')
+  }
+
+  const handleCancelQuickAdd = () => {
+    setQuickAddTransactionId(null)
+    setQuickAddSelectedCategory('new')
+    setQuickAddCustomCategory('')
+    setQuickAddKeyword('')
   }
 
   return (
@@ -502,7 +558,26 @@ const TransactionsTable = ({
                       ))}
                     </select>
                   ) : (
-                    <span>{t.category}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span>{t.category}</span>
+                      {t.category === 'others' && (
+                        <button
+                          onClick={() => handleQuickAddCategory(t.id, t.description)}
+                          style={{
+                            fontSize: '0.75rem',
+                            padding: '0.125rem 0.375rem',
+                            background: '#007bff',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '3px',
+                            cursor: 'pointer'
+                          }}
+                          title="Quick add category"
+                        >
+                          + Add
+                        </button>
+                      )}
+                    </div>
                   )}
                 </td>
                 <td style={{ padding: '0.375rem' }}>{t.amount}</td>
@@ -557,6 +632,101 @@ const TransactionsTable = ({
           </tbody>
         </table>
       </div>
+
+      {/* Quick Add Category Modal */}
+      {quickAddTransactionId && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '1.5rem',
+            borderRadius: '8px',
+            minWidth: '400px',
+            maxWidth: '90%',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+          }}>
+            <h3 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1.125rem' }}>
+              Quick Add Category
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontWeight: '500', fontSize: '0.875rem' }}>
+                  Category:
+                </label>
+                <select
+                  className="form-select"
+                  value={quickAddSelectedCategory}
+                  onChange={e => setQuickAddSelectedCategory(e.target.value)}
+                  style={{ width: '100%', fontSize: '0.875rem', padding: '0.375rem' }}
+                >
+                  <option value="new">New category</option>
+                  {categories.filter(cat => cat !== 'others').map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+              
+              {quickAddSelectedCategory === 'new' && (
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.25rem', fontWeight: '500', fontSize: '0.875rem' }}>
+                    Custom Category Name:
+                  </label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={quickAddCustomCategory}
+                    onChange={e => setQuickAddCustomCategory(e.target.value)}
+                    placeholder="Enter category name"
+                    style={{ width: '100%', fontSize: '0.875rem', padding: '0.375rem' }}
+                  />
+                </div>
+              )}
+              
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontWeight: '500', fontSize: '0.875rem' }}>
+                  Keyword (comma-separated):
+                </label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={quickAddKeyword}
+                  onChange={e => setQuickAddKeyword(e.target.value)}
+                  placeholder="Enter keywords"
+                  style={{ width: '100%', fontSize: '0.875rem', padding: '0.375rem' }}
+                />
+              </div>
+              
+              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+                <button
+                  className="btn btn-outline"
+                  onClick={handleCancelQuickAdd}
+                  style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={handleSaveQuickAdd}
+                  disabled={!quickAddKeyword.trim() || (quickAddSelectedCategory === 'new' && !quickAddCustomCategory.trim())}
+                  style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

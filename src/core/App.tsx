@@ -479,6 +479,7 @@ const App = () => {
               setSortColumn(column)
               setSortDirection(direction)
             }}
+            onUpdateCategory={updateCategory}
           />
         )}
 
