@@ -9,11 +9,13 @@ type BulkAction = 'delete' | 'exclude' | 'unexclude' | 'setCategory' | null
 const TransactionsTable = ({
    transactions,
    categories,
-   onExcludedChange,
-   onCategoryChange,
-   onDateChange,
-   onOverrideModeChange,
-   onRemoveTransaction,
+  onExcludedChange,
+  onCategoryChange,
+  onDateChange,
+  onCommentChange,
+  onResetTransactionDate,
+  onResetTransactionCategory,
+  onRemoveTransaction,
    searchQuery,
    onSearchQueryChange,
    selectedCategory,
@@ -33,7 +35,9 @@ const TransactionsTable = ({
   onExcludedChange: (id: string, excluded: boolean) => void
   onCategoryChange: (id: string, category: string) => void
   onDateChange: (id: string, date: string) => void
-  onOverrideModeChange: (id: string, overrideMode: boolean) => void
+  onCommentChange: (id: string, comment: string) => void
+  onResetTransactionDate: (id: string) => void
+  onResetTransactionCategory: (id: string) => void
   onRemoveTransaction: (id: string) => void
   searchQuery: string
   onSearchQueryChange: (query: string) => void
@@ -54,6 +58,10 @@ const TransactionsTable = ({
   const [bulkAction, setBulkAction] = useState<BulkAction>(null)
   const [bulkCategory, setBulkCategory] = useState<string>('')
   const [quickAddTransactionId, setQuickAddTransactionId] = useState<string | null>(null)
+  const [editTransactionId, setEditTransactionId] = useState<string | null>(null)
+  const [editDate, setEditDate] = useState<string>('')
+  const [editCategory, setEditCategory] = useState<string>('')
+  const [editComment, setEditComment] = useState<string>('')
   const [quickAddSelectedCategory, setQuickAddSelectedCategory] = useState<string>('new')
   const [quickAddCustomCategory, setQuickAddCustomCategory] = useState<string>('')
   const [quickAddKeyword, setQuickAddKeyword] = useState<string>('')
@@ -514,9 +522,8 @@ const TransactionsTable = ({
                 Amount{getSortIndicator('amount')}
               </th>
               <th style={{ padding: '0.375rem', fontSize: '0.8125rem' }}>Hash</th>
-              <th style={{ padding: '0.375rem', fontSize: '0.8125rem' }}>Exclude</th>
-              <th style={{ padding: '0.375rem', fontSize: '0.8125rem' }}>Override</th>
-              <th style={{ padding: '0.375rem', fontSize: '0.8125rem', width: '40px' }}>Remove</th>
+              <th style={{ padding: '0.375rem', fontSize: '0.8125rem', width: '40px' }}>Comment</th>
+              <th style={{ padding: '0.375rem', fontSize: '0.8125rem', width: '80px' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -537,17 +544,26 @@ const TransactionsTable = ({
                   color: t.excluded ? '#999' : 'inherit',
                   opacity: t.excluded ? 0.6 : 1
                 }}>
-                  {t.overrideMode ? (
-                    <input
-                      type="text"
-                      className="form-input"
-                      style={{ width: '100px', fontSize: '0.8125rem', padding: '0.25rem' }}
-                      value={t.date}
-                      onChange={e => { onDateChange(t.id, e.target.value) }}
-                    />
-                  ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                     <span>{t.date}</span>
-                  )}
+                    {t.dateOverridden && (
+                      <button
+                        onClick={() => onResetTransactionDate(t.id)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: '0.125rem',
+                          fontSize: '0.75rem',
+                          color: '#ff9800',
+                          opacity: 1
+                        }}
+                        title="Reset date to original"
+                      >
+                        🔄
+                      </button>
+                    )}
+                  </div>
                 </td>
                 <td style={{ 
                   padding: '0.375rem', 
@@ -561,39 +577,43 @@ const TransactionsTable = ({
                   color: t.excluded ? '#999' : 'inherit',
                   opacity: t.excluded ? 0.6 : 1
                 }}>
-                  {t.overrideMode ? (
-                    <select
-                      className="form-select"
-                      style={{ minWidth: '120px', fontSize: '0.8125rem', padding: '0.25rem' }}
-                      value={t.category}
-                      onChange={e => { onCategoryChange(t.id, e.target.value) }}
-                    >
-                      {categories.map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                    </select>
-                  ) : (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span>{t.category}</span>
-                      {t.category === 'others' && (
-                        <button
-                          onClick={() => handleQuickAddCategory(t.id, t.description)}
-                          style={{
-                            fontSize: '0.75rem',
-                            padding: '0.125rem 0.375rem',
-                            background: '#007bff',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '3px',
-                            cursor: 'pointer'
-                          }}
-                          title="Quick add category"
-                        >
-                          + Add
-                        </button>
-                      )}
-                    </div>
-                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span>{t.category}</span>
+                    {t.category === 'others' && !t.categoryOverridden && (
+                      <button
+                        onClick={() => handleQuickAddCategory(t.id, t.description)}
+                        style={{
+                          fontSize: '0.75rem',
+                          padding: '0.125rem 0.375rem',
+                          background: '#007bff',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '3px',
+                          cursor: 'pointer'
+                        }}
+                        title="Quick add category"
+                      >
+                        + Add
+                      </button>
+                    )}
+                    {t.categoryOverridden && (
+                      <button
+                        onClick={() => onResetTransactionCategory(t.id)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: '0.125rem',
+                          fontSize: '0.75rem',
+                          color: '#ff9800',
+                          opacity: 1
+                        }}
+                        title="Reset category to auto-classified"
+                      >
+                        🔄
+                      </button>
+                    )}
+                  </div>
                 </td>
                 <td style={{ 
                   padding: '0.375rem', 
@@ -618,45 +638,167 @@ const TransactionsTable = ({
                     {t.hash || 'N/A'}
                   </code>
                 </td>
-                <td style={{ padding: '0.375rem' }}>
-                  <input
-                    type="checkbox"
-                    className="form-checkbox"
-                    checked={t.excluded}
-                    onChange={e => { onExcludedChange(t.id, e.target.checked) }}
-                    style={{ width: '14px', height: '14px' }}
-                  />
+                <td style={{ padding: '0.375rem', textAlign: 'center', opacity: 1 }}>
+                  {t.comment && (
+                    <span
+                      style={{
+                        fontSize: '0.875rem',
+                        color: '#007bff'
+                      }}
+                      title={t.comment}
+                    >
+                      💭
+                    </span>
+                  )}
                 </td>
-                <td style={{ padding: '0.375rem' }}>
-                  <input
-                    type="checkbox"
-                    className="form-checkbox"
-                    checked={t.overrideMode}
-                    onChange={e => { onOverrideModeChange(t.id, e.target.checked) }}
-                    style={{ width: '14px', height: '14px' }}
-                  />
-                </td>
-                <td style={{ padding: '0.375rem', textAlign: 'center' }}>
-                  <button
-                    onClick={() => handleRemoveClick(t.id, t.description)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      padding: '0.25rem',
-                      fontSize: '0.875rem',
-                      color: '#dc3545'
-                    }}
-                    title="Remove transaction"
-                  >
-                    🗑️
-                  </button>
+                <td style={{ padding: '0.375rem', textAlign: 'center', opacity: 1 }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                    <button
+                      onClick={() => {
+                        setEditTransactionId(t.id)
+                        setEditDate(t.date)
+                        setEditCategory(t.category)
+                        setEditComment(t.comment || '')
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: '0.25rem',
+                        fontSize: '0.875rem',
+                        color: '#007bff'
+                      }}
+                      title="Edit transaction"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      onClick={() => handleRemoveClick(t.id, t.description)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: '0.25rem',
+                        fontSize: '0.875rem',
+                        color: '#dc3545'
+                      }}
+                      title="Remove transaction"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {/* Edit Transaction Modal */}
+      {editTransactionId && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '1.5rem',
+            borderRadius: '8px',
+            minWidth: '400px',
+            maxWidth: '90%',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+          }}>
+            <h3 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1.125rem' }}>
+              Edit Transaction
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontWeight: '500', fontSize: '0.875rem' }}>
+                  Date:
+                </label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={editDate}
+                  onChange={e => setEditDate(e.target.value)}
+                  placeholder="YYYY-MM-DD"
+                  style={{ width: '100%', fontSize: '0.875rem', padding: '0.375rem' }}
+                />
+              </div>
+              
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontWeight: '500', fontSize: '0.875rem' }}>
+                  Category:
+                </label>
+                <select
+                  className="form-select"
+                  value={editCategory}
+                  onChange={e => setEditCategory(e.target.value)}
+                  style={{ width: '100%', fontSize: '0.875rem', padding: '0.375rem' }}
+                >
+                  {categories.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.25rem', fontWeight: '500', fontSize: '0.875rem' }}>
+                  Comment:
+                </label>
+                <textarea
+                  className="form-input"
+                  value={editComment}
+                  onChange={e => setEditComment(e.target.value)}
+                  placeholder="Enter a comment for this transaction..."
+                  rows={4}
+                  style={{ width: '100%', fontSize: '0.875rem', padding: '0.375rem', fontFamily: 'inherit', resize: 'vertical' }}
+                />
+              </div>
+              
+              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+                <button
+                  className="btn btn-outline"
+                  onClick={() => {
+                    setEditTransactionId(null)
+                    setEditDate('')
+                    setEditCategory('')
+                    setEditComment('')
+                  }}
+                  style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => {
+                    if (editTransactionId) {
+                      onDateChange(editTransactionId, editDate)
+                      onCategoryChange(editTransactionId, editCategory)
+                      onCommentChange(editTransactionId, editComment)
+                    }
+                    setEditTransactionId(null)
+                    setEditDate('')
+                    setEditCategory('')
+                    setEditComment('')
+                  }}
+                  style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Quick Add Category Modal */}
       {quickAddTransactionId && (

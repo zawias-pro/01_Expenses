@@ -73,6 +73,9 @@ interface AppState {
   updateTransactionCategory: (id: string, category: string) => void
   updateTransactionDate: (id: string, date: string) => void
   updateTransactionOverrideMode: (id: string, overrideMode: boolean) => void
+  updateTransactionComment: (id: string, comment: string) => void
+  resetTransactionDate: (id: string) => void
+  resetTransactionCategory: (id: string) => void
   removeTransaction: (id: string) => void
   
   // TransactionsTable filters and sorting
@@ -176,9 +179,20 @@ const useStore = create<AppState>()(
       
       updateTransactionCategory: (id, category) => {
         set((state) => ({
-          transactions: state.transactions.map((t) =>
-            t.id === id ? { ...t, category, overridden: true } : t
-          ),
+          transactions: state.transactions.map((t) => {
+            if (t.id === id) {
+              // Store original category if not already stored (first time overriding)
+              const originalCategory = t.originalCategory || (!t.categoryOverridden ? t.category : undefined)
+              return { 
+                ...t, 
+                category, 
+                categoryOverridden: true,
+                overridden: true, // Keep for backward compatibility
+                originalCategory
+              }
+            }
+            return t
+          }),
         }))
       },
       
@@ -186,7 +200,15 @@ const useStore = create<AppState>()(
         set((state) => ({
           transactions: state.transactions.map((t) => {
             if (t.id === id) {
-              return { ...t, date, overridden: true }
+              // Store original date if not already stored (first time overriding)
+              const originalDate = t.originalDate || (!t.dateOverridden ? t.date : undefined)
+              return { 
+                ...t, 
+                date, 
+                dateOverridden: true,
+                overridden: true, // Keep for backward compatibility
+                originalDate 
+              }
             }
             return t
           }),
@@ -199,6 +221,58 @@ const useStore = create<AppState>()(
             t.id === id ? { ...t, overrideMode } : t
           ),
         }))
+      },
+      
+      updateTransactionComment: (id, comment) => {
+        set((state) => ({
+          transactions: state.transactions.map((t) =>
+            t.id === id ? { ...t, comment: comment.trim() || undefined } : t
+          ),
+        }))
+      },
+      
+      resetTransactionDate: (id) => {
+        const state = get()
+        set({
+          transactions: state.transactions.map((t) => {
+            if (t.id === id) {
+              // Restore original date if it was stored, otherwise keep current date
+              const restoredDate = t.originalDate || t.date
+              const dateOverridden = false
+              const overridden = t.categoryOverridden || false // Keep overridden true if category is still overridden
+              return { 
+                ...t, 
+                date: restoredDate, 
+                dateOverridden,
+                overridden,
+                originalDate: undefined 
+              }
+            }
+            return t
+          }),
+        })
+      },
+      
+      resetTransactionCategory: (id) => {
+        const state = get()
+        const allRules = computeAllRules(state.customRules)
+        set({
+          transactions: state.transactions.map((t) => {
+            if (t.id === id) {
+              const newCategory = classifyDescription(t.description, allRules)
+              const categoryOverridden = false
+              const overridden = t.dateOverridden || false // Keep overridden true if date is still overridden
+              return { 
+                ...t, 
+                category: newCategory, 
+                categoryOverridden,
+                overridden,
+                originalCategory: undefined 
+              }
+            }
+            return t
+          }),
+        })
       },
       
       removeTransaction: (id) => {
@@ -273,7 +347,7 @@ const useStore = create<AppState>()(
         const allRules = computeAllRules(state.customRules)
         set({
           transactions: state.transactions.map((t) => {
-            if (t.overridden) {
+            if (t.categoryOverridden) {
               return t // Keep overridden categories
             }
             const newCategory = classifyDescription(t.description, allRules)

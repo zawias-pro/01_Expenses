@@ -65,6 +65,8 @@ const parseCSVLine = (
     isValid: validation.isValid,
     validationError: validation.error,
     overridden: false,
+    dateOverridden: false,
+    categoryOverridden: false,
     overrideMode: false,
   }
 }

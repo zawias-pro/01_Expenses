@@ -177,7 +177,9 @@ const App = () => {
   const updateTransactionExcluded = useStore((state) => state.updateTransactionExcluded)
   const updateTransactionCategory = useStore((state) => state.updateTransactionCategory)
   const updateTransactionDate = useStore((state) => state.updateTransactionDate)
-  const updateTransactionOverrideMode = useStore((state) => state.updateTransactionOverrideMode)
+  const updateTransactionComment = useStore((state) => state.updateTransactionComment)
+  const resetTransactionDate = useStore((state) => state.resetTransactionDate)
+  const resetTransactionCategory = useStore((state) => state.resetTransactionCategory)
   const removeTransaction = useStore((state) => state.removeTransaction)
   const setSearchQuery = useStore((state) => state.setSearchQuery)
   const setSelectedCategory = useStore((state) => state.setSelectedCategory)
@@ -462,7 +464,9 @@ const App = () => {
             onExcludedChange={updateTransactionExcluded}
             onCategoryChange={updateTransactionCategory}
             onDateChange={updateTransactionDate}
-            onOverrideModeChange={updateTransactionOverrideMode}
+            onCommentChange={updateTransactionComment}
+            onResetTransactionDate={resetTransactionDate}
+            onResetTransactionCategory={resetTransactionCategory}
             onRemoveTransaction={removeTransaction}
             searchQuery={searchQuery}
             onSearchQueryChange={setSearchQuery}

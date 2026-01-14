@@ -9,8 +9,13 @@ interface Transaction {
   excluded: boolean
   isValid: boolean
   validationError?: string
-  overridden: boolean
+  overridden: boolean // Kept for backward compatibility - true if dateOverridden or categoryOverridden
+  dateOverridden?: boolean
+  categoryOverridden?: boolean
   overrideMode: boolean
+  comment?: string
+  originalDate?: string
+  originalCategory?: string
 }
 
 interface MonthlySummary {
