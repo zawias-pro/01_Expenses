@@ -62,6 +62,7 @@ const TransactionsTable = ({
   const [editDate, setEditDate] = useState<string>('')
   const [editCategory, setEditCategory] = useState<string>('')
   const [editComment, setEditComment] = useState<string>('')
+  const [editExcluded, setEditExcluded] = useState<boolean>(false)
   const [quickAddSelectedCategory, setQuickAddSelectedCategory] = useState<string>('new')
   const [quickAddCustomCategory, setQuickAddCustomCategory] = useState<string>('')
   const [quickAddKeyword, setQuickAddKeyword] = useState<string>('')
@@ -677,6 +678,7 @@ const TransactionsTable = ({
                         setEditDate(t.date)
                         setEditCategory(t.category)
                         setEditComment(t.comment || '')
+                        setEditExcluded(t.excluded)
                       }}
                       style={{
                         background: 'none',
@@ -782,6 +784,19 @@ const TransactionsTable = ({
                 />
               </div>
               
+              <div>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>
+                  <input
+                    type="checkbox"
+                    className="form-checkbox"
+                    checked={editExcluded}
+                    onChange={e => setEditExcluded(e.target.checked)}
+                    style={{ width: '16px', height: '16px' }}
+                  />
+                  Exclude from calculations
+                </label>
+              </div>
+              
               <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
                 <button
                   className="btn btn-outline"
@@ -790,6 +805,7 @@ const TransactionsTable = ({
                     setEditDate('')
                     setEditCategory('')
                     setEditComment('')
+                    setEditExcluded(false)
                   }}
                   style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
                 >
@@ -802,11 +818,13 @@ const TransactionsTable = ({
                       onDateChange(editTransactionId, editDate)
                       onCategoryChange(editTransactionId, editCategory)
                       onCommentChange(editTransactionId, editComment)
+                      onExcludedChange(editTransactionId, editExcluded)
                     }
                     setEditTransactionId(null)
                     setEditDate('')
                     setEditCategory('')
                     setEditComment('')
+                    setEditExcluded(false)
                   }}
                   style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
                 >
