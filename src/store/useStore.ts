@@ -12,9 +12,9 @@ import rulesContent from '../rules.csv?raw'
 const RULES = parseRules(rulesContent)
 const STORAGE_KEY = 'expense-analyzer-data'
 
-type View = 'csv' | 'categories' | 'transactions' | 'summary' | 'chart'
+type View = 'csv' | 'categories' | 'transactions' | 'summary' | 'chart' | 'budget'
 type SelectionType = 'month' | 'year' | 'all'
-type TabType = 'expenses' | 'chart' | 'categories'
+type TabType = 'expenses' | 'chart' | 'categories' | 'budget'
 
 interface AppState {
   // App-level state
@@ -54,6 +54,9 @@ interface AppState {
   editingKeywords: string
   newCategory: string
   newKeywords: string
+  
+  // Budget state
+  budgets: Record<string, number> // category -> monthly budget amount
   
   // Actions
   setView: (view: View) => void
@@ -106,6 +109,10 @@ interface AppState {
   setNewCategory: (category: string) => void
   setNewKeywords: (keywords: string) => void
   
+  // Budget actions
+  setBudget: (category: string, amount: number) => void
+  removeBudget: (category: string) => void
+  
   // Utility actions
   clearAll: () => void
   reclassifyTransactions: () => void
@@ -142,6 +149,7 @@ const initialState = {
   editingKeywords: '',
   newCategory: '',
   newKeywords: '',
+  budgets: {},
 }
 
 const useStore = create<AppState>()(
@@ -331,6 +339,19 @@ const useStore = create<AppState>()(
       setNewCategory: (category) => set({ newCategory: category }),
       setNewKeywords: (keywords) => set({ newKeywords: keywords }),
       
+      setBudget: (category, amount) => {
+        set((state) => ({
+          budgets: { ...state.budgets, [category]: amount }
+        }))
+      },
+      
+      removeBudget: (category) => {
+        set((state) => {
+          const { [category]: removed, ...rest } = state.budgets
+          return { budgets: rest }
+        })
+      },
+      
       clearAll: () => {
         set({
           ...initialState,
@@ -477,6 +498,7 @@ const exportState = (): string => {
     editingKeywords: state.editingKeywords,
     newCategory: state.newCategory,
     newKeywords: state.newKeywords,
+    budgets: state.budgets,
   }
   return JSON.stringify(exportData, null, 2)
 }

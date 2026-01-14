@@ -9,6 +9,7 @@ import { TransactionsTable } from '../views/table/TransactionsTable.tsx'
 import { DataByPeriod } from '../views/data-by-period/DataByPeriod.tsx'
 import { CumulativeBarChart } from '../views/data-cumulative/CumulativeBarChart.tsx'
 import { Categories } from '../views/categories/Categories.tsx'
+import { Budget } from '../views/budget/Budget.tsx'
 import {
   useStore,
   useAllRules,
@@ -426,6 +427,12 @@ const App = () => {
           >
             Cumulative Bar Chart
           </button>
+          <button
+            className="sidebar-btn"
+            onClick={() => { setView('budget') }}
+          >
+            Budget
+          </button>
         </nav>
       </div>
 
@@ -508,6 +515,10 @@ const App = () => {
             summaries={summaries}
             onBack={() => {}}
           />
+        )}
+
+        {view === 'budget' && (
+          <Budget />
         )}
       </div>
     </div>
