@@ -36,7 +36,7 @@ interface AppState {
   selectedMonthFilter: string | null // Format: "YYYY-MM"
   amountFilterType: 'none' | 'less' | 'greater' | null
   amountFilterValue: number | null
-  sortColumn: 'date' | 'description' | 'category' | 'amount' | null
+  sortColumn: 'date' | 'description' | 'category' | 'amount' | 'addedAt' | null
   sortDirection: 'asc' | 'desc' | null
   
   // DataByPeriod UI state
@@ -83,7 +83,7 @@ interface AppState {
   setSelectedCategory: (category: string | null) => void
   setSelectedMonthFilter: (month: string | null) => void
   setAmountFilter: (type: 'none' | 'less' | 'greater' | null, value: number | null) => void
-  setSortColumn: (column: 'date' | 'description' | 'category' | 'amount' | null) => void
+  setSortColumn: (column: 'date' | 'description' | 'category' | 'amount' | 'addedAt' | null) => void
   setSortDirection: (direction: 'asc' | 'desc' | null) => void
   
   // Category actions

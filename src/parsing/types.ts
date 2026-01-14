@@ -16,6 +16,7 @@ interface Transaction {
   comment?: string
   originalDate?: string
   originalCategory?: string
+  addedAt?: string // ISO timestamp when transaction was added
 }
 
 interface MonthlySummary {

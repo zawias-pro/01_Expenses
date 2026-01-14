@@ -48,9 +48,9 @@ const TransactionsTable = ({
   amountFilterType: 'none' | 'less' | 'greater' | null
   amountFilterValue: number | null
   onAmountFilterChange: (type: 'none' | 'less' | 'greater' | null, value: number | null) => void
-  sortColumn: 'date' | 'description' | 'category' | 'amount' | null
+  sortColumn: 'date' | 'description' | 'category' | 'amount' | 'addedAt' | null
   sortDirection: 'asc' | 'desc' | null
-  onSortChange: (column: 'date' | 'description' | 'category' | 'amount' | null, direction: 'asc' | 'desc' | null) => void
+  onSortChange: (column: 'date' | 'description' | 'category' | 'amount' | 'addedAt' | null, direction: 'asc' | 'desc' | null) => void
   onUpdateCategory: (category: string, keywords: string[]) => void
 }) => {
   const [amountFilterInput, setAmountFilterInput] = useState<string>('')
@@ -155,6 +155,10 @@ const TransactionsTable = ({
           comparison = a.category.localeCompare(b.category)
         } else if (sortColumn === 'amount') {
           comparison = parseAmount(a.amount) - parseAmount(b.amount)
+        } else if (sortColumn === 'addedAt') {
+          const aTime = a.addedAt || ''
+          const bTime = b.addedAt || ''
+          comparison = aTime.localeCompare(bTime)
         }
         return sortDirection === 'asc' ? comparison : -comparison
       })
@@ -163,7 +167,7 @@ const TransactionsTable = ({
     return filtered
   }, [transactions, searchQuery, selectedCategory, selectedMonthFilter, amountFilterType, amountFilterValue, sortColumn, sortDirection])
 
-  const handleSort = (column: 'date' | 'description' | 'category' | 'amount') => {
+  const handleSort = (column: 'date' | 'description' | 'category' | 'amount' | 'addedAt') => {
     if (sortColumn === column) {
       if (sortDirection === 'asc') {
         onSortChange(column, 'desc')
@@ -521,6 +525,12 @@ const TransactionsTable = ({
               >
                 Amount{getSortIndicator('amount')}
               </th>
+              <th 
+                style={{ padding: '0.375rem', fontSize: '0.8125rem', cursor: 'pointer', userSelect: 'none' }}
+                onClick={() => handleSort('addedAt')}
+              >
+                Added At{getSortIndicator('addedAt')}
+              </th>
               <th style={{ padding: '0.375rem', fontSize: '0.8125rem' }}>Hash</th>
               <th style={{ padding: '0.375rem', fontSize: '0.8125rem', width: '40px' }}>Comment</th>
               <th style={{ padding: '0.375rem', fontSize: '0.8125rem', width: '80px' }}>Actions</th>
@@ -621,6 +631,14 @@ const TransactionsTable = ({
                   color: t.excluded ? '#999' : 'inherit',
                   opacity: t.excluded ? 0.6 : 1
                 }}>{t.amount}</td>
+                <td style={{ 
+                  padding: '0.375rem', 
+                  textDecoration: t.excluded ? 'line-through' : 'none',
+                  color: t.excluded ? '#999' : 'inherit',
+                  opacity: t.excluded ? 0.6 : 1
+                }}>
+                  {t.addedAt ? new Date(t.addedAt).toLocaleString() : 'N/A'}
+                </td>
                 <td style={{ 
                   padding: '0.375rem', 
                   textDecoration: t.excluded ? 'line-through' : 'none',

@@ -264,6 +264,7 @@ const App = () => {
           ...t,
           category,
           excluded,
+          addedAt: new Date().toISOString(), // Set timestamp when transaction is added
         },
         originalLine: item.originalLine,
         lineIndex: item.lineIndex
