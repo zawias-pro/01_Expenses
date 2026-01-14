@@ -5,7 +5,6 @@ import { parseRules } from '../parsing/parseRules/parseRules.ts'
 import { getCategories } from '../parsing/getCategories/getCategories.ts'
 import { classifyDescription } from '../parsing/classifyDescription/classifyDescription.ts'
 import { processTransactions } from '../parsing/processTransactions/processTransactions.ts'
-import { hashTransaction } from '../parsing/hashTransaction/hashTransaction.ts'
 import rulesContent from '../rules.csv?raw'
 
 // NOTE: This is a development app, not production. No migrations needed.
@@ -187,9 +186,7 @@ const useStore = create<AppState>()(
         set((state) => ({
           transactions: state.transactions.map((t) => {
             if (t.id === id) {
-              // Regenerate hash when date changes
-              const newHash = hashTransaction(date, t.description, t.amount)
-              return { ...t, date, hash: newHash, overridden: true }
+              return { ...t, date, overridden: true }
             }
             return t
           }),
