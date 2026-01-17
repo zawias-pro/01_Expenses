@@ -1,4 +1,5 @@
-import { generateCategoryId } from '../categoryUtils.ts'
+import type { CategoryMetadata } from '../categoryTypes.ts'
+import { getCategoryIdFromName } from '../categoryUtils.ts'
 
 /**
  * Example:
@@ -7,7 +8,8 @@ import { generateCategoryId } from '../categoryUtils.ts'
  */
 const classifyDescription = (
   description: string, 
-  rules: Record<string, string[]> // category ID -> keywords
+  rules: Record<string, string[]>, // category ID -> keywords
+  metadata: CategoryMetadata // category ID -> category name
 ): string => {
   const desc = description.toLowerCase()
   for (const [categoryId, keywords] of Object.entries(rules)) {
@@ -17,8 +19,15 @@ const classifyDescription = (
       }
     }
   }
-  // Return ID for 'others' category
-  return generateCategoryId('others')
+  // Return ID for 'others' category - look it up from metadata
+  const othersId = getCategoryIdFromName('others', metadata)
+  if (othersId) {
+    return othersId
+  }
+  // Fallback: if 'others' doesn't exist, return first category ID or empty string
+  // This should never happen since parseRules always creates 'others'
+  const firstCategoryId = Object.keys(rules)[0]
+  return firstCategoryId || ''
 }
 
 export { classifyDescription }

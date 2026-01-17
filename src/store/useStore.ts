@@ -14,7 +14,7 @@ const STORAGE_KEY = 'expense-analyzer-data'
 import type { CategoryMetadata } from '../parsing/categoryTypes.ts'
 export type { CategoryMetadata }
 
-import { getCategoryIdFromName, getCategoryNameFromId } from '../parsing/categoryUtils.ts'
+import { getCategoryIdFromName, getCategoryNameFromId, getOrCreateCategoryId } from '../parsing/categoryUtils.ts'
 
 const INITIAL_CATEGORY_METADATA = INITIAL_METADATA
 
@@ -281,7 +281,7 @@ const useStore = create<AppState>()(
         set({
           transactions: state.transactions.map((t) => {
             if (t.id === id) {
-              const newCategoryId = classifyDescription(t.description, allRules)
+              const newCategoryId = classifyDescription(t.description, allRules, state.categoryMetadata)
               const categoryOverridden = false
               const overridden = t.dateOverridden || false // Keep overridden true if date is still overridden
               return { 
@@ -313,7 +313,8 @@ const useStore = create<AppState>()(
       updateCategory: (categoryName, keywords) => {
         set((state) => {
           const filtered = keywords.filter((k) => k.trim()).map((k) => k.trim())
-          const categoryId = getCategoryIdFromName(categoryName, state.categoryMetadata)
+          // Get or create category ID (creates new ID if category doesn't exist)
+          const categoryId = getOrCreateCategoryId(categoryName, state.categoryMetadata)
           
           // Update metadata if this is a new category
           const newMetadata = { ...state.categoryMetadata }
@@ -340,6 +341,10 @@ const useStore = create<AppState>()(
       removeCategory: (categoryName) => {
         set((state) => {
           const categoryId = getCategoryIdFromName(categoryName, state.categoryMetadata)
+          if (!categoryId) {
+            // Category doesn't exist, nothing to remove
+            return {}
+          }
           const rest = Object.fromEntries(
             Object.entries(state.customRules).filter(([key]) => key !== categoryId)
           )
@@ -352,10 +357,13 @@ const useStore = create<AppState>()(
       renameCategory: (oldName, newName) => {
         set((state) => {
           const categoryId = getCategoryIdFromName(oldName, state.categoryMetadata)
+          if (!categoryId) {
+            // Category doesn't exist, nothing to rename
+            return {}
+          }
           
           // Keep the same ID, just update the name in metadata
-          // This ensures RULES, customRules, transactions, and budgets all continue to work
-          // because they all reference categories by ID, not by name
+          // IDs are now independent of names, so renaming is simple
           const newMetadata: CategoryMetadata = {
             ...state.categoryMetadata,
             [categoryId]: newName
@@ -385,6 +393,10 @@ const useStore = create<AppState>()(
       setBudget: (categoryName, amount) => {
         set((state) => {
           const categoryId = getCategoryIdFromName(categoryName, state.categoryMetadata)
+          if (!categoryId) {
+            // Category doesn't exist, nothing to set budget for
+            return {}
+          }
           return {
             budgets: { ...state.budgets, [categoryId]: amount }
           }
@@ -394,6 +406,10 @@ const useStore = create<AppState>()(
       removeBudget: (categoryName) => {
         set((state) => {
           const categoryId = getCategoryIdFromName(categoryName, state.categoryMetadata)
+          if (!categoryId) {
+            // Category doesn't exist, nothing to remove
+            return {}
+          }
           const rest: Record<string, number> = {}
           for (const [id, amount] of Object.entries(state.budgets)) {
             if (id !== categoryId) {
@@ -423,7 +439,7 @@ const useStore = create<AppState>()(
             if (t.categoryOverridden) {
               return t // Keep overridden categories
             }
-            const newCategoryId = classifyDescription(t.description, allRules)
+            const newCategoryId = classifyDescription(t.description, allRules, state.categoryMetadata)
             if (t.category === newCategoryId) {
               return t // No change needed
             }
@@ -617,7 +633,8 @@ export {
   exportState, 
   importState,
   getCategoryIdFromName,
-  getCategoryNameFromId
+  getCategoryNameFromId,
+  getOrCreateCategoryId
 }
 
 // Re-export for convenience

@@ -1,33 +1,41 @@
 // Category utility functions
 import type { CategoryMetadata } from './categoryTypes.ts'
 
-// Generate a stable ID from a category name
-const generateCategoryId = (name: string): string => {
-  // Use a simple hash-like function to generate stable IDs from names
-  // This ensures the same name always gets the same ID
-  let hash = 0
-  for (let i = 0; i < name.length; i++) {
-    const char = name.charCodeAt(i)
-    hash = ((hash << 5) - hash) + char
-    hash = hash & hash // Convert to 32-bit integer
-  }
-  return `cat_${Math.abs(hash).toString(36)}`
+// Generate a unique category ID (independent of name)
+// Uses timestamp + random to ensure uniqueness
+let idCounter = 0
+const generateCategoryId = (): string => {
+  idCounter++
+  const timestamp = Date.now()
+  const random = Math.random().toString(36).substring(2, 9)
+  return `cat_${timestamp}_${random}_${idCounter}`
 }
 
 // Helper functions for ID/name conversion
-const getCategoryIdFromName = (name: string, metadata: CategoryMetadata): string => {
-  // First, try to find existing ID for this name
+// Only looks up existing IDs - never generates new ones
+const getCategoryIdFromName = (name: string, metadata: CategoryMetadata): string | null => {
+  // Find existing ID for this name
   for (const [id, categoryName] of Object.entries(metadata)) {
     if (categoryName === name) {
       return id
     }
   }
-  // If not found, generate a new ID
-  return generateCategoryId(name)
+  // Not found - return null (caller should handle creation)
+  return null
+}
+
+// Get or create category ID - use this when you need to ensure a category exists
+const getOrCreateCategoryId = (name: string, metadata: CategoryMetadata): string => {
+  const existingId = getCategoryIdFromName(name, metadata)
+  if (existingId) {
+    return existingId
+  }
+  // Generate new unique ID
+  return generateCategoryId()
 }
 
 const getCategoryNameFromId = (id: string, metadata: CategoryMetadata): string => {
   return metadata[id] || 'others'
 }
 
-export { generateCategoryId, getCategoryIdFromName, getCategoryNameFromId }
+export { generateCategoryId, getCategoryIdFromName, getCategoryNameFromId, getOrCreateCategoryId }

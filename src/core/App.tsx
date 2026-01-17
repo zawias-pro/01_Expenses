@@ -158,6 +158,7 @@ const App = () => {
   const transactions = useStore((state) => state.transactions)
   const selectedMonth = useStore((state) => state.selectedMonth)
   const customRules = useStore((state) => state.customRules)
+  const categoryMetadata = useStore((state) => state.categoryMetadata)
   const searchQuery = useStore((state) => state.searchQuery)
   const selectedCategory = useStore((state) => state.selectedCategory)
   const selectedMonthFilter = useStore((state) => state.selectedMonthFilter)
@@ -251,7 +252,7 @@ const App = () => {
     // Only process valid transactions
     const classified = validWithIndex.map((item) => {
       const t = item.transaction
-      const category = classifyDescription(t.description, allRules)
+      const category = classifyDescription(t.description, allRules, categoryMetadata)
       // Automatically exclude income transactions (positive amounts)
       // but keep them valid so the checkbox can be unchecked later
       let excluded = false
@@ -453,6 +454,7 @@ const App = () => {
             onFillExample={handleFillExample}
             onCsvAccept={handleCsvAccept}
             rules={allRules}
+            categoryMetadata={categoryMetadata}
           />
         )}
 

@@ -1,4 +1,4 @@
-import { generateCategoryId } from '../categoryUtils.ts'
+import { getOrCreateCategoryId } from '../categoryUtils.ts'
 
 /**
  * Example:
@@ -16,7 +16,8 @@ const parseRules = (content: string): { rules: Record<string, string[]>, metadat
       const keyword = parts[0].trim()
       const categoryName = parts[1].trim()
       if (keyword && categoryName) {
-        const categoryId = generateCategoryId(categoryName)
+        // Use getOrCreateCategoryId to ensure same name gets same ID within this parse
+        const categoryId = getOrCreateCategoryId(categoryName, metadata)
         if (!(categoryId in rules)) {
           rules[categoryId] = []
           metadata[categoryId] = categoryName
@@ -26,7 +27,7 @@ const parseRules = (content: string): { rules: Record<string, string[]>, metadat
     }
   }
   // Always include 'others' category
-  const othersId = generateCategoryId('others')
+  const othersId = getOrCreateCategoryId('others', metadata)
   if (!(othersId in rules)) {
     rules[othersId] = []
     metadata[othersId] = 'others'

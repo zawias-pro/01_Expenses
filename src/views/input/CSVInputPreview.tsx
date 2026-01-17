@@ -1,6 +1,7 @@
 import { parseCSVLine } from '../../parsing/parseCSVLine/parseCSVLine.ts'
 import { classifyDescription } from '../../parsing/classifyDescription/classifyDescription.ts'
 import type { Transaction } from '../../parsing/types.ts'
+import type { CategoryMetadata } from '../../parsing/categoryTypes.ts'
 
 const CSVInputPreview = ({ 
   csvContent, 
@@ -15,7 +16,8 @@ const CSVInputPreview = ({
   onAmountIndexChange,
   onFillExample, 
   onCsvAccept, 
-  rules 
+  rules,
+  categoryMetadata
 }: {
   csvContent: string
   delimiter: string
@@ -30,6 +32,7 @@ const CSVInputPreview = ({
   onFillExample: () => void
   onCsvAccept: () => void
   rules: Record<string, string[]>
+  categoryMetadata: CategoryMetadata
 }) => {
   // Parse preview transactions from first 3 rows and classify categories
   const getPreviewTransactions = (): Transaction[] => {
@@ -40,7 +43,7 @@ const CSVInputPreview = ({
       const parsed = parseCSVLine(line, delimiter, dateIndex, descriptionIndex, amountIndex)
       return {
         ...parsed,
-        category: classifyDescription(parsed.description, rules)
+        category: classifyDescription(parsed.description, rules, categoryMetadata)
       }
     })
   }

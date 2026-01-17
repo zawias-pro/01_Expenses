@@ -3,7 +3,7 @@ import type { Transaction } from '../../parsing/types.ts'
 import { getYearFromDate } from '../../parsing/getYearFromDate/getYearFromDate.ts'
 import { getMonthFromDate } from '../../parsing/getMonthFromDate/getMonthFromDate.ts'
 import { parsePolishAmount } from '../../parsing/parsePolishAmount/parsePolishAmount.ts'
-import { useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName, generateCategoryId } from '../../store/useStore.ts'
+import { useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName, getOrCreateCategoryId } from '../../store/useStore.ts'
 
 type BulkAction = 'delete' | 'exclude' | 'unexclude' | 'setCategory' | null
 
@@ -258,10 +258,12 @@ const TransactionsTable = ({
     } else if (bulkAction === 'setCategory' && bulkCategory) {
       // bulkCategory is a category name, convert to ID
       const categoryId = getCategoryIdFromName(bulkCategory, categoryMetadata)
-      selectedIds.forEach(id => { onCategoryChange(id, categoryId) })
-      setSelectedIds(new Set())
-      setBulkAction(null)
-      setBulkCategory('')
+      if (categoryId) {
+        selectedIds.forEach(id => { onCategoryChange(id, categoryId) })
+        setSelectedIds(new Set())
+        setBulkAction(null)
+        setBulkCategory('')
+      }
     }
   }
 
@@ -299,7 +301,8 @@ const TransactionsTable = ({
     onUpdateCategory(categoryName, keywords)
     
     // Update the transaction's category (convert name to ID)
-    const categoryId = getCategoryIdFromName(categoryName, categoryMetadata)
+    // Use getOrCreateCategoryId since we just created the category
+    const categoryId = getOrCreateCategoryId(categoryName, categoryMetadata)
     onCategoryChange(quickAddTransactionId, categoryId)
     
     // Close the modal
