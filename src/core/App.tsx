@@ -372,7 +372,6 @@ const App = () => {
     input.click()
   }
 
-
   return (
     <div className="app-container">
       {/* Sidebar */}
@@ -402,28 +401,24 @@ const App = () => {
           <button 
             className="sidebar-btn"
             onClick={() => { setView('categories') }}
-            disabled={transactions.length === 0}
           >
             Categories
           </button>
           <button 
             className="sidebar-btn"
             onClick={() => { setView('transactions') }}
-            disabled={transactions.length === 0}
           >
             Transactions Table
           </button>
           <button
             className="sidebar-btn"
             onClick={() => { setView('summary') }}
-            disabled={transactions.length === 0 || summaries === null || summaries.length === 0}
           >
             Data by Period
           </button>
           <button
             className="sidebar-btn"
             onClick={() => { setView('chart') }}
-            disabled={transactions.length === 0 || summaries === null || summaries.length === 0}
           >
             Cumulative Bar Chart
           </button>
