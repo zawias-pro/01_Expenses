@@ -1,5 +1,8 @@
 import { useState } from 'react'
 import { useStore, useCategoryMetadata, getCategoryNameFromId } from '../../store/useStore.ts'
+import { ExportCategoriesModal } from './components/ExportCategoriesModal.tsx'
+import { AddCategoryForm } from './components/AddCategoryForm.tsx'
+import { CategoryRow } from './components/CategoryRow.tsx'
 
 const Categories = ({
   rules,
@@ -18,14 +21,6 @@ const Categories = ({
   const categoryMetadata = useCategoryMetadata()
   const transactions = useStore((state) => state.transactions)
   const showExportModal = useStore((state) => state.showExportModal)
-  const editingCategory = useStore((state) => state.editingCategory) // category ID
-  const editingKeywords = useStore((state) => state.editingKeywords)
-  const newCategory = useStore((state) => state.newCategory) // category name
-  const newKeywords = useStore((state) => state.newKeywords)
-  
-  // Local state for renaming
-  const [renamingCategoryId, setRenamingCategoryId] = useState<string | null>(null)
-  const [renamingCategoryName, setRenamingCategoryName] = useState<string>('')
   
   // Sorting state
   const [sortColumn, setSortColumn] = useState<'name' | 'count'>('name')
@@ -33,69 +28,6 @@ const Categories = ({
   
   // Store actions
   const setShowExportModal = useStore((state) => state.setShowExportModal)
-  const setEditingCategory = useStore((state) => state.setEditingCategory)
-  const setEditingKeywords = useStore((state) => state.setEditingKeywords)
-  const setNewCategory = useStore((state) => state.setNewCategory)
-  const setNewKeywords = useStore((state) => state.setNewKeywords)
-
-  const handleStartEdit = (categoryId: string, keywords: string[]) => {
-    setEditingCategory(categoryId)
-    setEditingKeywords(keywords.join(', '))
-  }
-
-  const handleSaveEdit = () => {
-    if (editingCategory) {
-      const categoryName = getCategoryNameFromId(editingCategory, categoryMetadata)
-      const keywordsArray = editingKeywords.split(',').map(k => k.trim()).filter(k => k)
-      onUpdateCategory(categoryName, keywordsArray)
-      setEditingCategory(null)
-      setEditingKeywords('')
-    }
-  }
-
-  const handleCancelEdit = () => {
-    setEditingCategory(null)
-    setEditingKeywords('')
-  }
-
-  const handleStartRename = (categoryId: string, categoryName: string) => {
-    setRenamingCategoryId(categoryId)
-    setRenamingCategoryName(categoryName)
-  }
-
-  const handleSaveRename = () => {
-    if (renamingCategoryId && renamingCategoryName.trim()) {
-      const oldName = getCategoryNameFromId(renamingCategoryId, categoryMetadata)
-      const newName = renamingCategoryName.trim()
-      
-      // Check if the new name already exists (and is not the same as the old name)
-      const existingNames = Object.values(categoryMetadata)
-      if (existingNames.includes(newName) && oldName !== newName) {
-        alert(`Category "${newName}" already exists. Please choose a different name.`)
-        return
-      }
-      
-      if (oldName !== newName) {
-        onRenameCategory(oldName, newName)
-      }
-      setRenamingCategoryId(null)
-      setRenamingCategoryName('')
-    }
-  }
-
-  const handleCancelRename = () => {
-    setRenamingCategoryId(null)
-    setRenamingCategoryName('')
-  }
-
-  const handleAddCategory = () => {
-    if (newCategory.trim() && newKeywords.trim()) {
-      const keywordsArray = newKeywords.split(',').map(k => k.trim()).filter(k => k)
-      onUpdateCategory(newCategory.trim(), keywordsArray)
-      setNewCategory('')
-      setNewKeywords('')
-    }
-  }
 
   const handleSort = (column: 'name' | 'count') => {
     if (sortColumn === column) {
@@ -104,19 +36,6 @@ const Categories = ({
       setSortColumn(column)
       setSortDirection('asc')
     }
-  }
-
-  const exportRules = (): string => {
-    // Export in format: keyword;category (one line per keyword)
-    // Export uses category names, not IDs
-    const lines: string[] = []
-    for (const [categoryId, keywords] of Object.entries(rules)) {
-      const categoryName = getCategoryNameFromId(categoryId, categoryMetadata)
-      for (const keyword of keywords) {
-        lines.push(`${keyword};${categoryName}`)
-      }
-    }
-    return lines.sort().join('\n')
   }
 
   // Get category entries sorted by name or count
@@ -155,53 +74,7 @@ const Categories = ({
           </button>
         </div>
 
-        <div style={{ marginBottom: '2rem', padding: '1.25rem', backgroundColor: 'var(--surface-hover)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-          <h4 className="section-subheader" style={{ marginTop: 0, marginBottom: '1rem' }}>Add New Category</h4>
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-            <div className="form-group" style={{ flex: '1', minWidth: '200px', marginBottom: 0 }}>
-              <label className="form-label" style={{ fontSize: '0.8125rem' }}>Category</label>
-              <input
-                type="text"
-                className="form-input"
-                placeholder="e.g., 'entertainment'"
-                value={newCategory}
-                onChange={e => { setNewCategory(e.target.value) }}
-                onKeyDown={e => {
-                  if (e.key === 'Enter') {
-                    handleAddCategory()
-                  }
-                }}
-                style={{ padding: '0.5rem', fontSize: '0.875rem' }}
-              />
-            </div>
-            <div className="form-group" style={{ flex: '1', minWidth: '200px', marginBottom: 0 }}>
-              <label className="form-label" style={{ fontSize: '0.8125rem' }}>Keywords (comma-separated)</label>
-              <input
-                type="text"
-                className="form-input"
-                placeholder="e.g., 'netflix, spotify, hbo'"
-                value={newKeywords}
-                onChange={e => { setNewKeywords(e.target.value) }}
-                onKeyDown={e => {
-                  if (e.key === 'Enter') {
-                    handleAddCategory()
-                  }
-                }}
-                style={{ padding: '0.5rem', fontSize: '0.875rem' }}
-              />
-            </div>
-            <div>
-              <button
-                className="btn btn-primary"
-                onClick={handleAddCategory}
-                disabled={!newCategory.trim() || !newKeywords.trim()}
-                style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
-              >
-                Add Category
-              </button>
-            </div>
-          </div>
-        </div>
+        <AddCategoryForm onUpdateCategory={onUpdateCategory} />
       
         <div>
           <h3 className="section-subheader">Expense Categories</h3>
@@ -228,169 +101,26 @@ const Categories = ({
                 </tr>
               </thead>
               <tbody>
-                {categoryEntries.map(({ id, name, keywords, count }) => {
-                  const isEditing = editingCategory === id
-                  const isRenaming = renamingCategoryId === id
-                  const isCustom = id in customRules
-                  
-                  return (
-                    <tr key={id}>
-                      <td style={{ padding: '0.5rem 1rem' }}>
-                        {isRenaming ? (
-                          <input
-                            type="text"
-                            className="form-input"
-                            value={renamingCategoryName}
-                            onChange={e => { setRenamingCategoryName(e.target.value) }}
-                            onKeyDown={e => {
-                              if (e.key === 'Enter') {
-                                handleSaveRename()
-                              } else if (e.key === 'Escape') {
-                                handleCancelRename()
-                              }
-                            }}
-                            style={{ width: '100%', fontWeight: 'bold', padding: '0.25rem 0.5rem' }}
-                            autoFocus
-                          />
-                        ) : (
-                          <strong>{name}</strong>
-                        )}
-                      </td>
-                      <td style={{ padding: '0.5rem 1rem' }}>
-                        <span style={{ color: '#666', fontSize: '0.875rem' }}>
-                          {count}
-                        </span>
-                      </td>
-                      <td style={{ padding: '0.5rem 1rem' }}>
-                        {isEditing ? (
-                          <input
-                            type="text"
-                            className="form-input"
-                            value={editingKeywords}
-                            onChange={e => { setEditingKeywords(e.target.value) }}
-                            onKeyDown={e => {
-                              if (e.key === 'Enter') {
-                                handleSaveEdit()
-                              } else if (e.key === 'Escape') {
-                                handleCancelEdit()
-                              }
-                            }}
-                            style={{ width: '100%', padding: '0.25rem 0.5rem' }}
-                            autoFocus
-                          />
-                        ) : (
-                          <span>{keywords.join(', ')}</span>
-                        )}
-                      </td>
-                      <td style={{ padding: '0.5rem 1rem' }}>
-                        {isEditing ? (
-                          <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <button
-                              className="btn btn-primary"
-                              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
-                              onClick={handleSaveEdit}
-                            >
-                              Save
-                            </button>
-                            <button
-                              className="btn btn-outline"
-                              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
-                              onClick={handleCancelEdit}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        ) : isRenaming ? (
-                          <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <button
-                              className="btn btn-primary"
-                              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
-                              onClick={handleSaveRename}
-                              disabled={!renamingCategoryName.trim()}
-                            >
-                              Save
-                            </button>
-                            <button
-                              className="btn btn-outline"
-                              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
-                              onClick={handleCancelRename}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        ) : (
-                          <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <button
-                              className="btn btn-outline"
-                              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
-                              onClick={() => { handleStartEdit(id, keywords) }}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              className="btn btn-outline"
-                              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
-                              onClick={() => { handleStartRename(id, name) }}
-                            >
-                              Rename
-                            </button>
-                            {isCustom && (
-                              <button
-                                className="btn btn-danger"
-                                style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
-                                onClick={() => { onRemoveCategory(name) }}
-                              >
-                                Remove
-                              </button>
-                            )}
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  )
-                })}
+                {categoryEntries.map(({ id, name, keywords, count }) => (
+                  <CategoryRow
+                    key={id}
+                    id={id}
+                    name={name}
+                    keywords={keywords}
+                    count={count}
+                    isCustom={id in customRules}
+                    onUpdateCategory={onUpdateCategory}
+                    onRemoveCategory={onRemoveCategory}
+                    onRenameCategory={onRenameCategory}
+                  />
+                ))}
               </tbody>
             </table>
           </div>
-          
         </div>
       </div>
 
-      {showExportModal && (
-        <div className="modal-overlay" onClick={() => { setShowExportModal(false) }}>
-          <div className="modal" onClick={e => { e.stopPropagation() }}>
-            <div className="modal-header">
-              <h3 className="modal-title">Export Categories</h3>
-              <button
-                className="modal-close"
-                onClick={() => { setShowExportModal(false) }}
-                aria-label="Close"
-              >
-                ×
-              </button>
-            </div>
-            <div className="modal-body">
-              <p style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--text-secondary)' }}>
-                All categories in export format (keyword;category):
-              </p>
-              <textarea
-                className="form-textarea modal-textarea"
-                value={exportRules()}
-                readOnly
-                onClick={e => { (e.target as HTMLTextAreaElement).select() }}
-              />
-            </div>
-            <div className="modal-footer">
-              <button
-                className="btn btn-outline"
-                onClick={() => { setShowExportModal(false) }}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {showExportModal && <ExportCategoriesModal rules={rules} />}
     </>
   )
 }

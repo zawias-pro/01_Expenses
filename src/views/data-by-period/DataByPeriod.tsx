@@ -1,14 +1,4 @@
 import { useMemo, useEffect } from 'react'
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell
-} from 'recharts'
 import type { MonthlySummary, Transaction } from '../../parsing/types.ts'
 import { aggregateByYear } from '../../parsing/aggregateByYear/aggregateByYear.ts'
 import { aggregateAllData } from '../../parsing/aggregateAllData/aggregateAllData.ts'
@@ -17,43 +7,10 @@ import { parsePolishAmount } from '../../parsing/parsePolishAmount/parsePolishAm
 import { getYearFromDate } from '../../parsing/getYearFromDate/getYearFromDate.ts'
 import { getMonthFromDate } from '../../parsing/getMonthFromDate/getMonthFromDate.ts'
 import { useStore, useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName } from '../../store/useStore.ts'
-
-const CategoryBarChart = ({ categories }: { categories: Record<string, number> }) => {
-  const categoryEntries = Object.entries(categories)
-    .sort(([, a], [, b]) => b - a) // Sort by amount descending
-    .map(([name, amount], index) => ({
-      name,
-      amount,
-      color: `hsl(${String((index * 137.5) % 360)}, 70%, 50%)` // Generate distinct colors
-    }))
-
-  if (categoryEntries.length === 0) {
-    return <p>No category data available</p>
-  }
- 
-  return (
-    <div className="chart-wrapper" style={{ height: '300px' }}>
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={categoryEntries}>
-          <CartesianGrid />
-          <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} interval={0} />
-          <YAxis tickFormatter={(value: number) => formatPolishNumber(value)} />
-          <Tooltip
-            formatter={(value: number | undefined) => {
-              if (value === undefined) { return '???' }
-              return formatPolishNumber(value)
-            }}
-          />
-          <Bar dataKey="amount">
-            {categoryEntries.map((entry) => (
-              <Cell key={entry.name} fill={entry.color} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  )
-}
+import { CategoryBarChart } from './components/CategoryBarChart.tsx'
+import { PeriodSelection } from './components/PeriodSelection.tsx'
+import { CategoryProcessingControls } from './components/CategoryProcessingControls.tsx'
+import { BudgetComparison } from './components/BudgetComparison.tsx'
 
 const monthNames = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -78,15 +35,8 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
   const categoryThresholdPercent = useStore((state) => state.categoryThresholdPercent)
   
   // Store actions
-  const setSelectionType = useStore((state) => state.setSelectionType)
   const setSelectedYear = useStore((state) => state.setSelectedYear)
   const setActiveTab = useStore((state) => state.setActiveTab)
-  const setTreatLowValueAsOthers = useStore((state) => state.setTreatLowValueAsOthers)
-  const setLowValueThreshold = useStore((state) => state.setLowValueThreshold)
-  const setMergeSmallCategories = useStore((state) => state.setMergeSmallCategories)
-  const setCategoryThresholdPercent = useStore((state) => state.setCategoryThresholdPercent)
-  const setSelectedMonth = useStore((state) => state.setSelectedMonth)
-  const budgets = useStore((state) => state.budgets)
   const categoryMetadata = useCategoryMetadata()
   // Look up 'others' category ID - it should always exist
   const othersCategoryId = getCategoryIdFromName('others', categoryMetadata) || ''
@@ -102,34 +52,6 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
   const allDataSummary = aggregateAllData(summaries)
 
   const availableYears = Array.from(new Set(summaries.map(s => s.year))).sort()
-
-  const handleSelectionTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newType = event.target.value as 'month' | 'year' | 'all'
-    setSelectionType(newType)
-
-    if (newType === 'all') {
-      onSelectionChange('all')
-    } else if (newType === 'year' && availableYears.length > 0) {
-      const year = selectedYear || availableYears[0]
-      setSelectedYear(year)
-      onSelectionChange('year', year)
-    } else if (newType === 'month') {
-      onSelectionChange('month', selectedMonth.year, selectedMonth.month)
-    }
-  }
-
-  const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const year = parseInt(event.target.value)
-    setSelectedYear(year)
-    onSelectionChange('year', year)
-  }
-
-  const handleMonthChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const [year, month] = event.target.value.split('-').map(Number)
-    setSelectedYear(year)
-    setSelectedMonth({ year, month })
-    onSelectionChange('month', year, month)
-  }
 
   const getDisplaySummary = () => {
     if (selectionType === 'all') {
@@ -316,122 +238,18 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
     <div className="section">
       <h2 className="section-header">Data Aggregated by Period</h2>
 
-      <div className="selection-controls">
-        <label htmlFor="selection-type-select" className="form-label">View:</label>
-        <select
-          id="selection-type-select"
-          className="form-select"
-          style={{ width: 'auto', minWidth: '150px' }}
-          value={selectionType}
-          onChange={handleSelectionTypeChange}
-        >
-          <option value="all">All Data</option>
-          <option value="year">By Year</option>
-          <option value="month">By Month</option>
-        </select>
-
-        {selectionType === 'year' && (
-          <select
-            id="year-select"
-            className="form-select"
-            style={{ width: 'auto', minWidth: '120px' }}
-            value={selectedYear || ''}
-            onChange={handleYearChange}
-          >
-            {availableYears.map(year => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
-          </select>
-        )}
-
-        {selectionType === 'month' && (
-          <select
-            id="month-select"
-            className="form-select"
-            style={{ width: 'auto', minWidth: '200px' }}
-            value={`${selectedMonth.year.toString()}-${selectedMonth.month.toString()}`}
-            onChange={handleMonthChange}
-          >
-            {monthOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        )}
-      </div>
+      <PeriodSelection
+        availableYears={availableYears}
+        monthOptions={monthOptions}
+        selectedMonth={selectedMonth}
+        onSelectionChange={onSelectionChange}
+      />
 
       {displaySummary && (
         <div>
           <h3 className="section-subheader">{getDisplayTitle()}</h3>
           
-          {/* Category processing controls */}
-          <div style={{ marginBottom: '1.5rem' }}>
-            {/* Low-value threshold controls */}
-            <div className="filter-controls" style={{ marginBottom: '0.75rem' }}>
-              <label className="filter-label">
-                <input
-                  type="checkbox"
-                  className="form-checkbox"
-                  checked={treatLowValueAsOthers}
-                  onChange={e => { setTreatLowValueAsOthers(e.target.checked) }}
-                />
-                Treat low-value expenses as "others"
-              </label>
-              {treatLowValueAsOthers && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <label htmlFor="low-value-threshold" className="form-label" style={{ margin: 0 }}>
-                    Threshold:
-                  </label>
-                  <input
-                    id="low-value-threshold"
-                    type="number"
-                    className="form-input"
-                    style={{ width: '120px' }}
-                    min="0"
-                    step="0.01"
-                    value={lowValueThreshold}
-                    onChange={e => { setLowValueThreshold(parseFloat(e.target.value) || 0) }}
-                  />
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>PLN</span>
-                </div>
-              )}
-            </div>
-            
-            {/* Category percentage threshold controls */}
-            <div className="filter-controls">
-              <label className="filter-label">
-                <input
-                  type="checkbox"
-                  className="form-checkbox"
-                  checked={mergeSmallCategories}
-                  onChange={e => { setMergeSmallCategories(e.target.checked) }}
-                />
-                Merge small categories into "others"
-              </label>
-              {mergeSmallCategories && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <label htmlFor="category-threshold" className="form-label" style={{ margin: 0 }}>
-                    Category threshold:
-                  </label>
-                  <input
-                    id="category-threshold"
-                    type="number"
-                    className="form-input"
-                    style={{ width: '120px' }}
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    value={categoryThresholdPercent}
-                    onChange={e => { setCategoryThresholdPercent(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0))) }}
-                  />
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>%</span>
-                </div>
-              )}
-            </div>
-          </div>
+          <CategoryProcessingControls />
           
           {/* Tab Navigation */}
           <div className="tabs">
@@ -504,89 +322,7 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
           
           {/* Tab Content: Vs Budget */}
           <div className={`tab-content ${activeTab === 'budget' ? 'active' : ''}`}>
-            {(() => {
-              // Calculate budget multiplier based on selection type
-              let budgetMultiplier = 1
-              if (selectionType === 'year' && selectedYear !== null) {
-                budgetMultiplier = 12 // Yearly budget = monthly * 12
-              } else if (selectionType === 'all') {
-                // Calculate number of months in the data
-                const months = new Set(summaries.map(s => `${String(s.year)}-${String(s.month)}`)).size
-                budgetMultiplier = months
-              }
-              // For 'month', multiplier is 1 (already monthly)
-              
-              // Combine: categories with transactions + categories with budgets (even if no transactions)
-              const allCategories = new Set([
-                ...Object.keys(processedCategories),
-                ...Object.keys(budgets)
-              ])
-              
-              const budgetComparison: Array<{
-                category: string
-                actual: number
-                budget: number
-                difference: number
-                percentage: number
-              }> = Array.from(allCategories)
-                .map((category) => {
-                  const actual = processedCategories[category] || 0 // Default to 0 if no transactions
-                  const monthlyBudget = budgets[category] || 0 // Default to 0 if not set
-                  const periodBudget = monthlyBudget * budgetMultiplier
-                  const difference = actual - periodBudget
-                  const percentage = periodBudget > 0 ? (actual / periodBudget) * 100 : (actual > 0 ? Infinity : 0)
-                  return {
-                    category,
-                    actual,
-                    budget: periodBudget,
-                    difference,
-                    percentage
-                  }
-                })
-              
-              if (budgetComparison.length === 0) {
-                return <p style={{ color: '#666' }}>No categories found for this period.</p>
-              }
-              
-              return (
-                <div>
-                  <p style={{ marginBottom: '1rem', color: '#666', fontSize: '0.875rem' }}>
-                    {selectionType === 'month' && 'Monthly budget comparison'}
-                    {selectionType === 'year' && 'Yearly budget comparison (monthly budget × 12)'}
-                    {selectionType === 'all' && `Budget comparison for ${String(budgetMultiplier)} month(s)`}
-                  </p>
-                  <ul className="category-list">
-                    {budgetComparison
-                      .sort((a, b) => Math.abs(b.difference) - Math.abs(a.difference))
-                      .map(({ category, actual, budget, difference, percentage }) => (
-                        <li key={category} style={{ 
-                          borderLeft: difference > 0 ? '4px solid #dc3545' : '4px solid #28a745',
-                          paddingLeft: '0.5rem'
-                        }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <span style={{ fontWeight: '500' }}>{category}</span>
-                              <span style={{ 
-                                color: difference > 0 ? '#dc3545' : '#28a745',
-                                fontWeight: '500'
-                              }}>
-                                {difference > 0 ? '+' : ''}{formatPolishNumber(difference)} PLN
-                              </span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: '#666' }}>
-                              <span>Actual: {formatPolishNumber(actual)} PLN</span>
-                              <span>Budget: {formatPolishNumber(budget)} PLN</span>
-                              <span>
-                                {percentage === Infinity ? '∞' : percentage.toFixed(1)}%
-                              </span>
-                            </div>
-                          </div>
-                        </li>
-                      ))}
-                  </ul>
-                </div>
-              )
-            })()}
+            <BudgetComparison processedCategories={processedCategories} summaries={summaries} />
           </div>
         </div>
       )}

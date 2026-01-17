@@ -2,6 +2,8 @@ import { parseCSVLine } from '../../parsing/parseCSVLine/parseCSVLine.ts'
 import { classifyDescription } from '../../parsing/classifyDescription/classifyDescription.ts'
 import type { Transaction } from '../../parsing/types.ts'
 import type { CategoryMetadata } from '../../parsing/categoryTypes.ts'
+import { CSVConfigControls } from './components/CSVConfigControls.tsx'
+import { CSVPreviewTable } from './components/CSVPreviewTable.tsx'
 
 const CSVInputPreview = ({ 
   csvContent, 
@@ -73,65 +75,16 @@ const CSVInputPreview = ({
         Paste CSV data below to add transactions to your existing data. Transactions will be appended, not replaced.
       </p>
 
-      <div className="form-group">
-        <div className="form-group-row">
-          <div className="form-group">
-            <label htmlFor="delimiter-select" className="form-label">
-              CSV Delimiter:
-            </label>
-            <select
-              id="delimiter-select"
-              className="form-select"
-              value={delimiter}
-              onChange={e => { onDelimiterChange(e.target.value) }}
-            >
-              <option value=";">Semicolon (;)</option>
-              <option value=",">Comma (,)</option>
-              <option value="\t">Tab</option>
-              <option value="|">Pipe (|)</option>
-            </select>
-          </div>
-          <div className="form-group-small">
-            <label htmlFor="date-index" className="form-label">
-              Date Column:
-            </label>
-            <input
-              id="date-index"
-              type="number"
-              className="form-input"
-              value={dateIndex}
-              onChange={e => { onDateIndexChange(parseInt(e.target.value) || 0) }}
-              min="0"
-            />
-          </div>
-          <div className="form-group-small">
-            <label htmlFor="description-index" className="form-label">
-              Description Column:
-            </label>
-            <input
-              id="description-index"
-              type="number"
-              className="form-input"
-              value={descriptionIndex}
-              onChange={e => { onDescriptionIndexChange(parseInt(e.target.value) || 0) }}
-              min="0"
-            />
-          </div>
-          <div className="form-group-small">
-            <label htmlFor="amount-index" className="form-label">
-              Amount Column:
-            </label>
-            <input
-              id="amount-index"
-              type="number"
-              className="form-input"
-              value={amountIndex}
-              onChange={e => { onAmountIndexChange(parseInt(e.target.value) || 0) }}
-              min="0"
-            />
-          </div>
-        </div>
-      </div>
+      <CSVConfigControls
+        delimiter={delimiter}
+        dateIndex={dateIndex}
+        descriptionIndex={descriptionIndex}
+        amountIndex={amountIndex}
+        onDelimiterChange={onDelimiterChange}
+        onDateIndexChange={onDateIndexChange}
+        onDescriptionIndexChange={onDescriptionIndexChange}
+        onAmountIndexChange={onAmountIndexChange}
+      />
 
       <div className="form-group">
         <textarea
@@ -143,53 +96,7 @@ const CSVInputPreview = ({
         />
       </div>
 
-      {previewTransactions.length > 0 && (
-        <div>
-          <h3 className="section-subheader">Preview (first 3 rows):</h3>
-          <div className="preview-container">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Exclude</th>
-                  <th>Date</th>
-                  <th>Description</th>
-                  <th>Category</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {previewTransactions.map(t => (
-                  <tr key={t.id}>
-                    <td>
-                      <input
-                        type="checkbox"
-                        className="form-checkbox"
-                        checked={t.excluded}
-                        disabled
-                        readOnly
-                      />
-                    </td>
-                    <td>{t.date}</td>
-                    <td>{t.description}</td>
-                    <td>{t.category}</td>
-                    <td>{t.amount}</td>
-                    <td>
-                      {t.isValid ? (
-                        <span className="status-badge status-valid">✓ Valid</span>
-                      ) : (
-                        <span className="status-badge status-error">
-                          ✗ Error: {t.validationError}
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      <CSVPreviewTable transactions={previewTransactions} />
 
       <div className="action-buttons">
         <button className="btn btn-outline" onClick={onFillExample}>
