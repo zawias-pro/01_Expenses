@@ -351,57 +351,21 @@ const useStore = create<AppState>()(
       
       renameCategory: (oldName, newName) => {
         set((state) => {
-          const oldId = getCategoryIdFromName(oldName, state.categoryMetadata)
-          const newId = getCategoryIdFromName(newName, state.categoryMetadata)
+          const categoryId = getCategoryIdFromName(oldName, state.categoryMetadata)
           
-          // Update metadata
-          const newMetadata: CategoryMetadata = {}
-          for (const [id, name] of Object.entries(state.categoryMetadata)) {
-            if (id !== oldId) {
-              newMetadata[id] = name
-            }
-          }
-          newMetadata[newId] = newName
-          
-          // Update customRules if this category has rules
-          const newCustomRules: Record<string, string[]> = {}
-          for (const [id, keywords] of Object.entries(state.customRules)) {
-            if (id !== oldId) {
-              newCustomRules[id] = keywords
-            }
-          }
-          if (state.customRules[oldId]) {
-            newCustomRules[newId] = state.customRules[oldId]
-          }
-          
-          // Update transactions
-          const newTransactions = state.transactions.map(t => {
-            if (t.category === oldId) {
-              return { ...t, category: newId }
-            }
-            return t
-          })
-          
-          // Update budgets
-          const newBudgets: Record<string, number> = {}
-          for (const [id, amount] of Object.entries(state.budgets)) {
-            if (id !== oldId) {
-              newBudgets[id] = amount
-            }
-          }
-          if (state.budgets[oldId] !== undefined) {
-            newBudgets[newId] = state.budgets[oldId]
+          // Keep the same ID, just update the name in metadata
+          // This ensures RULES, customRules, transactions, and budgets all continue to work
+          // because they all reference categories by ID, not by name
+          const newMetadata: CategoryMetadata = {
+            ...state.categoryMetadata,
+            [categoryId]: newName
           }
           
           return {
             categoryMetadata: newMetadata,
-            customRules: newCustomRules,
-            transactions: newTransactions,
-            budgets: newBudgets,
           }
         })
-        // Re-classify transactions when rules change
-        get().reclassifyTransactions()
+        // No need to reclassify - we're just changing the display name, not the category ID
       },
       
       setSelectionType: (type) => set({ selectionType: type }),

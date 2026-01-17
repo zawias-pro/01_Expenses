@@ -190,6 +190,7 @@ const App = () => {
   const setSortDirection = useStore((state) => state.setSortDirection)
   const updateCategory = useStore((state) => state.updateCategory)
   const removeCategory = useStore((state) => state.removeCategory)
+  const renameCategory = useStore((state) => state.renameCategory)
   const clearAll = useStore((state) => state.clearAll)
   
   // Computed values
@@ -461,6 +462,7 @@ const App = () => {
             customRules={customRules}
             onUpdateCategory={updateCategory}
             onRemoveCategory={removeCategory}
+            onRenameCategory={renameCategory}
           />
         )}
 

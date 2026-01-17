@@ -1,15 +1,18 @@
+import { useState } from 'react'
 import { useStore, useCategoryMetadata, getCategoryNameFromId } from '../../store/useStore.ts'
 
 const Categories = ({
   rules,
   customRules,
   onUpdateCategory,
-  onRemoveCategory
+  onRemoveCategory,
+  onRenameCategory
 }: {
   rules: Record<string, string[]> // category ID -> keywords
   customRules: Record<string, string[]> // category ID -> keywords
   onUpdateCategory: (categoryName: string, keywords: string[]) => void
   onRemoveCategory: (categoryName: string) => void
+  onRenameCategory: (oldName: string, newName: string) => void
 }) => {
   // Store state
   const categoryMetadata = useCategoryMetadata()
@@ -18,6 +21,10 @@ const Categories = ({
   const editingKeywords = useStore((state) => state.editingKeywords)
   const newCategory = useStore((state) => state.newCategory) // category name
   const newKeywords = useStore((state) => state.newKeywords)
+  
+  // Local state for renaming
+  const [renamingCategoryId, setRenamingCategoryId] = useState<string | null>(null)
+  const [renamingCategoryName, setRenamingCategoryName] = useState<string>('')
   
   // Store actions
   const setShowExportModal = useStore((state) => state.setShowExportModal)
@@ -44,6 +51,36 @@ const Categories = ({
   const handleCancelEdit = () => {
     setEditingCategory(null)
     setEditingKeywords('')
+  }
+
+  const handleStartRename = (categoryId: string, categoryName: string) => {
+    setRenamingCategoryId(categoryId)
+    setRenamingCategoryName(categoryName)
+  }
+
+  const handleSaveRename = () => {
+    if (renamingCategoryId && renamingCategoryName.trim()) {
+      const oldName = getCategoryNameFromId(renamingCategoryId, categoryMetadata)
+      const newName = renamingCategoryName.trim()
+      
+      // Check if the new name already exists (and is not the same as the old name)
+      const existingNames = Object.values(categoryMetadata)
+      if (existingNames.includes(newName) && oldName !== newName) {
+        alert(`Category "${newName}" already exists. Please choose a different name.`)
+        return
+      }
+      
+      if (oldName !== newName) {
+        onRenameCategory(oldName, newName)
+      }
+      setRenamingCategoryId(null)
+      setRenamingCategoryName('')
+    }
+  }
+
+  const handleCancelRename = () => {
+    setRenamingCategoryId(null)
+    setRenamingCategoryName('')
   }
 
   const handleAddCategory = () => {
@@ -104,11 +141,32 @@ const Categories = ({
               <tbody>
                 {categoryEntries.map(({ id, name, keywords }) => {
                   const isEditing = editingCategory === id
+                  const isRenaming = renamingCategoryId === id
                   const isCustom = id in customRules
                   
                   return (
                     <tr key={id}>
-                      <td><strong>{name}</strong></td>
+                      <td>
+                        {isRenaming ? (
+                          <input
+                            type="text"
+                            className="form-input"
+                            value={renamingCategoryName}
+                            onChange={e => { setRenamingCategoryName(e.target.value) }}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') {
+                                handleSaveRename()
+                              } else if (e.key === 'Escape') {
+                                handleCancelRename()
+                              }
+                            }}
+                            style={{ width: '100%', fontWeight: 'bold' }}
+                            autoFocus
+                          />
+                        ) : (
+                          <strong>{name}</strong>
+                        )}
+                      </td>
                       <td>
                         {isEditing ? (
                           <input
@@ -148,6 +206,24 @@ const Categories = ({
                               Cancel
                             </button>
                           </div>
+                        ) : isRenaming ? (
+                          <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button
+                              className="btn btn-primary"
+                              style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}
+                              onClick={handleSaveRename}
+                              disabled={!renamingCategoryName.trim()}
+                            >
+                              Save
+                            </button>
+                            <button
+                              className="btn btn-outline"
+                              style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}
+                              onClick={handleCancelRename}
+                            >
+                              Cancel
+                            </button>
+                          </div>
                         ) : (
                           <div style={{ display: 'flex', gap: '0.5rem' }}>
                             <button
@@ -156,6 +232,13 @@ const Categories = ({
                               onClick={() => { handleStartEdit(id, keywords) }}
                             >
                               Edit
+                            </button>
+                            <button
+                              className="btn btn-outline"
+                              style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}
+                              onClick={() => { handleStartRename(id, name) }}
+                            >
+                              Rename
                             </button>
                             {isCustom && (
                               <button
