@@ -16,6 +16,7 @@ const Categories = ({
 }) => {
   // Store state
   const categoryMetadata = useCategoryMetadata()
+  const transactions = useStore((state) => state.transactions)
   const showExportModal = useStore((state) => state.showExportModal)
   const editingCategory = useStore((state) => state.editingCategory) // category ID
   const editingKeywords = useStore((state) => state.editingKeywords)
@@ -107,11 +108,15 @@ const Categories = ({
 
   // Get category entries sorted by name
   const categoryEntries = Object.entries(rules)
-    .map(([categoryId, keywords]) => ({
-      id: categoryId,
-      name: getCategoryNameFromId(categoryId, categoryMetadata),
-      keywords
-    }))
+    .map(([categoryId, keywords]) => {
+      const count = transactions.filter(t => t.category === categoryId).length
+      return {
+        id: categoryId,
+        name: getCategoryNameFromId(categoryId, categoryMetadata),
+        keywords,
+        count
+      }
+    })
     .sort((a, b) => a.name.localeCompare(b.name))
 
   return (
@@ -139,7 +144,7 @@ const Categories = ({
                 </tr>
               </thead>
               <tbody>
-                {categoryEntries.map(({ id, name, keywords }) => {
+                {categoryEntries.map(({ id, name, keywords, count }) => {
                   const isEditing = editingCategory === id
                   const isRenaming = renamingCategoryId === id
                   const isCustom = id in customRules
@@ -164,7 +169,12 @@ const Categories = ({
                             autoFocus
                           />
                         ) : (
-                          <strong>{name}</strong>
+                          <>
+                            <strong>{name}</strong>
+                            <span style={{ marginLeft: '0.5rem', color: '#666', fontSize: '0.875rem' }}>
+                              ({count})
+                            </span>
+                          </>
                         )}
                       </td>
                       <td>
