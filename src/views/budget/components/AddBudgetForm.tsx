@@ -1,6 +1,10 @@
 import { useState } from 'react'
 import { useStore, useCategories, useCategoryMetadata, getCategoryIdFromName } from '../../../store/useStore.ts'
 import { parsePolishAmount } from '../../../parsing/parsePolishAmount/parsePolishAmount.ts'
+import { Button } from '../../../components/Button/Button.tsx'
+import { Input } from '../../../components/Input/Input.tsx'
+import { Select } from '../../../components/Select/Select.tsx'
+import { SectionSubheader } from '../../../components/Header/Header.tsx'
 
 const AddBudgetForm = () => {
   const categories = useCategories()
@@ -35,10 +39,9 @@ const AddBudgetForm = () => {
       backgroundColor: '#f5f5f5', 
       borderRadius: '4px' 
     }}>
-      <h3 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1rem' }}>Add New Budget</h3>
+      <SectionSubheader style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1rem' }}>Add New Budget</SectionSubheader>
       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-        <select
-          className="form-select"
+        <Select
           value={newCategory}
           onChange={e => { setNewCategory(e.target.value) }}
           style={{ minWidth: '200px', fontSize: '0.875rem', padding: '0.375rem' }}
@@ -52,23 +55,21 @@ const AddBudgetForm = () => {
             .map(cat => (
               <option key={cat} value={cat}>{cat}</option>
             ))}
-        </select>
-        <input
+        </Select>
+        <Input
           type="text"
-          className="form-input"
           value={newAmount}
           onChange={e => { setNewAmount(e.target.value) }}
           placeholder="Amount (e.g., 1 000,00 PLN)"
           style={{ minWidth: '150px', fontSize: '0.875rem', padding: '0.375rem' }}
         />
-        <button
-          className="btn btn-primary"
+        <Button
           onClick={handleAddBudget}
           disabled={!newCategory.trim() || !newAmount.trim()}
           style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
         >
           Add
-        </button>
+        </Button>
       </div>
     </div>
   )

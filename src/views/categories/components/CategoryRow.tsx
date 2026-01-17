@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useStore, getCategoryNameFromId, useCategoryMetadata } from '../../../store/useStore.ts'
+import { Button } from '../../../components/Button/Button.tsx'
+import { Input } from '../../../components/Input/Input.tsx'
 
 interface CategoryRowProps {
   id: string
@@ -83,9 +85,8 @@ const CategoryRow = ({
     <tr>
       <td style={{ padding: '0.5rem 1rem' }}>
         {isRenaming ? (
-          <input
+          <Input
             type="text"
-            className="form-input"
             value={renamingCategoryName}
             onChange={e => { setRenamingCategoryName(e.target.value) }}
             onKeyDown={e => {
@@ -109,9 +110,8 @@ const CategoryRow = ({
       </td>
       <td style={{ padding: '0.5rem 1rem' }}>
         {isEditing ? (
-          <input
+          <Input
             type="text"
-            className="form-input"
             value={editingKeywords}
             onChange={e => { setEditingKeywords(e.target.value) }}
             onKeyDown={e => {
@@ -131,63 +131,61 @@ const CategoryRow = ({
       <td style={{ padding: '0.5rem 1rem' }}>
         {isEditing ? (
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              className="btn btn-primary"
+            <Button
               style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
               onClick={handleSaveEdit}
             >
               Save
-            </button>
-            <button
-              className="btn btn-outline"
+            </Button>
+            <Button
+              variant="outline"
               style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
               onClick={handleCancelEdit}
             >
               Cancel
-            </button>
+            </Button>
           </div>
         ) : isRenaming ? (
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              className="btn btn-primary"
+            <Button
               style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
               onClick={handleSaveRename}
               disabled={!renamingCategoryName.trim()}
             >
               Save
-            </button>
-            <button
-              className="btn btn-outline"
+            </Button>
+            <Button
+              variant="outline"
               style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
               onClick={handleCancelRename}
             >
               Cancel
-            </button>
+            </Button>
           </div>
         ) : (
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              className="btn btn-outline"
+            <Button
+              variant="outline"
               style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
               onClick={handleStartEdit}
             >
               Edit
-            </button>
-            <button
-              className="btn btn-outline"
+            </Button>
+            <Button
+              variant="outline"
               style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
               onClick={handleStartRename}
             >
               Rename
-            </button>
+            </Button>
             {isCustom && (
-              <button
-                className="btn btn-danger"
+              <Button
+                variant="danger"
                 style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
                 onClick={() => { onRemoveCategory(name) }}
               >
                 Remove
-              </button>
+              </Button>
             )}
           </div>
         )}

@@ -1,3 +1,6 @@
+import { Input } from '../../../components/Input/Input.tsx'
+import { Select } from '../../../components/Select/Select.tsx'
+
 interface CSVConfigControlsProps {
   delimiter: string
   dateIndex: number
@@ -23,58 +26,50 @@ const CSVConfigControls = ({
     <div className="form-group">
       <div className="form-group-row">
         <div className="form-group">
-          <label htmlFor="delimiter-select" className="form-label">
-            CSV Delimiter:
-          </label>
-          <select
+          <Select
             id="delimiter-select"
-            className="form-select"
+            label="CSV Delimiter:"
             value={delimiter}
             onChange={e => { onDelimiterChange(e.target.value) }}
+            style={{ marginBottom: 0 }}
           >
             <option value=";">Semicolon (;)</option>
             <option value=",">Comma (,)</option>
             <option value="\t">Tab</option>
             <option value="|">Pipe (|)</option>
-          </select>
+          </Select>
         </div>
         <div className="form-group-small">
-          <label htmlFor="date-index" className="form-label">
-            Date Column:
-          </label>
-          <input
+          <Input
             id="date-index"
+            label="Date Column:"
             type="number"
-            className="form-input"
             value={dateIndex}
             onChange={e => { onDateIndexChange(parseInt(e.target.value) || 0) }}
             min="0"
+            style={{ marginBottom: 0 }}
           />
         </div>
         <div className="form-group-small">
-          <label htmlFor="description-index" className="form-label">
-            Description Column:
-          </label>
-          <input
+          <Input
             id="description-index"
+            label="Description Column:"
             type="number"
-            className="form-input"
             value={descriptionIndex}
             onChange={e => { onDescriptionIndexChange(parseInt(e.target.value) || 0) }}
             min="0"
+            style={{ marginBottom: 0 }}
           />
         </div>
         <div className="form-group-small">
-          <label htmlFor="amount-index" className="form-label">
-            Amount Column:
-          </label>
-          <input
+          <Input
             id="amount-index"
+            label="Amount Column:"
             type="number"
-            className="form-input"
             value={amountIndex}
             onChange={e => { onAmountIndexChange(parseInt(e.target.value) || 0) }}
             min="0"
+            style={{ marginBottom: 0 }}
           />
         </div>
       </div>

@@ -1,4 +1,6 @@
 import { useStore } from '../../../store/useStore.ts'
+import { Checkbox } from '../../../components/Checkbox/Checkbox.tsx'
+import { Input } from '../../../components/Input/Input.tsx'
 
 const CategoryProcessingControls = () => {
   const treatLowValueAsOthers = useStore((state) => state.treatLowValueAsOthers)
@@ -15,25 +17,20 @@ const CategoryProcessingControls = () => {
     <div style={{ marginBottom: '1.5rem' }}>
       {/* Low-value threshold controls */}
       <div className="filter-controls" style={{ marginBottom: '0.75rem' }}>
-        <label className="filter-label">
-          <input
-            type="checkbox"
-            className="form-checkbox"
-            checked={treatLowValueAsOthers}
-            onChange={e => { setTreatLowValueAsOthers(e.target.checked) }}
-          />
-          Treat low-value expenses as "others"
-        </label>
+        <Checkbox
+          label='Treat low-value expenses as "others"'
+          checked={treatLowValueAsOthers}
+          onChange={e => { setTreatLowValueAsOthers(e.target.checked) }}
+        />
         {treatLowValueAsOthers && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <label htmlFor="low-value-threshold" className="form-label" style={{ margin: 0 }}>
               Threshold:
             </label>
-            <input
+            <Input
               id="low-value-threshold"
               type="number"
-              className="form-input"
-              style={{ width: '120px' }}
+              style={{ width: '120px', marginBottom: 0 }}
               min="0"
               step="0.01"
               value={lowValueThreshold}
@@ -46,25 +43,20 @@ const CategoryProcessingControls = () => {
       
       {/* Category percentage threshold controls */}
       <div className="filter-controls">
-        <label className="filter-label">
-          <input
-            type="checkbox"
-            className="form-checkbox"
-            checked={mergeSmallCategories}
-            onChange={e => { setMergeSmallCategories(e.target.checked) }}
-          />
-          Merge small categories into "others"
-        </label>
+        <Checkbox
+          label='Merge small categories into "others"'
+          checked={mergeSmallCategories}
+          onChange={e => { setMergeSmallCategories(e.target.checked) }}
+        />
         {mergeSmallCategories && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <label htmlFor="category-threshold" className="form-label" style={{ margin: 0 }}>
               Category threshold:
             </label>
-            <input
+            <Input
               id="category-threshold"
               type="number"
-              className="form-input"
-              style={{ width: '120px' }}
+              style={{ width: '120px', marginBottom: 0 }}
               min="0"
               max="100"
               step="0.1"

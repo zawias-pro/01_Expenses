@@ -4,6 +4,9 @@ import type { Transaction } from '../../parsing/types.ts'
 import type { CategoryMetadata } from '../../parsing/categoryTypes.ts'
 import { CSVConfigControls } from './components/CSVConfigControls.tsx'
 import { CSVPreviewTable } from './components/CSVPreviewTable.tsx'
+import { SectionHeader } from '../../components/Header/Header.tsx'
+import { Button } from '../../components/Button/Button.tsx'
+import { TextArea } from '../../components/Input/Input.tsx'
 
 const CSVInputPreview = ({ 
   csvContent, 
@@ -70,7 +73,7 @@ const CSVInputPreview = ({
 
   return (
     <div className="section">
-      <h2 className="section-header">CSV Input</h2>
+      <SectionHeader>CSV Input</SectionHeader>
       <p style={{ marginBottom: '1rem', color: '#666' }}>
         Paste CSV data below to add transactions to your existing data. Transactions will be appended, not replaced.
       </p>
@@ -87,28 +90,27 @@ const CSVInputPreview = ({
       />
 
       <div className="form-group">
-        <textarea
-          className="form-textarea"
+        <TextArea
           value={csvContent}
           onChange={e => { onCsvChange(e.target.value) }}
           rows={10}
           placeholder="Paste your CSV data here..."
+          style={{ marginBottom: 0 }}
         />
       </div>
 
       <CSVPreviewTable transactions={previewTransactions} />
 
       <div className="action-buttons">
-        <button className="btn btn-outline" onClick={onFillExample}>
+        <Button variant="outline" onClick={onFillExample}>
           Fill with Example Data
-        </button>
-        <button 
-          className="btn btn-primary"
+        </Button>
+        <Button 
           onClick={handleAddTransactions}
           disabled={csvContent.trim().length === 0}
         >
           Add transactions
-        </button>
+        </Button>
       </div>
     </div>
   ) 

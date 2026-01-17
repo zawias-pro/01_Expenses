@@ -3,6 +3,8 @@ import { useStore, useCategoryMetadata, getCategoryNameFromId } from '../../stor
 import { ExportCategoriesModal } from './components/ExportCategoriesModal.tsx'
 import { AddCategoryForm } from './components/AddCategoryForm.tsx'
 import { CategoryRow } from './components/CategoryRow.tsx'
+import { Button } from '../../components/Button/Button.tsx'
+import { SectionHeader, SectionSubheader } from '../../components/Header/Header.tsx'
 
 const Categories = ({
   rules,
@@ -65,19 +67,19 @@ const Categories = ({
     <>
       <div className="section">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h2 className="section-header" style={{ margin: 0 }}>Categories</h2>
-          <button
-            className="btn btn-outline"
+          <SectionHeader style={{ margin: 0, borderBottom: 'none', paddingBottom: 0 }}>Categories</SectionHeader>
+          <Button
+            variant="outline"
             onClick={() => { setShowExportModal(true) }}
           >
             Export
-          </button>
+          </Button>
         </div>
 
         <AddCategoryForm onUpdateCategory={onUpdateCategory} />
       
         <div>
-          <h3 className="section-subheader">Expense Categories</h3>
+          <SectionSubheader>Expense Categories</SectionSubheader>
           <div className="table-container">
             <table className="table">
               <thead>

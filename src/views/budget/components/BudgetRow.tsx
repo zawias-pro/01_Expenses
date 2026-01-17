@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useStore } from '../../../store/useStore.ts'
 import { formatPolishNumber } from '../../../parsing/formatPolishNumber/formatPolishNumber.ts'
 import { parsePolishAmount } from '../../../parsing/parsePolishAmount/parsePolishAmount.ts'
+import { Button } from '../../../components/Button/Button.tsx'
+import { Input } from '../../../components/Input/Input.tsx'
 
 interface BudgetRowProps {
   name: string
@@ -53,46 +55,44 @@ const BudgetRow = ({ name, amount }: BudgetRowProps) => {
       {isEditing ? (
         <>
           <span style={{ minWidth: '200px', fontWeight: '500' }}>{name}</span>
-          <input
+          <Input
             type="text"
-            className="form-input"
             value={editingAmount}
             onChange={e => { setEditingAmount(e.target.value) }}
             style={{ minWidth: '150px', fontSize: '0.875rem', padding: '0.375rem' }}
           />
-          <button
-            className="btn btn-primary"
+          <Button
             onClick={handleSaveEdit}
             style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
           >
             Save
-          </button>
-          <button
-            className="btn btn-outline"
+          </Button>
+          <Button
+            variant="outline"
             onClick={() => { setIsEditing(false) }}
             style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
           >
             Cancel
-          </button>
+          </Button>
         </>
       ) : (
         <>
           <span style={{ minWidth: '200px', fontWeight: '500' }}>{name}</span>
           <span style={{ minWidth: '150px' }}>{formatPolishNumber(amount)} PLN</span>
-          <button
-            className="btn btn-outline"
+          <Button
+            variant="outline"
             onClick={handleStartEdit}
             style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
           >
             Edit
-          </button>
-          <button
-            className="btn btn-outline"
+          </Button>
+          <Button
+            variant="outline"
             onClick={handleRemove}
             style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem', color: '#dc3545' }}
           >
             Remove
-          </button>
+          </Button>
         </>
       )}
     </div>

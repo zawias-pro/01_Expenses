@@ -1,4 +1,5 @@
 import { useStore } from '../../../store/useStore.ts'
+import { Select } from '../../../components/Select/Select.tsx'
 
 const PeriodSelection = ({ 
   availableYears, 
@@ -53,10 +54,9 @@ const PeriodSelection = ({
 
   return (
     <div className="selection-controls">
-      <label htmlFor="selection-type-select" className="form-label">View:</label>
-      <select
+      <Select
         id="selection-type-select"
-        className="form-select"
+        label="View:"
         style={{ width: 'auto', minWidth: '150px' }}
         value={selectionType}
         onChange={handleSelectionTypeChange}
@@ -64,12 +64,11 @@ const PeriodSelection = ({
         <option value="all">All Data</option>
         <option value="year">By Year</option>
         <option value="month">By Month</option>
-      </select>
+      </Select>
 
       {selectionType === 'year' && (
-        <select
+        <Select
           id="year-select"
-          className="form-select"
           style={{ width: 'auto', minWidth: '120px' }}
           value={selectedYear || ''}
           onChange={handleYearChange}
@@ -79,13 +78,12 @@ const PeriodSelection = ({
               {year}
             </option>
           ))}
-        </select>
+        </Select>
       )}
 
       {selectionType === 'month' && (
-        <select
+        <Select
           id="month-select"
-          className="form-select"
           style={{ width: 'auto', minWidth: '200px' }}
           value={`${selectedMonth.year.toString()}-${selectedMonth.month.toString()}`}
           onChange={handleMonthChange}
@@ -95,7 +93,7 @@ const PeriodSelection = ({
               {option.label}
             </option>
           ))}
-        </select>
+        </Select>
       )}
     </div>
   )

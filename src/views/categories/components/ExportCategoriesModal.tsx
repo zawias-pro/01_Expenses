@@ -1,4 +1,7 @@
 import { useStore, getCategoryNameFromId, useCategoryMetadata } from '../../../store/useStore.ts'
+import { Modal } from '../../../components/Modal/Modal.tsx'
+import { Button } from '../../../components/Button/Button.tsx'
+import { TextArea } from '../../../components/Input/Input.tsx'
 
 interface ExportCategoriesModalProps {
   rules: Record<string, string[]>
@@ -19,40 +22,28 @@ const ExportCategoriesModal = ({ rules }: ExportCategoriesModalProps) => {
     return lines.sort().join('\n')
   }
 
+  const handleClose = () => { setShowExportModal(false) }
+
   return (
-    <div className="modal-overlay" onClick={() => { setShowExportModal(false) }}>
-      <div className="modal" onClick={e => { e.stopPropagation() }}>
-        <div className="modal-header">
-          <h3 className="modal-title">Export Categories</h3>
-          <button
-            className="modal-close"
-            onClick={() => { setShowExportModal(false) }}
-            aria-label="Close"
-          >
-            ×
-          </button>
-        </div>
-        <div className="modal-body">
-          <p style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--text-secondary)' }}>
-            All categories in export format (keyword;category):
-          </p>
-          <textarea
-            className="form-textarea modal-textarea"
-            value={exportRules()}
-            readOnly
-            onClick={e => { (e.target as HTMLTextAreaElement).select() }}
-          />
-        </div>
-        <div className="modal-footer">
-          <button
-            className="btn btn-outline"
-            onClick={() => { setShowExportModal(false) }}
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
+    <Modal
+      title="Export Categories"
+      onClose={handleClose}
+      footer={
+        <Button variant="outline" onClick={handleClose}>
+          Close
+        </Button>
+      }
+    >
+      <p style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--text-secondary)' }}>
+        All categories in export format (keyword;category):
+      </p>
+      <TextArea
+        value={exportRules()}
+        readOnly
+        onClick={e => { (e.target as HTMLTextAreaElement).select() }}
+        style={{ minHeight: '300px', fontFamily: 'Courier New, monospace' }}
+      />
+    </Modal>
   )
 }
 

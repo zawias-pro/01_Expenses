@@ -11,6 +11,7 @@ import { CategoryBarChart } from './components/CategoryBarChart.tsx'
 import { PeriodSelection } from './components/PeriodSelection.tsx'
 import { CategoryProcessingControls } from './components/CategoryProcessingControls.tsx'
 import { BudgetComparison } from './components/BudgetComparison.tsx'
+import { SectionHeader, SectionSubheader } from '../../components/Header/Header.tsx'
 
 const monthNames = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -236,7 +237,7 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
 
   return (
     <div className="section">
-      <h2 className="section-header">Data Aggregated by Period</h2>
+      <SectionHeader>Data Aggregated by Period</SectionHeader>
 
       <PeriodSelection
         availableYears={availableYears}
@@ -247,7 +248,7 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
 
       {displaySummary && (
         <div>
-          <h3 className="section-subheader">{getDisplayTitle()}</h3>
+          <SectionSubheader>{getDisplayTitle()}</SectionSubheader>
           
           <CategoryProcessingControls />
           

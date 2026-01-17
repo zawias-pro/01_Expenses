@@ -1,4 +1,7 @@
 import { useStore } from '../../../store/useStore.ts'
+import { Button } from '../../../components/Button/Button.tsx'
+import { Input } from '../../../components/Input/Input.tsx'
+import { SectionSubheader } from '../../../components/Header/Header.tsx'
 
 interface AddCategoryFormProps {
   onUpdateCategory: (categoryName: string, keywords: string[]) => void
@@ -21,13 +24,12 @@ const AddCategoryForm = ({ onUpdateCategory }: AddCategoryFormProps) => {
 
   return (
     <div style={{ marginBottom: '2rem', padding: '1.25rem', backgroundColor: 'var(--surface-hover)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-      <h4 className="section-subheader" style={{ marginTop: 0, marginBottom: '1rem' }}>Add New Category</h4>
+      <SectionSubheader style={{ marginTop: 0, marginBottom: '1rem' }}>Add New Category</SectionSubheader>
       <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-        <div className="form-group" style={{ flex: '1', minWidth: '200px', marginBottom: 0 }}>
-          <label className="form-label" style={{ fontSize: '0.8125rem' }}>Category</label>
-          <input
+        <div style={{ flex: '1', minWidth: '200px' }}>
+          <Input
+            label="Category"
             type="text"
-            className="form-input"
             placeholder="e.g., 'entertainment'"
             value={newCategory}
             onChange={e => { setNewCategory(e.target.value) }}
@@ -39,11 +41,10 @@ const AddCategoryForm = ({ onUpdateCategory }: AddCategoryFormProps) => {
             style={{ padding: '0.5rem', fontSize: '0.875rem' }}
           />
         </div>
-        <div className="form-group" style={{ flex: '1', minWidth: '200px', marginBottom: 0 }}>
-          <label className="form-label" style={{ fontSize: '0.8125rem' }}>Keywords (comma-separated)</label>
-          <input
+        <div style={{ flex: '1', minWidth: '200px' }}>
+          <Input
+            label="Keywords (comma-separated)"
             type="text"
-            className="form-input"
             placeholder="e.g., 'netflix, spotify, hbo'"
             value={newKeywords}
             onChange={e => { setNewKeywords(e.target.value) }}
@@ -55,15 +56,14 @@ const AddCategoryForm = ({ onUpdateCategory }: AddCategoryFormProps) => {
             style={{ padding: '0.5rem', fontSize: '0.875rem' }}
           />
         </div>
-        <div>
-          <button
-            className="btn btn-primary"
+        <div style={{ marginBottom: '1.5rem' }}>
+          <Button
             onClick={handleAddCategory}
             disabled={!newCategory.trim() || !newKeywords.trim()}
             style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
           >
             Add Category
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -1,3 +1,5 @@
+import { Select } from '../../../components/Select/Select.tsx'
+
 interface CategoryFilterProps {
   categories: string[]
   selectedCategory: string | null
@@ -7,11 +9,8 @@ interface CategoryFilterProps {
 const CategoryFilter = ({ categories, selectedCategory, onCategoryChange }: CategoryFilterProps) => {
   return (
     <div style={{ marginBottom: '1.5rem' }}>
-      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>
-        Filter by Category:
-      </label>
-      <select
-        className="form-select"
+      <Select
+        label="Filter by Category:"
         value={selectedCategory || ''}
         onChange={e => { onCategoryChange(e.target.value || null) }}
         style={{ fontSize: '0.875rem', padding: '0.375rem', minWidth: '200px' }}
@@ -20,7 +19,7 @@ const CategoryFilter = ({ categories, selectedCategory, onCategoryChange }: Cate
         {categories.map(cat => (
           <option key={cat} value={cat}>{cat}</option>
         ))}
-      </select>
+      </Select>
     </div>
   )
 }

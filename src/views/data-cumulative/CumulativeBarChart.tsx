@@ -2,6 +2,8 @@ import { useState } from 'react'
 import type { MonthlySummary } from '../../parsing/types.ts'
 import { CategoryFilter } from './components/CategoryFilter.tsx'
 import { CumulativeChart } from './components/CumulativeChart.tsx'
+import { SectionHeader } from '../../components/Header/Header.tsx'
+import { Button } from '../../components/Button/Button.tsx'
 
 const monthNames = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -57,11 +59,11 @@ const CumulativeBarChart = ({ summaries, onBack }: {
   if (chartData.length === 0) {
     return (
       <div className="section">
-        <h2 className="section-header">Cumulative Bar Chart</h2>
+        <SectionHeader>Cumulative Bar Chart</SectionHeader>
         <p>No data available</p>
         {onBack && (
           <div className="action-buttons">
-            <button className="btn btn-outline" onClick={onBack}>Back</button>
+            <Button variant="outline" onClick={onBack}>Back</Button>
           </div>
         )}
       </div>
@@ -70,7 +72,7 @@ const CumulativeBarChart = ({ summaries, onBack }: {
 
   return (
     <div className="section">
-      <h2 className="section-header">Cumulative Bar Chart</h2>
+      <SectionHeader>Cumulative Bar Chart</SectionHeader>
       <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>
         Expense trends by category over time
       </p>
