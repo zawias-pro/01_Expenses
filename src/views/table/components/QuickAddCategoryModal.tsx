@@ -1,4 +1,4 @@
-import { useStore, useCategories, getOrCreateCategoryId, useCategoryMetadata } from '../../../store/useStore.ts'
+import { useCategories } from '../../../store/useStore.ts'
 
 interface QuickAddCategoryModalProps {
   transactionId: string | null

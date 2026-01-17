@@ -1,4 +1,4 @@
-import { useStore, useCategories } from '../../../store/useStore.ts'
+import { useCategories } from '../../../store/useStore.ts'
 
 type BulkAction = 'delete' | 'exclude' | 'unexclude' | 'setCategory' | null
 

@@ -1,5 +1,3 @@
-import { useStore, useCategories, useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName } from '../../../store/useStore.ts'
-
 interface EditTransactionModalProps {
   transactionId: string | null
   date: string
@@ -13,6 +11,8 @@ interface EditTransactionModalProps {
   onSave: () => void
   onCancel: () => void
 }
+
+import { useCategories, useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName } from '../../../store/useStore.ts'
 
 export const EditTransactionModal = ({
   transactionId,

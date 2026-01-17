@@ -27,6 +27,10 @@ const Categories = ({
   const [renamingCategoryId, setRenamingCategoryId] = useState<string | null>(null)
   const [renamingCategoryName, setRenamingCategoryName] = useState<string>('')
   
+  // Sorting state
+  const [sortColumn, setSortColumn] = useState<'name' | 'count'>('name')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+  
   // Store actions
   const setShowExportModal = useStore((state) => state.setShowExportModal)
   const setEditingCategory = useStore((state) => state.setEditingCategory)
@@ -93,6 +97,15 @@ const Categories = ({
     }
   }
 
+  const handleSort = (column: 'name' | 'count') => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortColumn(column)
+      setSortDirection('asc')
+    }
+  }
+
   const exportRules = (): string => {
     // Export in format: keyword;category (one line per keyword)
     // Export uses category names, not IDs
@@ -106,7 +119,7 @@ const Categories = ({
     return lines.sort().join('\n')
   }
 
-  // Get category entries sorted by name
+  // Get category entries sorted by name or count
   const categoryEntries = Object.entries(rules)
     .map(([categoryId, keywords]) => {
       const count = transactions.filter(t => t.category === categoryId).length
@@ -117,7 +130,17 @@ const Categories = ({
         count
       }
     })
-    .sort((a, b) => a.name.localeCompare(b.name))
+    .sort((a, b) => {
+      if (sortColumn === 'name') {
+        return sortDirection === 'asc' 
+          ? a.name.localeCompare(b.name)
+          : b.name.localeCompare(a.name)
+      } else {
+        return sortDirection === 'asc'
+          ? a.count - b.count
+          : b.count - a.count
+      }
+    })
 
   return (
     <>
@@ -131,6 +154,54 @@ const Categories = ({
             Export
           </button>
         </div>
+
+        <div style={{ marginBottom: '2rem', padding: '1.25rem', backgroundColor: 'var(--surface-hover)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+          <h4 className="section-subheader" style={{ marginTop: 0, marginBottom: '1rem' }}>Add New Category</h4>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+            <div className="form-group" style={{ flex: '1', minWidth: '200px', marginBottom: 0 }}>
+              <label className="form-label" style={{ fontSize: '0.8125rem' }}>Category</label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="e.g., 'entertainment'"
+                value={newCategory}
+                onChange={e => { setNewCategory(e.target.value) }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    handleAddCategory()
+                  }
+                }}
+                style={{ padding: '0.5rem', fontSize: '0.875rem' }}
+              />
+            </div>
+            <div className="form-group" style={{ flex: '1', minWidth: '200px', marginBottom: 0 }}>
+              <label className="form-label" style={{ fontSize: '0.8125rem' }}>Keywords (comma-separated)</label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="e.g., 'netflix, spotify, hbo'"
+                value={newKeywords}
+                onChange={e => { setNewKeywords(e.target.value) }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    handleAddCategory()
+                  }
+                }}
+                style={{ padding: '0.5rem', fontSize: '0.875rem' }}
+              />
+            </div>
+            <div>
+              <button
+                className="btn btn-primary"
+                onClick={handleAddCategory}
+                disabled={!newCategory.trim() || !newKeywords.trim()}
+                style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
+              >
+                Add Category
+              </button>
+            </div>
+          </div>
+        </div>
       
         <div>
           <h3 className="section-subheader">Expense Categories</h3>
@@ -138,7 +209,20 @@ const Categories = ({
             <table className="table">
               <thead>
                 <tr>
-                  <th>Category</th>
+                  <th 
+                    className="sortable-header" 
+                    onClick={() => { handleSort('name') }}
+                    style={{ cursor: 'pointer', userSelect: 'none' }}
+                  >
+                    Category {sortColumn === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    className="sortable-header"
+                    onClick={() => { handleSort('count') }}
+                    style={{ cursor: 'pointer', userSelect: 'none' }}
+                  >
+                    Transactions {sortColumn === 'count' && (sortDirection === 'asc' ? '↑' : '↓')}
+                  </th>
                   <th>Keywords</th>
                   <th>Action</th>
                 </tr>
@@ -151,7 +235,7 @@ const Categories = ({
                   
                   return (
                     <tr key={id}>
-                      <td>
+                      <td style={{ padding: '0.5rem 1rem' }}>
                         {isRenaming ? (
                           <input
                             type="text"
@@ -165,19 +249,19 @@ const Categories = ({
                                 handleCancelRename()
                               }
                             }}
-                            style={{ width: '100%', fontWeight: 'bold' }}
+                            style={{ width: '100%', fontWeight: 'bold', padding: '0.25rem 0.5rem' }}
                             autoFocus
                           />
                         ) : (
-                          <>
-                            <strong>{name}</strong>
-                            <span style={{ marginLeft: '0.5rem', color: '#666', fontSize: '0.875rem' }}>
-                              ({count})
-                            </span>
-                          </>
+                          <strong>{name}</strong>
                         )}
                       </td>
-                      <td>
+                      <td style={{ padding: '0.5rem 1rem' }}>
+                        <span style={{ color: '#666', fontSize: '0.875rem' }}>
+                          {count}
+                        </span>
+                      </td>
+                      <td style={{ padding: '0.5rem 1rem' }}>
                         {isEditing ? (
                           <input
                             type="text"
@@ -191,26 +275,26 @@ const Categories = ({
                                 handleCancelEdit()
                               }
                             }}
-                            style={{ width: '100%' }}
+                            style={{ width: '100%', padding: '0.25rem 0.5rem' }}
                             autoFocus
                           />
                         ) : (
                           <span>{keywords.join(', ')}</span>
                         )}
                       </td>
-                      <td>
+                      <td style={{ padding: '0.5rem 1rem' }}>
                         {isEditing ? (
                           <div style={{ display: 'flex', gap: '0.5rem' }}>
                             <button
                               className="btn btn-primary"
-                              style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}
+                              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
                               onClick={handleSaveEdit}
                             >
                               Save
                             </button>
                             <button
                               className="btn btn-outline"
-                              style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}
+                              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
                               onClick={handleCancelEdit}
                             >
                               Cancel
@@ -220,7 +304,7 @@ const Categories = ({
                           <div style={{ display: 'flex', gap: '0.5rem' }}>
                             <button
                               className="btn btn-primary"
-                              style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}
+                              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
                               onClick={handleSaveRename}
                               disabled={!renamingCategoryName.trim()}
                             >
@@ -228,7 +312,7 @@ const Categories = ({
                             </button>
                             <button
                               className="btn btn-outline"
-                              style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}
+                              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
                               onClick={handleCancelRename}
                             >
                               Cancel
@@ -238,14 +322,14 @@ const Categories = ({
                           <div style={{ display: 'flex', gap: '0.5rem' }}>
                             <button
                               className="btn btn-outline"
-                              style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}
+                              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
                               onClick={() => { handleStartEdit(id, keywords) }}
                             >
                               Edit
                             </button>
                             <button
                               className="btn btn-outline"
-                              style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}
+                              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
                               onClick={() => { handleStartRename(id, name) }}
                             >
                               Rename
@@ -253,7 +337,7 @@ const Categories = ({
                             {isCustom && (
                               <button
                                 className="btn btn-danger"
-                                style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}
+                                style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
                                 onClick={() => { onRemoveCategory(name) }}
                               >
                                 Remove
@@ -269,50 +353,6 @@ const Categories = ({
             </table>
           </div>
           
-          <div style={{ marginTop: '1.5rem', padding: '1.5rem', backgroundColor: 'var(--surface-hover)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-            <h4 className="section-subheader" style={{ marginTop: 0 }}>Add New Category</h4>
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-              <div className="form-group" style={{ flex: '1', minWidth: '200px', marginBottom: 0 }}>
-                <label className="form-label">Category</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="e.g., 'entertainment'"
-                  value={newCategory}
-                  onChange={e => { setNewCategory(e.target.value) }}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') {
-                      handleAddCategory()
-                    }
-                  }}
-                />
-              </div>
-              <div className="form-group" style={{ flex: '1', minWidth: '200px', marginBottom: 0 }}>
-                <label className="form-label">Keywords (comma-separated)</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="e.g., 'netflix, spotify, hbo'"
-                  value={newKeywords}
-                  onChange={e => { setNewKeywords(e.target.value) }}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') {
-                      handleAddCategory()
-                    }
-                  }}
-                />
-              </div>
-              <div>
-                <button
-                  className="btn btn-primary"
-                  onClick={handleAddCategory}
-                  disabled={!newCategory.trim() || !newKeywords.trim()}
-                >
-                  Add Category
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
