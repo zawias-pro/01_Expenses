@@ -9,7 +9,7 @@ interface Transaction {
   excluded: boolean
   isValid: boolean
   validationError?: string
-  overridden: boolean // Kept for backward compatibility - true if dateOverridden or categoryOverridden
+  overridden: boolean // true if dateOverridden or categoryOverridden
   dateOverridden?: boolean
   categoryOverridden?: boolean
   overrideMode: boolean

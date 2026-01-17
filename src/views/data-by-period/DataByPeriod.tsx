@@ -16,7 +16,7 @@ import { formatPolishNumber } from '../../parsing/formatPolishNumber/formatPolis
 import { parsePolishAmount } from '../../parsing/parsePolishAmount/parsePolishAmount.ts'
 import { getYearFromDate } from '../../parsing/getYearFromDate/getYearFromDate.ts'
 import { getMonthFromDate } from '../../parsing/getMonthFromDate/getMonthFromDate.ts'
-import { useStore } from '../../store/useStore.ts'
+import { useStore, useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName, generateCategoryId } from '../../store/useStore.ts'
 
 const CategoryBarChart = ({ categories }: { categories: Record<string, number> }) => {
   const categoryEntries = Object.entries(categories)
@@ -87,6 +87,8 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
   const setCategoryThresholdPercent = useStore((state) => state.setCategoryThresholdPercent)
   const setSelectedMonth = useStore((state) => state.setSelectedMonth)
   const budgets = useStore((state) => state.budgets)
+  const categoryMetadata = useCategoryMetadata()
+  const othersCategoryId = generateCategoryId('others')
   
   // Initialize selectedYear from selectedMonth if not set
   useEffect(() => {
@@ -195,6 +197,7 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
       // For 'all', we already have all transactions filtered
 
       // Re-aggregate categories, treating low-value expenses as "others"
+      // Use category names for display (MonthlySummary uses names)
       const processed: Record<string, number> = {}
       
       periodTransactions.forEach(t => {
@@ -203,14 +206,16 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
           if (amount < 0) {
             // This is an expense
             const absAmount = Math.abs(amount)
-            let category = t.category
+            let categoryId = t.category
             
             // If the expense is below threshold, treat it as "others"
             if (absAmount < lowValueThreshold) {
-              category = 'others'
+              categoryId = othersCategoryId
             }
             
-            processed[category] = (processed[category] || 0) + absAmount
+            // Convert ID to name for display
+            const categoryName = getCategoryNameFromId(categoryId, categoryMetadata)
+            processed[categoryName] = (processed[categoryName] || 0) + absAmount
           }
         } catch {
           // Skip invalid transactions

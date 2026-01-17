@@ -3,6 +3,7 @@ import type { Transaction } from '../../parsing/types.ts'
 import { getYearFromDate } from '../../parsing/getYearFromDate/getYearFromDate.ts'
 import { getMonthFromDate } from '../../parsing/getMonthFromDate/getMonthFromDate.ts'
 import { parsePolishAmount } from '../../parsing/parsePolishAmount/parsePolishAmount.ts'
+import { useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName, generateCategoryId } from '../../store/useStore.ts'
 
 type BulkAction = 'delete' | 'exclude' | 'unexclude' | 'setCategory' | null
 
@@ -31,9 +32,9 @@ const TransactionsTable = ({
    onUpdateCategory,
 }: {
   transactions: Transaction[]
-  categories: string[]
+  categories: string[] // category names
   onExcludedChange: (id: string, excluded: boolean) => void
-  onCategoryChange: (id: string, category: string) => void
+  onCategoryChange: (id: string, categoryId: string) => void
   onDateChange: (id: string, date: string) => void
   onCommentChange: (id: string, comment: string) => void
   onResetTransactionDate: (id: string) => void
@@ -66,6 +67,9 @@ const TransactionsTable = ({
   const [quickAddSelectedCategory, setQuickAddSelectedCategory] = useState<string>('new')
   const [quickAddCustomCategory, setQuickAddCustomCategory] = useState<string>('')
   const [quickAddKeyword, setQuickAddKeyword] = useState<string>('')
+  
+  const categoryMetadata = useCategoryMetadata()
+  const othersCategoryId = generateCategoryId('others')
 
   // Parse amount string to number
   const parseAmount = (amountStr: string): number => {
@@ -103,16 +107,18 @@ const TransactionsTable = ({
     // Search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase()
-      filtered = filtered.filter(t => 
-        t.description.toLowerCase().includes(query) ||
-        t.category.toLowerCase().includes(query) ||
-        t.date.includes(query) ||
-        t.amount.includes(query) ||
-        (t.hash && t.hash.toLowerCase().includes(query))
-      )
+      filtered = filtered.filter(t => {
+        const categoryName = getCategoryNameFromId(t.category, categoryMetadata)
+        return 
+          t.description.toLowerCase().includes(query) ||
+          categoryName.toLowerCase().includes(query) ||
+          t.date.includes(query) ||
+          t.amount.includes(query) ||
+          (t.hash && t.hash.toLowerCase().includes(query))
+      })
     }
 
-    // Category filter
+    // Category filter (selectedCategory is a category ID)
     if (selectedCategory) {
       filtered = filtered.filter(t => t.category === selectedCategory)
     }
@@ -153,7 +159,9 @@ const TransactionsTable = ({
         } else if (sortColumn === 'description') {
           comparison = a.description.localeCompare(b.description)
         } else if (sortColumn === 'category') {
-          comparison = a.category.localeCompare(b.category)
+          const aName = getCategoryNameFromId(a.category, categoryMetadata)
+          const bName = getCategoryNameFromId(b.category, categoryMetadata)
+          comparison = aName.localeCompare(bName)
         } else if (sortColumn === 'amount') {
           comparison = parseAmount(a.amount) - parseAmount(b.amount)
         } else if (sortColumn === 'addedAt') {
@@ -247,7 +255,9 @@ const TransactionsTable = ({
       setSelectedIds(new Set())
       setBulkAction(null)
     } else if (bulkAction === 'setCategory' && bulkCategory) {
-      selectedIds.forEach(id => onCategoryChange(id, bulkCategory))
+      // bulkCategory is a category name, convert to ID
+      const categoryId = getCategoryIdFromName(bulkCategory, categoryMetadata)
+      selectedIds.forEach(id => onCategoryChange(id, categoryId))
       setSelectedIds(new Set())
       setBulkAction(null)
       setBulkCategory('')
@@ -287,8 +297,9 @@ const TransactionsTable = ({
     const keywords = quickAddKeyword.split(',').map(k => k.trim()).filter(k => k)
     onUpdateCategory(categoryName, keywords)
     
-    // Update the transaction's category
-    onCategoryChange(quickAddTransactionId, categoryName)
+    // Update the transaction's category (convert name to ID)
+    const categoryId = getCategoryIdFromName(categoryName, categoryMetadata)
+    onCategoryChange(quickAddTransactionId, categoryId)
     
     // Close the modal
     setQuickAddTransactionId(null)
@@ -339,7 +350,11 @@ const TransactionsTable = ({
           <select
             className="form-select"
             value={selectedCategory || ''}
-            onChange={e => onSelectedCategoryChange(e.target.value || null)}
+            onChange={e => {
+              const categoryName = e.target.value
+              const categoryId = categoryName ? getCategoryIdFromName(categoryName, categoryMetadata) : null
+              onSelectedCategoryChange(categoryId)
+            }}
             style={{ width: '100%', fontSize: '0.875rem', padding: '0.375rem' }}
           >
             <option value="">All categories</option>
@@ -589,8 +604,8 @@ const TransactionsTable = ({
                   opacity: t.excluded ? 0.6 : 1
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span>{t.category}</span>
-                    {t.category === 'others' && !t.categoryOverridden && (
+                    <span>{getCategoryNameFromId(t.category, categoryMetadata)}</span>
+                    {t.category === othersCategoryId && !t.categoryOverridden && (
                       <button
                         onClick={() => handleQuickAddCategory(t.id, t.description)}
                         style={{
@@ -676,7 +691,7 @@ const TransactionsTable = ({
                       onClick={() => {
                         setEditTransactionId(t.id)
                         setEditDate(t.date)
-                        setEditCategory(t.category)
+                        setEditCategory(t.category) // Store category ID
                         setEditComment(t.comment || '')
                         setEditExcluded(t.excluded)
                       }}
@@ -760,8 +775,12 @@ const TransactionsTable = ({
                 </label>
                 <select
                   className="form-select"
-                  value={editCategory}
-                  onChange={e => setEditCategory(e.target.value)}
+                  value={getCategoryNameFromId(editCategory || othersCategoryId, categoryMetadata)}
+                  onChange={e => {
+                    const categoryName = e.target.value
+                    const categoryId = getCategoryIdFromName(categoryName, categoryMetadata)
+                    setEditCategory(categoryId)
+                  }}
                   style={{ width: '100%', fontSize: '0.875rem', padding: '0.375rem' }}
                 >
                   {categories.map(cat => (
@@ -816,7 +835,7 @@ const TransactionsTable = ({
                   onClick={() => {
                     if (editTransactionId) {
                       onDateChange(editTransactionId, editDate)
-                      onCategoryChange(editTransactionId, editCategory)
+                      onCategoryChange(editTransactionId, editCategory || othersCategoryId)
                       onCommentChange(editTransactionId, editComment)
                       onExcludedChange(editTransactionId, editExcluded)
                     }

@@ -1,18 +1,27 @@
+import type { CategoryMetadata } from '../../store/useStore.ts'
+import { getCategoryIdFromName } from '../../store/useStore.ts'
+import { generateCategoryId } from '../categoryUtils.ts'
+
 /**
  * Example:
- * Input: "BIEDRONKA purchase", { "grocery": ["biedronka"], "transfers": ["transfer"] }
- * Output: "grocery"
+ * Input: "BIEDRONKA purchase", { "cat_xyz": ["biedronka"], "cat_abc": ["transfer"] }, { "cat_xyz": "grocery", "cat_abc": "transfers" }
+ * Output: "cat_xyz"
  */
-const classifyDescription = (description: string, rules: Record<string, string[]>): string => {
+const classifyDescription = (
+  description: string, 
+  rules: Record<string, string[]>, // category ID -> keywords
+  metadata: CategoryMetadata // category ID -> category name
+): string => {
   const desc = description.toLowerCase()
-  for (const [category, keywords] of Object.entries(rules)) {
+  for (const [categoryId, keywords] of Object.entries(rules)) {
     for (const keyword of keywords) {
       if (desc.includes(keyword.toLowerCase())) {
-        return category
+        return categoryId
       }
     }
   }
-  return 'others'
+  // Return ID for 'others' category
+  return generateCategoryId('others')
 }
 
 export { classifyDescription }

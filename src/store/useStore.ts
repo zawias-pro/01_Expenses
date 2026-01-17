@@ -9,8 +9,31 @@ import rulesContent from '../rules.csv?raw'
 
 // NOTE: This is a development app, not production. No migrations needed.
 // Handle everything in-memory only.
-const RULES = parseRules(rulesContent)
+const { rules: RULES, metadata: INITIAL_METADATA } = parseRules(rulesContent)
 const STORAGE_KEY = 'expense-analyzer-data'
+
+// Category metadata: maps category ID to category name
+export type CategoryMetadata = Record<string, string> // ID -> name
+
+import { generateCategoryId } from '../parsing/categoryUtils.ts'
+
+// Helper functions for ID/name conversion
+const getCategoryIdFromName = (name: string, metadata: CategoryMetadata): string => {
+  // First, try to find existing ID for this name
+  for (const [id, categoryName] of Object.entries(metadata)) {
+    if (categoryName === name) {
+      return id
+    }
+  }
+  // If not found, generate a new ID
+  return generateCategoryId(name)
+}
+
+const getCategoryNameFromId = (id: string, metadata: CategoryMetadata): string => {
+  return metadata[id] || 'others'
+}
+
+const INITIAL_CATEGORY_METADATA = INITIAL_METADATA
 
 type View = 'csv' | 'categories' | 'transactions' | 'summary' | 'chart' | 'budget'
 type SelectionType = 'month' | 'year' | 'all'
@@ -20,7 +43,8 @@ interface AppState {
   // App-level state
   transactions: Transaction[]
   view: View
-  customRules: Record<string, string[]>
+  customRules: Record<string, string[]> // category ID -> keywords
+  categoryMetadata: CategoryMetadata // category ID -> category name
   selectedMonth: { year: number; month: number } | null
   dateIndex: number
   descriptionIndex: number
@@ -32,7 +56,7 @@ interface AppState {
   
   // TransactionsTable filters and sorting
   searchQuery: string
-  selectedCategory: string | null
+  selectedCategory: string | null // category ID
   selectedMonthFilter: string | null // Format: "YYYY-MM"
   amountFilterType: 'none' | 'less' | 'greater' | null
   amountFilterValue: number | null
@@ -50,13 +74,13 @@ interface AppState {
   
   // Categories UI state
   showExportModal: boolean
-  editingCategory: string | null
+  editingCategory: string | null // category ID
   editingKeywords: string
-  newCategory: string
+  newCategory: string // category name (for UI)
   newKeywords: string
   
   // Budget state
-  budgets: Record<string, number> // category -> monthly budget amount
+  budgets: Record<string, number> // category ID -> monthly budget amount
   
   // Actions
   setView: (view: View) => void
@@ -68,12 +92,13 @@ interface AppState {
   setTransactions: (transactions: Transaction[]) => void
   setSelectedMonth: (month: { year: number; month: number } | null) => void
   setCustomRules: (rules: Record<string, string[]>) => void
+  setCategoryMetadata: (metadata: CategoryMetadata) => void
   setOnlyShowOthers: (value: boolean) => void
   setAmountSortDirection: (direction: 'asc' | 'desc' | null) => void
   
   // Transaction actions
   updateTransactionExcluded: (id: string, excluded: boolean) => void
-  updateTransactionCategory: (id: string, category: string) => void
+  updateTransactionCategory: (id: string, categoryId: string) => void
   updateTransactionDate: (id: string, date: string) => void
   updateTransactionOverrideMode: (id: string, overrideMode: boolean) => void
   updateTransactionComment: (id: string, comment: string) => void
@@ -89,9 +114,10 @@ interface AppState {
   setSortColumn: (column: 'date' | 'description' | 'category' | 'amount' | 'addedAt' | null) => void
   setSortDirection: (direction: 'asc' | 'desc' | null) => void
   
-  // Category actions
-  updateCategory: (category: string, keywords: string[]) => void
-  removeCategory: (category: string) => void
+  // Category actions (operate on names for user convenience)
+  updateCategory: (categoryName: string, keywords: string[]) => void
+  removeCategory: (categoryName: string) => void
+  renameCategory: (oldName: string, newName: string) => void
   
   // DataByPeriod actions
   setSelectionType: (type: SelectionType) => void
@@ -109,9 +135,9 @@ interface AppState {
   setNewCategory: (category: string) => void
   setNewKeywords: (keywords: string) => void
   
-  // Budget actions
-  setBudget: (category: string, amount: number) => void
-  removeBudget: (category: string) => void
+  // Budget actions (operate on names for user convenience)
+  setBudget: (categoryName: string, amount: number) => void
+  removeBudget: (categoryName: string) => void
   
   // Utility actions
   clearAll: () => void
@@ -122,6 +148,7 @@ const initialState = {
   transactions: [],
   view: 'csv' as View,
   customRules: {},
+  categoryMetadata: INITIAL_CATEGORY_METADATA,
   selectedMonth: null,
   dateIndex: 0,
   descriptionIndex: 1,
@@ -174,6 +201,10 @@ const useStore = create<AppState>()(
         // Re-classify transactions when rules change
         get().reclassifyTransactions()
       },
+      
+      setCategoryMetadata: (metadata) => {
+        set({ categoryMetadata: metadata })
+      },
       setOnlyShowOthers: (value) => set({ onlyShowOthers: value }),
       setAmountSortDirection: (direction) => set({ amountSortDirection: direction }),
       
@@ -195,7 +226,7 @@ const useStore = create<AppState>()(
                 ...t, 
                 category, 
                 categoryOverridden: true,
-                overridden: true, // Keep for backward compatibility
+                overridden: true,
                 originalCategory
               }
             }
@@ -214,7 +245,7 @@ const useStore = create<AppState>()(
                 ...t, 
                 date, 
                 dateOverridden: true,
-                overridden: true, // Keep for backward compatibility
+                overridden: true,
                 originalDate 
               }
             }
@@ -263,16 +294,16 @@ const useStore = create<AppState>()(
       
       resetTransactionCategory: (id) => {
         const state = get()
-        const allRules = computeAllRules(state.customRules)
+        const allRules = computeAllRules(state.customRules, state.categoryMetadata)
         set({
           transactions: state.transactions.map((t) => {
             if (t.id === id) {
-              const newCategory = classifyDescription(t.description, allRules)
+              const newCategoryId = classifyDescription(t.description, allRules, state.categoryMetadata)
               const categoryOverridden = false
               const overridden = t.dateOverridden || false // Keep overridden true if date is still overridden
               return { 
                 ...t, 
-                category: newCategory, 
+                category: newCategoryId, 
                 categoryOverridden,
                 overridden,
                 originalCategory: undefined 
@@ -296,30 +327,85 @@ const useStore = create<AppState>()(
       setSortColumn: (column) => set({ sortColumn: column }),
       setSortDirection: (direction) => set({ sortDirection: direction }),
       
-      updateCategory: (category, keywords) => {
+      updateCategory: (categoryName, keywords) => {
         set((state) => {
           const filtered = keywords.filter((k) => k.trim()).map((k) => k.trim())
+          const categoryId = getCategoryIdFromName(categoryName, state.categoryMetadata)
+          
+          // Update metadata if this is a new category
+          const newMetadata = { ...state.categoryMetadata }
+          if (!newMetadata[categoryId]) {
+            newMetadata[categoryId] = categoryName
+          }
+          
           if (filtered.length === 0) {
             // Remove category if no keywords
             const rest = Object.fromEntries(
-              Object.entries(state.customRules).filter(([key]) => key !== category)
+              Object.entries(state.customRules).filter(([key]) => key !== categoryId)
             )
-            return { customRules: rest }
+            return { customRules: rest, categoryMetadata: newMetadata }
           }
           return {
-            customRules: { ...state.customRules, [category]: filtered },
+            customRules: { ...state.customRules, [categoryId]: filtered },
+            categoryMetadata: newMetadata,
           }
         })
         // Re-classify transactions when rules change
         get().reclassifyTransactions()
       },
       
-      removeCategory: (category) => {
+      removeCategory: (categoryName) => {
         set((state) => {
+          const categoryId = getCategoryIdFromName(categoryName, state.categoryMetadata)
           const rest = Object.fromEntries(
-            Object.entries(state.customRules).filter(([key]) => key !== category)
+            Object.entries(state.customRules).filter(([key]) => key !== categoryId)
           )
           return { customRules: rest }
+        })
+        // Re-classify transactions when rules change
+        get().reclassifyTransactions()
+      },
+      
+      renameCategory: (oldName, newName) => {
+        set((state) => {
+          const oldId = getCategoryIdFromName(oldName, state.categoryMetadata)
+          const newId = getCategoryIdFromName(newName, state.categoryMetadata)
+          
+          // Update metadata
+          const newMetadata = { ...state.categoryMetadata }
+          if (newMetadata[oldId]) {
+            delete newMetadata[oldId]
+          }
+          newMetadata[newId] = newName
+          
+          // Update customRules if this category has rules
+          const newCustomRules = { ...state.customRules }
+          if (newCustomRules[oldId]) {
+            newCustomRules[newId] = newCustomRules[oldId]
+            delete newCustomRules[oldId]
+          }
+          
+          // Update transactions
+          const newTransactions = state.transactions.map(t => {
+            if (t.category === oldId) {
+              return { ...t, category: newId }
+            }
+            return t
+          })
+          
+          // Update budgets
+          const newBudgets = { ...state.budgets }
+          if (newBudgets[oldId] !== undefined) {
+            newBudgets[newId] = newBudgets[oldId]
+            delete newBudgets[oldId]
+          }
+          
+          return {
+            categoryMetadata: newMetadata,
+            customRules: newCustomRules,
+            transactions: newTransactions,
+            budgets: newBudgets,
+          }
         })
         // Re-classify transactions when rules change
         get().reclassifyTransactions()
@@ -339,15 +425,19 @@ const useStore = create<AppState>()(
       setNewCategory: (category) => set({ newCategory: category }),
       setNewKeywords: (keywords) => set({ newKeywords: keywords }),
       
-      setBudget: (category, amount) => {
-        set((state) => ({
-          budgets: { ...state.budgets, [category]: amount }
-        }))
+      setBudget: (categoryName, amount) => {
+        set((state) => {
+          const categoryId = getCategoryIdFromName(categoryName, state.categoryMetadata)
+          return {
+            budgets: { ...state.budgets, [categoryId]: amount }
+          }
+        })
       },
       
-      removeBudget: (category) => {
+      removeBudget: (categoryName) => {
         set((state) => {
-          const { [category]: removed, ...rest } = state.budgets
+          const categoryId = getCategoryIdFromName(categoryName, state.categoryMetadata)
+          const { [categoryId]: removed, ...rest } = state.budgets
           return { budgets: rest }
         })
       },
@@ -365,19 +455,19 @@ const useStore = create<AppState>()(
         const state = get()
         if (state.transactions.length === 0) return
         
-        const allRules = computeAllRules(state.customRules)
+        const allRules = computeAllRules(state.customRules, state.categoryMetadata)
         set({
           transactions: state.transactions.map((t) => {
             if (t.categoryOverridden) {
               return t // Keep overridden categories
             }
-            const newCategory = classifyDescription(t.description, allRules)
-            if (t.category === newCategory) {
+            const newCategoryId = classifyDescription(t.description, allRules, state.categoryMetadata)
+            if (t.category === newCategoryId) {
               return t // No change needed
             }
             return {
               ...t,
-              category: newCategory,
+              category: newCategoryId,
             }
           }),
         })
@@ -418,23 +508,25 @@ const useStore = create<AppState>()(
         newKeywords: state.newKeywords,
       }),
       onRehydrateStorage: () => () => {
-        // No migration needed - this is a development app, handle everything in-memory
+        // No migration needed - this is a development app
       },
     }
   )
 )
 
 // Computed selectors
-const computeAllRules = (customRules: Record<string, string[]>): Record<string, string[]> => {
+// RULES already uses category IDs as keys
+const computeAllRules = (customRules: Record<string, string[]>, metadata: CategoryMetadata): Record<string, string[]> => {
+  // Merge RULES (which uses IDs) with custom rules (which also use IDs)
   const merged: Record<string, string[]> = { ...RULES }
-  for (const [category, keywords] of Object.entries(customRules)) {
-    if (merged[category]) {
+  for (const [categoryId, keywords] of Object.entries(customRules)) {
+    if (merged[categoryId]) {
       // Merge arrays, avoiding duplicates
-      const existing = new Set(merged[category])
+      const existing = new Set(merged[categoryId])
       keywords.forEach((k) => existing.add(k))
-      merged[category] = Array.from(existing)
+      merged[categoryId] = Array.from(existing)
     } else {
-      merged[category] = [...keywords]
+      merged[categoryId] = [...keywords]
     }
   }
   return merged
@@ -442,17 +534,23 @@ const computeAllRules = (customRules: Record<string, string[]>): Record<string, 
 
 const useAllRules = () => {
   const customRules = useStore((state) => state.customRules)
-  return computeAllRules(customRules)
+  const categoryMetadata = useStore((state) => state.categoryMetadata)
+  return computeAllRules(customRules, categoryMetadata)
 }
 
 const useCategories = () => {
-  const allRules = useAllRules()
-  return getCategories(allRules)
+  const categoryMetadata = useStore((state) => state.categoryMetadata)
+  return Object.values(categoryMetadata).sort()
+}
+
+const useCategoryMetadata = () => {
+  return useStore((state) => state.categoryMetadata)
 }
 
 const useSummaries = (): MonthlySummary[] | null => {
   const transactions = useStore((state) => state.transactions)
   const allRules = useAllRules()
+  const categoryMetadata = useStore((state) => state.categoryMetadata)
   
   if (transactions.length === 0) {
     return null
@@ -463,7 +561,7 @@ const useSummaries = (): MonthlySummary[] | null => {
     return []
   }
   
-  return processTransactions(activeTransactions, allRules)
+  return processTransactions(activeTransactions, allRules, categoryMetadata)
 }
 
 // Export/Import functions
@@ -547,5 +645,19 @@ const importState = (jsonString: string): boolean => {
   }
 }
 
-export type { View, SelectionType, TabType }
-export { useStore, computeAllRules, useAllRules, useCategories, useSummaries, exportState, importState }
+export type { View, SelectionType, TabType, CategoryMetadata }
+export { 
+  useStore, 
+  computeAllRules, 
+  useAllRules, 
+  useCategories, 
+  useCategoryMetadata,
+  useSummaries, 
+  exportState, 
+  importState,
+  getCategoryIdFromName,
+  getCategoryNameFromId
+}
+
+// Re-export for convenience
+export { generateCategoryId } from '../parsing/categoryUtils.ts'

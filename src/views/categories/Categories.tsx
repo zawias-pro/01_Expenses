@@ -1,4 +1,4 @@
-import { useStore } from '../../store/useStore.ts'
+import { useStore, useCategoryMetadata, getCategoryNameFromId } from '../../store/useStore.ts'
 
 const Categories = ({
   rules,
@@ -6,16 +6,17 @@ const Categories = ({
   onUpdateCategory,
   onRemoveCategory
 }: {
-  rules: Record<string, string[]>
-  customRules: Record<string, string[]>
-  onUpdateCategory: (category: string, keywords: string[]) => void
-  onRemoveCategory: (category: string) => void
+  rules: Record<string, string[]> // category ID -> keywords
+  customRules: Record<string, string[]> // category ID -> keywords
+  onUpdateCategory: (categoryName: string, keywords: string[]) => void
+  onRemoveCategory: (categoryName: string) => void
 }) => {
   // Store state
+  const categoryMetadata = useCategoryMetadata()
   const showExportModal = useStore((state) => state.showExportModal)
-  const editingCategory = useStore((state) => state.editingCategory)
+  const editingCategory = useStore((state) => state.editingCategory) // category ID
   const editingKeywords = useStore((state) => state.editingKeywords)
-  const newCategory = useStore((state) => state.newCategory)
+  const newCategory = useStore((state) => state.newCategory) // category name
   const newKeywords = useStore((state) => state.newKeywords)
   
   // Store actions
@@ -25,15 +26,16 @@ const Categories = ({
   const setNewCategory = useStore((state) => state.setNewCategory)
   const setNewKeywords = useStore((state) => state.setNewKeywords)
 
-  const handleStartEdit = (category: string, keywords: string[]) => {
-    setEditingCategory(category)
+  const handleStartEdit = (categoryId: string, keywords: string[]) => {
+    setEditingCategory(categoryId)
     setEditingKeywords(keywords.join(', '))
   }
 
   const handleSaveEdit = () => {
     if (editingCategory) {
+      const categoryName = getCategoryNameFromId(editingCategory, categoryMetadata)
       const keywordsArray = editingKeywords.split(',').map(k => k.trim()).filter(k => k)
-      onUpdateCategory(editingCategory, keywordsArray)
+      onUpdateCategory(categoryName, keywordsArray)
       setEditingCategory(null)
       setEditingKeywords('')
     }
@@ -55,16 +57,25 @@ const Categories = ({
 
   const exportRules = (): string => {
     // Export in format: keyword;category (one line per keyword)
+    // Export uses category names, not IDs
     const lines: string[] = []
-    for (const [category, keywords] of Object.entries(rules)) {
+    for (const [categoryId, keywords] of Object.entries(rules)) {
+      const categoryName = getCategoryNameFromId(categoryId, categoryMetadata)
       for (const keyword of keywords) {
-        lines.push(`${keyword};${category}`)
+        lines.push(`${keyword};${categoryName}`)
       }
     }
     return lines.sort().join('\n')
   }
 
-  const categoryNames = Object.keys(rules).sort()
+  // Get category entries sorted by name
+  const categoryEntries = Object.entries(rules)
+    .map(([categoryId, keywords]) => ({
+      id: categoryId,
+      name: getCategoryNameFromId(categoryId, categoryMetadata),
+      keywords
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name))
 
   return (
     <>
@@ -91,14 +102,13 @@ const Categories = ({
                 </tr>
               </thead>
               <tbody>
-                {categoryNames.map(category => {
-                  const keywords = rules[category]
-                  const isEditing = editingCategory === category
-                  const isCustom = category in customRules
+                {categoryEntries.map(({ id, name, keywords }) => {
+                  const isEditing = editingCategory === id
+                  const isCustom = id in customRules
                   
                   return (
-                    <tr key={category}>
-                      <td><strong>{category}</strong></td>
+                    <tr key={id}>
+                      <td><strong>{name}</strong></td>
                       <td>
                         {isEditing ? (
                           <input
@@ -143,7 +153,7 @@ const Categories = ({
                             <button
                               className="btn btn-outline"
                               style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}
-                              onClick={() => { handleStartEdit(category, keywords) }}
+                              onClick={() => { handleStartEdit(id, keywords) }}
                             >
                               Edit
                             </button>
@@ -151,7 +161,7 @@ const Categories = ({
                               <button
                                 className="btn btn-danger"
                                 style={{ padding: '0.375rem 0.75rem', fontSize: '0.8125rem' }}
-                                onClick={() => { onRemoveCategory(category) }}
+                                onClick={() => { onRemoveCategory(name) }}
                               >
                                 Remove
                               </button>

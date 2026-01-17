@@ -14,6 +14,7 @@ import {
   useStore,
   useAllRules,
   useCategories,
+  useCategoryMetadata,
   useSummaries,
   exportState,
   importState,
@@ -196,13 +197,17 @@ const App = () => {
   const allRules = useAllRules()
   const categories = useCategories()
   const summaries = useSummaries()
+  const categoryMetadata = useCategoryMetadata()
   
   // Validate selectedMonth when summaries change
   useEffect(() => {
     if (summaries && summaries.length > 0) {
+      const firstSummary = summaries[0]
+      if (!firstSummary) return
+      
       if (selectedMonth === null) {
         // Set to first available month if not set
-        setSelectedMonth({ year: summaries[0].year, month: summaries[0].month })
+        setSelectedMonth({ year: firstSummary.year, month: firstSummary.month })
       } else {
         // Validate that the selected month exists in the summaries
         const monthExists = summaries.some(
@@ -210,7 +215,7 @@ const App = () => {
         )
         if (!monthExists) {
           // If selected month doesn't exist, set to first available
-          setSelectedMonth({ year: summaries[0].year, month: summaries[0].month })
+          setSelectedMonth({ year: firstSummary.year, month: firstSummary.month })
         }
       }
     } else if (summaries === null || summaries.length === 0) {
@@ -247,7 +252,7 @@ const App = () => {
     // Only process valid transactions
     const classified = validWithIndex.map((item) => {
       const t = item.transaction
-      const category = classifyDescription(t.description, allRules)
+      const category = classifyDescription(t.description, allRules, categoryMetadata)
       // Automatically exclude income transactions (positive amounts)
       // but keep them valid so the checkbox can be unchecked later
       let excluded = false

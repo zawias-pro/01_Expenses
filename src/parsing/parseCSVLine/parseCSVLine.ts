@@ -37,8 +37,11 @@ const parseCSVLine = (
   description = description.replace(/\s+/g, ' ').trim()
   // Account field is ignored - always set to empty string
   const account = ''
-  // Category from CSV is ignored - always default to "others"
-  const category = 'others'
+  // Category from CSV is ignored - always default to "others" ID
+  // Import the helper function to generate consistent IDs
+  // Note: This will be set correctly when the transaction is classified in App.tsx
+  // For now, we use a placeholder that will be replaced
+  const category = 'others' // This will be converted to ID during classification
   const amount = parts.length > amountIndex ? clean(parts[amountIndex]) : ''
 
   // Calculate hash using normalized description (before validation)
