@@ -92,7 +92,7 @@ const Budget = () => {
           <select
             className="form-select"
             value={newCategory}
-            onChange={e => setNewCategory(e.target.value)}
+            onChange={e => { setNewCategory(e.target.value) }}
             style={{ minWidth: '200px', fontSize: '0.875rem', padding: '0.375rem' }}
           >
             <option value="">Select category...</option>
@@ -109,7 +109,7 @@ const Budget = () => {
             type="text"
             className="form-input"
             value={newAmount}
-            onChange={e => setNewAmount(e.target.value)}
+            onChange={e => { setNewAmount(e.target.value) }}
             placeholder="Amount (e.g., 1 000,00 PLN)"
             style={{ minWidth: '150px', fontSize: '0.875rem', padding: '0.375rem' }}
           />
@@ -151,7 +151,7 @@ const Budget = () => {
                       type="text"
                       className="form-input"
                       value={editingAmount}
-                      onChange={e => setEditingAmount(e.target.value)}
+                      onChange={e => { setEditingAmount(e.target.value) }}
                       style={{ minWidth: '150px', fontSize: '0.875rem', padding: '0.375rem' }}
                     />
                     <button
@@ -175,14 +175,14 @@ const Budget = () => {
                     <span style={{ minWidth: '150px' }}>{formatPolishNumber(amount)} PLN</span>
                     <button
                       className="btn btn-outline"
-                      onClick={() => handleStartEdit(name, amount)}
+                      onClick={() => { handleStartEdit(name, amount) }}
                       style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
                     >
                       Edit
                     </button>
                     <button
                       className="btn btn-outline"
-                      onClick={() => handleRemove(name)}
+                      onClick={() => { handleRemove(name) }}
                       style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem', color: '#dc3545' }}
                     >
                       Remove

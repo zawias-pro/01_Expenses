@@ -1,4 +1,5 @@
 // Category utility functions
+import type { CategoryMetadata } from './categoryTypes.ts'
 
 // Generate a stable ID from a category name
 export const generateCategoryId = (name: string): string => {
@@ -11,4 +12,20 @@ export const generateCategoryId = (name: string): string => {
     hash = hash & hash // Convert to 32-bit integer
   }
   return `cat_${Math.abs(hash).toString(36)}`
+}
+
+// Helper functions for ID/name conversion
+export const getCategoryIdFromName = (name: string, metadata: CategoryMetadata): string => {
+  // First, try to find existing ID for this name
+  for (const [id, categoryName] of Object.entries(metadata)) {
+    if (categoryName === name) {
+      return id
+    }
+  }
+  // If not found, generate a new ID
+  return generateCategoryId(name)
+}
+
+export const getCategoryNameFromId = (id: string, metadata: CategoryMetadata): string => {
+  return metadata[id] || 'others'
 }

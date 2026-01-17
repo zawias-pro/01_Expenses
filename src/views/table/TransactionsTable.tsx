@@ -242,22 +242,22 @@ const TransactionsTable = ({
     if (bulkAction === 'delete') {
       const count = selectedIds.size
       if (window.confirm(`Are you sure you want to remove ${count} transaction(s)?`)) {
-        selectedIds.forEach(id => onRemoveTransaction(id))
+        selectedIds.forEach(id => { onRemoveTransaction(id) })
         setSelectedIds(new Set())
         setBulkAction(null)
       }
     } else if (bulkAction === 'exclude') {
-      selectedIds.forEach(id => onExcludedChange(id, true))
+      selectedIds.forEach(id => { onExcludedChange(id, true) })
       setSelectedIds(new Set())
       setBulkAction(null)
     } else if (bulkAction === 'unexclude') {
-      selectedIds.forEach(id => onExcludedChange(id, false))
+      selectedIds.forEach(id => { onExcludedChange(id, false) })
       setSelectedIds(new Set())
       setBulkAction(null)
     } else if (bulkAction === 'setCategory' && bulkCategory) {
       // bulkCategory is a category name, convert to ID
       const categoryId = getCategoryIdFromName(bulkCategory, categoryMetadata)
-      selectedIds.forEach(id => onCategoryChange(id, categoryId))
+      selectedIds.forEach(id => { onCategoryChange(id, categoryId) })
       setSelectedIds(new Set())
       setBulkAction(null)
       setBulkCategory('')
@@ -336,7 +336,7 @@ const TransactionsTable = ({
             type="text"
             className="form-input"
             value={searchQuery}
-            onChange={e => onSearchQueryChange(e.target.value)}
+            onChange={e => { onSearchQueryChange(e.target.value) }}
             placeholder="Search transactions..."
             style={{ width: '100%', fontSize: '0.875rem', padding: '0.375rem' }}
           />
@@ -372,7 +372,7 @@ const TransactionsTable = ({
           <select
             className="form-select"
             value={selectedMonthFilter || ''}
-            onChange={e => onSelectedMonthFilterChange(e.target.value || null)}
+            onChange={e => { onSelectedMonthFilterChange(e.target.value || null) }}
             style={{ width: '100%', fontSize: '0.875rem', padding: '0.375rem' }}
           >
             <option value="">All months</option>
@@ -412,7 +412,7 @@ const TransactionsTable = ({
                   type="number"
                   className="form-input"
                   value={amountFilterInput}
-                  onChange={e => setAmountFilterInput(e.target.value)}
+                  onChange={e => { setAmountFilterInput(e.target.value) }}
                   placeholder="Amount"
                   style={{ fontSize: '0.875rem', padding: '0.375rem', width: '120px' }}
                 />
@@ -465,7 +465,7 @@ const TransactionsTable = ({
               <select
                 className="form-select"
                 value={bulkCategory}
-                onChange={e => setBulkCategory(e.target.value)}
+                onChange={e => { setBulkCategory(e.target.value) }}
                 style={{ fontSize: '0.875rem', padding: '0.375rem', minWidth: '150px' }}
               >
                 <option value="">Select category...</option>
@@ -512,38 +512,38 @@ const TransactionsTable = ({
                   ref={(input) => {
                     if (input) input.indeterminate = someSelected && !allSelected
                   }}
-                  onChange={e => handleSelectAll(e.target.checked)}
+                  onChange={e => { handleSelectAll(e.target.checked) }}
                   style={{ width: '14px', height: '14px' }}
                   title="Select all"
                 />
               </th>
               <th 
                 style={{ padding: '0.375rem', fontSize: '0.8125rem', cursor: 'pointer', userSelect: 'none' }}
-                onClick={() => handleSort('date')}
+                onClick={() => { handleSort('date') }}
               >
                 Date{getSortIndicator('date')}
               </th>
               <th 
                 style={{ padding: '0.375rem', fontSize: '0.8125rem', cursor: 'pointer', userSelect: 'none' }}
-                onClick={() => handleSort('description')}
+                onClick={() => { handleSort('description') }}
               >
                 Description{getSortIndicator('description')}
               </th>
               <th 
                 style={{ padding: '0.375rem', fontSize: '0.8125rem', cursor: 'pointer', userSelect: 'none' }}
-                onClick={() => handleSort('category')}
+                onClick={() => { handleSort('category') }}
               >
                 Category{getSortIndicator('category')}
               </th>
               <th 
                 style={{ padding: '0.375rem', fontSize: '0.8125rem', cursor: 'pointer', userSelect: 'none' }}
-                onClick={() => handleSort('amount')}
+                onClick={() => { handleSort('amount') }}
               >
                 Amount{getSortIndicator('amount')}
               </th>
               <th 
                 style={{ padding: '0.375rem', fontSize: '0.8125rem', cursor: 'pointer', userSelect: 'none' }}
-                onClick={() => handleSort('addedAt')}
+                onClick={() => { handleSort('addedAt') }}
               >
                 Added At{getSortIndicator('addedAt')}
               </th>
@@ -560,7 +560,7 @@ const TransactionsTable = ({
                     type="checkbox"
                     className="form-checkbox"
                     checked={selectedIds.has(t.id)}
-                    onChange={() => handleToggleSelect(t.id)}
+                    onChange={() => { handleToggleSelect(t.id) }}
                     style={{ width: '14px', height: '14px' }}
                   />
                 </td>
@@ -574,7 +574,7 @@ const TransactionsTable = ({
                     <span>{t.date}</span>
                     {t.dateOverridden && (
                       <button
-                        onClick={() => onResetTransactionDate(t.id)}
+                        onClick={() => { onResetTransactionDate(t.id) }}
                         style={{
                           background: 'none',
                           border: 'none',
@@ -607,7 +607,7 @@ const TransactionsTable = ({
                     <span>{getCategoryNameFromId(t.category, categoryMetadata)}</span>
                     {t.category === othersCategoryId && !t.categoryOverridden && (
                       <button
-                        onClick={() => handleQuickAddCategory(t.id, t.description)}
+                        onClick={() => { handleQuickAddCategory(t.id, t.description) }}
                         style={{
                           fontSize: '0.75rem',
                           padding: '0.125rem 0.375rem',
@@ -624,7 +624,7 @@ const TransactionsTable = ({
                     )}
                     {t.categoryOverridden && (
                       <button
-                        onClick={() => onResetTransactionCategory(t.id)}
+                        onClick={() => { onResetTransactionCategory(t.id) }}
                         style={{
                           background: 'none',
                           border: 'none',
@@ -708,7 +708,7 @@ const TransactionsTable = ({
                       ✏️
                     </button>
                     <button
-                      onClick={() => handleRemoveClick(t.id, t.description)}
+                      onClick={() => { handleRemoveClick(t.id, t.description) }}
                       style={{
                         background: 'none',
                         border: 'none',
@@ -763,7 +763,7 @@ const TransactionsTable = ({
                   type="text"
                   className="form-input"
                   value={editDate}
-                  onChange={e => setEditDate(e.target.value)}
+                  onChange={e => { setEditDate(e.target.value) }}
                   placeholder="YYYY-MM-DD"
                   style={{ width: '100%', fontSize: '0.875rem', padding: '0.375rem' }}
                 />
@@ -796,7 +796,7 @@ const TransactionsTable = ({
                 <textarea
                   className="form-input"
                   value={editComment}
-                  onChange={e => setEditComment(e.target.value)}
+                  onChange={e => { setEditComment(e.target.value) }}
                   placeholder="Enter a comment for this transaction..."
                   rows={4}
                   style={{ width: '100%', fontSize: '0.875rem', padding: '0.375rem', fontFamily: 'inherit', resize: 'vertical' }}
@@ -809,7 +809,7 @@ const TransactionsTable = ({
                     type="checkbox"
                     className="form-checkbox"
                     checked={editExcluded}
-                    onChange={e => setEditExcluded(e.target.checked)}
+                    onChange={e => { setEditExcluded(e.target.checked) }}
                     style={{ width: '16px', height: '16px' }}
                   />
                   Exclude from calculations
@@ -888,7 +888,7 @@ const TransactionsTable = ({
                 <select
                   className="form-select"
                   value={quickAddSelectedCategory}
-                  onChange={e => setQuickAddSelectedCategory(e.target.value)}
+                  onChange={e => { setQuickAddSelectedCategory(e.target.value) }}
                   style={{ width: '100%', fontSize: '0.875rem', padding: '0.375rem' }}
                 >
                   <option value="new">New category</option>
@@ -907,7 +907,7 @@ const TransactionsTable = ({
                     type="text"
                     className="form-input"
                     value={quickAddCustomCategory}
-                    onChange={e => setQuickAddCustomCategory(e.target.value)}
+                    onChange={e => { setQuickAddCustomCategory(e.target.value) }}
                     placeholder="Enter category name"
                     style={{ width: '100%', fontSize: '0.875rem', padding: '0.375rem' }}
                   />
@@ -922,7 +922,7 @@ const TransactionsTable = ({
                   type="text"
                   className="form-input"
                   value={quickAddKeyword}
-                  onChange={e => setQuickAddKeyword(e.target.value)}
+                  onChange={e => { setQuickAddKeyword(e.target.value) }}
                   placeholder="Enter keywords"
                   style={{ width: '100%', fontSize: '0.875rem', padding: '0.375rem' }}
                 />

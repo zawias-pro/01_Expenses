@@ -92,7 +92,7 @@ const CumulativeBarChart = ({ summaries, onBack }: {
         <select
           className="form-select"
           value={selectedCategory || ''}
-          onChange={e => setSelectedCategory(e.target.value || null)}
+          onChange={e => { setSelectedCategory(e.target.value || null) }}
           style={{ fontSize: '0.875rem', padding: '0.375rem', minWidth: '200px' }}
         >
           <option value="">All categories</option>

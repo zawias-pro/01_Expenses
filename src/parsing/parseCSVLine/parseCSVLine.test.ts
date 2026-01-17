@@ -9,7 +9,7 @@ test('parseCSVLine - parses valid CSV line', () => {
   assert.strictEqual(result.description, 'Description')
   // Account field is ignored and always set to empty string
   assert.strictEqual(result.account, '')
-  // Category from CSV is ignored, always defaults to "others"
+  // Category from CSV is ignored, always defaults to "others" (as a placeholder, will be converted to ID during classification)
   assert.strictEqual(result.category, 'others')
   assert.strictEqual(result.amount, '-5 000,00 PLN')
   assert.strictEqual(result.excluded, false)
@@ -23,7 +23,7 @@ test('parseCSVLine - marks insufficient columns as invalid', () => {
   const result = parseCSVLine(line, ';')
   assert.strictEqual(result.isValid, false)
   assert.strictEqual(result.excluded, true)
-  assert.strictEqual(result.validationError, 'Insufficient CSV columns (expected 5, got 1)')
+  assert.strictEqual(result.validationError, 'Insufficient CSV columns (need at least 5, got 1)')
 })
 
 test('parseCSVLine - marks empty line as invalid', () => {
@@ -37,8 +37,8 @@ test('parseCSVLine - marks empty line as invalid', () => {
 test('parseCSVLine - handles user example invalid rows', () => {
   // Test the user's example: "xd", "r", "r", "r"
   const testCases = [
-    { input: 'xd', expectedError: 'Insufficient CSV columns (expected 5, got 1)' },
-    { input: 'r', expectedError: 'Insufficient CSV columns (expected 5, got 1)' },
+    { input: 'xd', expectedError: 'Insufficient CSV columns (need at least 5, got 1)' },
+    { input: 'r', expectedError: 'Insufficient CSV columns (need at least 5, got 1)' },
   ]
 
   testCases.forEach(({ input, expectedError }) => {

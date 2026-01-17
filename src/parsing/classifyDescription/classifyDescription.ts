@@ -1,5 +1,4 @@
-import type { CategoryMetadata } from '../../store/useStore.ts'
-import { getCategoryIdFromName } from '../../store/useStore.ts'
+import type { CategoryMetadata } from '../categoryTypes.ts'
 import { generateCategoryId } from '../categoryUtils.ts'
 
 /**

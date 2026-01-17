@@ -1,10 +1,10 @@
 import type { Transaction, MonthlySummary } from '../types.ts'
-import type { CategoryMetadata } from '../../store/useStore.ts'
+import type { CategoryMetadata } from '../categoryTypes.ts'
 import { getMonthFromDate } from '../getMonthFromDate/getMonthFromDate.ts'
 import { parsePolishAmount } from '../parsePolishAmount/parsePolishAmount.ts'
 import { classifyDescription } from '../classifyDescription/classifyDescription.ts'
 import { getYearFromDate } from '../getYearFromDate/getYearFromDate.ts'
-import { getCategoryNameFromId } from '../../store/useStore.ts'
+import { getCategoryNameFromId } from '../categoryUtils.ts'
 
 /**
  * Example:

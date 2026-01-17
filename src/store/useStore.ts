@@ -12,26 +12,13 @@ import rulesContent from '../rules.csv?raw'
 const { rules: RULES, metadata: INITIAL_METADATA } = parseRules(rulesContent)
 const STORAGE_KEY = 'expense-analyzer-data'
 
-// Category metadata: maps category ID to category name
-export type CategoryMetadata = Record<string, string> // ID -> name
+import type { CategoryMetadata } from '../parsing/categoryTypes.ts'
+export type { CategoryMetadata }
 
-import { generateCategoryId } from '../parsing/categoryUtils.ts'
+import { generateCategoryId, getCategoryIdFromName, getCategoryNameFromId } from '../parsing/categoryUtils.ts'
 
-// Helper functions for ID/name conversion
-const getCategoryIdFromName = (name: string, metadata: CategoryMetadata): string => {
-  // First, try to find existing ID for this name
-  for (const [id, categoryName] of Object.entries(metadata)) {
-    if (categoryName === name) {
-      return id
-    }
-  }
-  // If not found, generate a new ID
-  return generateCategoryId(name)
-}
-
-const getCategoryNameFromId = (id: string, metadata: CategoryMetadata): string => {
-  return metadata[id] || 'others'
-}
+// Helper functions for ID/name conversion (re-exported from categoryUtils)
+import { getCategoryIdFromName, getCategoryNameFromId } from '../parsing/categoryUtils.ts'
 
 const INITIAL_CATEGORY_METADATA = INITIAL_METADATA
 

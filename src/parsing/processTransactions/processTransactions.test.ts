@@ -2,15 +2,18 @@ import { test } from 'node:test'
 import assert from 'node:assert'
 import { processTransactions } from './processTransactions.ts'
 import type { Transaction } from '../types.ts'
+import { generateCategoryId } from '../categoryUtils.ts'
+import type { CategoryMetadata } from '../categoryTypes.ts'
 
 test('processTransactions - processes transactions correctly', () => {
+  const category1Id = generateCategoryId('Category1')
   const transactions: Transaction[] = [
     {
       id: '1',
       date: '2025-12-12',
       description: 'Test expense',
       account: 'Account1',
-      category: 'Category1',
+      category: category1Id,
       amount: '-5 000,00 PLN',
       excluded: false,
       isValid: true,
@@ -22,7 +25,7 @@ test('processTransactions - processes transactions correctly', () => {
       date: '2025-12-12',
       description: 'Test income',
       account: 'Account1',
-      category: 'Category1',
+      category: category1Id,
       amount: '2 000,00 PLN',
       excluded: false,
       isValid: true,
@@ -34,7 +37,7 @@ test('processTransactions - processes transactions correctly', () => {
       date: '2025-11-11',
       description: 'Another expense',
       account: 'Account1',
-      category: 'Category1',
+      category: category1Id,
       amount: '-1 000,00 PLN',
       excluded: false,
       isValid: true,
@@ -42,8 +45,12 @@ test('processTransactions - processes transactions correctly', () => {
       overrideMode: false,
     },
   ]
-  const rules = { 'test-category': ['test'] }
-  const result = processTransactions(transactions, rules)
+  const rules = { [category1Id]: ['test'] }
+  const metadata: CategoryMetadata = {
+    [category1Id]: 'Category1',
+    [generateCategoryId('others')]: 'others'
+  }
+  const result = processTransactions(transactions, rules, metadata)
 
   assert(result.length === 2)
   const dec = result.find(s => s.year === 2025 && s.month === 12)
@@ -61,13 +68,14 @@ test('processTransactions - processes transactions correctly', () => {
 })
 
 test('processTransactions - processes all transactions passed to it', () => {
+  const category1Id = generateCategoryId('Category1')
   const transactions: Transaction[] = [
     {
       id: '1',
       date: '2025-12-12',
       description: 'Test expense',
       account: 'Account1',
-      category: 'Category1',
+      category: category1Id,
       amount: '-5 000,00 PLN',
       excluded: true,
       isValid: true,
@@ -79,7 +87,7 @@ test('processTransactions - processes all transactions passed to it', () => {
       date: '2025-12-12',
       description: 'Test income',
       account: 'Account1',
-      category: 'Category1',
+      category: category1Id,
       amount: '2 000,00 PLN',
       excluded: false,
       isValid: true,
@@ -88,9 +96,13 @@ test('processTransactions - processes all transactions passed to it', () => {
     },
   ]
   const rules = {}
+  const metadata: CategoryMetadata = {
+    [category1Id]: 'Category1',
+    [generateCategoryId('others')]: 'others'
+  }
   // Note: processTransactions processes all transactions - filtering excluded ones
   // should happen before calling this function
-  const result = processTransactions(transactions, rules)
+  const result = processTransactions(transactions, rules, metadata)
 
   assert(result.length === 1)
   const dec = result[0]
@@ -100,13 +112,16 @@ test('processTransactions - processes all transactions passed to it', () => {
 })
 
 test('processTransactions - classifies categories from description and respects overrides', () => {
+  const groceryId = generateCategoryId('grocery')
+  const othersId = generateCategoryId('others')
+  const customCategoryId = generateCategoryId('custom-category')
   const transactions: Transaction[] = [
     {
       id: '1',
       date: '2025-12-12',
       description: 'BIEDRONKA purchase',
       account: 'Account1',
-      category: 'others',
+      category: othersId,
       amount: '-100,00 PLN',
       excluded: false,
       isValid: true,
@@ -118,7 +133,7 @@ test('processTransactions - classifies categories from description and respects 
       date: '2025-12-12',
       description: 'Random transaction',
       account: 'Account1',
-      category: 'others',
+      category: othersId,
       amount: '-50,00 PLN',
       excluded: false,
       isValid: true,
@@ -130,7 +145,7 @@ test('processTransactions - classifies categories from description and respects 
       date: '2025-12-12',
       description: 'Another transaction',
       account: 'Account1',
-      category: 'custom-category',
+      category: customCategoryId,
       amount: '-25,00 PLN',
       excluded: false,
       isValid: true,
@@ -138,8 +153,13 @@ test('processTransactions - classifies categories from description and respects 
       overrideMode: false,
     },
   ]
-  const rules = { 'grocery': ['biedronka'] }
-  const result = processTransactions(transactions, rules)
+  const rules = { [groceryId]: ['biedronka'] }
+  const metadata: CategoryMetadata = {
+    [groceryId]: 'grocery',
+    [othersId]: 'others',
+    [customCategoryId]: 'custom-category'
+  }
+  const result = processTransactions(transactions, rules, metadata)
 
   assert(result.length === 1)
   const dec = result[0]
