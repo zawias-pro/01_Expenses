@@ -13,7 +13,6 @@ import { Budget } from '../views/budget/Budget.tsx'
 import {
   useStore,
   useAllRules,
-  useCategories,
   useSummaries,
   exportState,
   importState,
@@ -159,13 +158,6 @@ const App = () => {
   const selectedMonth = useStore((state) => state.selectedMonth)
   const customRules = useStore((state) => state.customRules)
   const categoryMetadata = useStore((state) => state.categoryMetadata)
-  const searchQuery = useStore((state) => state.searchQuery)
-  const selectedCategory = useStore((state) => state.selectedCategory)
-  const selectedMonthFilter = useStore((state) => state.selectedMonthFilter)
-  const amountFilterType = useStore((state) => state.amountFilterType)
-  const amountFilterValue = useStore((state) => state.amountFilterValue)
-  const sortColumn = useStore((state) => state.sortColumn)
-  const sortDirection = useStore((state) => state.sortDirection)
   
   // Store actions
   const setView = useStore((state) => state.setView)
@@ -176,19 +168,6 @@ const App = () => {
   const setAmountIndex = useStore((state) => state.setAmountIndex)
   const setTransactions = useStore((state) => state.setTransactions)
   const setSelectedMonth = useStore((state) => state.setSelectedMonth)
-  const updateTransactionExcluded = useStore((state) => state.updateTransactionExcluded)
-  const updateTransactionCategory = useStore((state) => state.updateTransactionCategory)
-  const updateTransactionDate = useStore((state) => state.updateTransactionDate)
-  const updateTransactionComment = useStore((state) => state.updateTransactionComment)
-  const resetTransactionDate = useStore((state) => state.resetTransactionDate)
-  const resetTransactionCategory = useStore((state) => state.resetTransactionCategory)
-  const removeTransaction = useStore((state) => state.removeTransaction)
-  const setSearchQuery = useStore((state) => state.setSearchQuery)
-  const setSelectedCategory = useStore((state) => state.setSelectedCategory)
-  const setSelectedMonthFilter = useStore((state) => state.setSelectedMonthFilter)
-  const setAmountFilter = useStore((state) => state.setAmountFilter)
-  const setSortColumn = useStore((state) => state.setSortColumn)
-  const setSortDirection = useStore((state) => state.setSortDirection)
   const updateCategory = useStore((state) => state.updateCategory)
   const removeCategory = useStore((state) => state.removeCategory)
   const renameCategory = useStore((state) => state.renameCategory)
@@ -196,7 +175,6 @@ const App = () => {
   
   // Computed values
   const allRules = useAllRules()
-  const categories = useCategories()
   const summaries = useSummaries()
   
   // Validate selectedMonth when summaries change
@@ -469,33 +447,7 @@ const App = () => {
         )}
 
         {view === 'transactions' && (
-          <TransactionsTable
-            transactions={transactions}
-            categories={categories}
-            onExcludedChange={updateTransactionExcluded}
-            onCategoryChange={updateTransactionCategory}
-            onDateChange={updateTransactionDate}
-            onCommentChange={updateTransactionComment}
-            onResetTransactionDate={resetTransactionDate}
-            onResetTransactionCategory={resetTransactionCategory}
-            onRemoveTransaction={removeTransaction}
-            searchQuery={searchQuery}
-            onSearchQueryChange={setSearchQuery}
-            selectedCategory={selectedCategory}
-            onSelectedCategoryChange={setSelectedCategory}
-            selectedMonthFilter={selectedMonthFilter}
-            onSelectedMonthFilterChange={setSelectedMonthFilter}
-            amountFilterType={amountFilterType}
-            amountFilterValue={amountFilterValue}
-            onAmountFilterChange={setAmountFilter}
-            sortColumn={sortColumn}
-            sortDirection={sortDirection}
-            onSortChange={(column, direction) => {
-              setSortColumn(column)
-              setSortDirection(direction)
-            }}
-            onUpdateCategory={updateCategory}
-          />
+          <TransactionsTable transactions={transactions} />
         )}
 
         {view === 'summary' && summaries && selectedMonth && (
