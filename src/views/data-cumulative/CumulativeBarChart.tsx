@@ -38,10 +38,10 @@ const CumulativeBarChart = ({ summaries, onBack }: {
 
   // Transform data for Recharts: each month becomes a data point with all category values
   const chartData = sortedSummaries.map(summary => {
-    const monthLabel = `${monthNames[summary.month - 1]} ${summary.year.toString()}`
+    const monthLabel = `${monthNames[summary.month - 1] ?? ''} ${String(summary.year)}`
     const dataPoint: Record<string, string | number> = {
       month: monthLabel,
-      monthKey: `${summary.year.toString()}-${String(summary.month).padStart(2, '0')}` // For sorting
+      monthKey: `${String(summary.year)}-${String(summary.month).padStart(2, '0')}` // For sorting
     }
 
     // Add all categories (0 if not present in this month)

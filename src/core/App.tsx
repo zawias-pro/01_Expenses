@@ -14,7 +14,6 @@ import {
   useStore,
   useAllRules,
   useCategories,
-  useCategoryMetadata,
   useSummaries,
   exportState,
   importState,
@@ -197,7 +196,6 @@ const App = () => {
   const allRules = useAllRules()
   const categories = useCategories()
   const summaries = useSummaries()
-  const categoryMetadata = useCategoryMetadata()
   
   // Validate selectedMonth when summaries change
   useEffect(() => {
@@ -252,7 +250,7 @@ const App = () => {
     // Only process valid transactions
     const classified = validWithIndex.map((item) => {
       const t = item.transaction
-      const category = classifyDescription(t.description, allRules, categoryMetadata)
+      const category = classifyDescription(t.description, allRules)
       // Automatically exclude income transactions (positive amounts)
       // but keep them valid so the checkbox can be unchecked later
       let excluded = false
@@ -306,15 +304,15 @@ const App = () => {
     // Show alert if invalid transactions or duplicates were found
     const messages: string[] = []
     if (invalidCount > 0) {
-      messages.push(`Found ${invalidCount} invalid transaction(s) that were not added.`)
+      messages.push(`Found ${String(invalidCount)} invalid transaction(s) that were not added.`)
     }
     if (duplicates.length > 0) {
-      messages.push(`Found ${duplicates.length} duplicate transaction(s) that were not added.`)
+      messages.push(`Found ${String(duplicates.length)} duplicate transaction(s) that were not added.`)
     }
     if (messages.length > 0) {
       const uniqueCount = unique.length
       if (uniqueCount > 0) {
-        messages.push(`Added: ${uniqueCount} valid transaction(s)`)
+        messages.push(`Added: ${String(uniqueCount)} valid transaction(s)`)
       } else {
         messages.push(`No transactions were added. Please fix errors in the CSV preview.`)
       }
@@ -345,7 +343,8 @@ const App = () => {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `expense-analyzer-state-${new Date().toISOString().split('T')[0]}.json`
+    const dateStr = new Date().toISOString().split('T')[0]
+    a.download = `expense-analyzer-state-${dateStr ?? ''}.json`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)

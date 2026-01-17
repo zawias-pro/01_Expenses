@@ -1,2 +1,4 @@
 // Category metadata: maps category ID to category name
-export type CategoryMetadata = Record<string, string> // ID -> name
+type CategoryMetadata = Record<string, string> // ID -> name
+
+export type { CategoryMetadata }

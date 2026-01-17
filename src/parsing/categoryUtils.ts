@@ -2,7 +2,7 @@
 import type { CategoryMetadata } from './categoryTypes.ts'
 
 // Generate a stable ID from a category name
-export const generateCategoryId = (name: string): string => {
+const generateCategoryId = (name: string): string => {
   // Use a simple hash-like function to generate stable IDs from names
   // This ensures the same name always gets the same ID
   let hash = 0
@@ -15,7 +15,7 @@ export const generateCategoryId = (name: string): string => {
 }
 
 // Helper functions for ID/name conversion
-export const getCategoryIdFromName = (name: string, metadata: CategoryMetadata): string => {
+const getCategoryIdFromName = (name: string, metadata: CategoryMetadata): string => {
   // First, try to find existing ID for this name
   for (const [id, categoryName] of Object.entries(metadata)) {
     if (categoryName === name) {
@@ -26,6 +26,8 @@ export const getCategoryIdFromName = (name: string, metadata: CategoryMetadata):
   return generateCategoryId(name)
 }
 
-export const getCategoryNameFromId = (id: string, metadata: CategoryMetadata): string => {
+const getCategoryNameFromId = (id: string, metadata: CategoryMetadata): string => {
   return metadata[id] || 'others'
 }
+
+export { generateCategoryId, getCategoryIdFromName, getCategoryNameFromId }

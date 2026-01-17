@@ -16,7 +16,7 @@ import { formatPolishNumber } from '../../parsing/formatPolishNumber/formatPolis
 import { parsePolishAmount } from '../../parsing/parsePolishAmount/parsePolishAmount.ts'
 import { getYearFromDate } from '../../parsing/getYearFromDate/getYearFromDate.ts'
 import { getMonthFromDate } from '../../parsing/getMonthFromDate/getMonthFromDate.ts'
-import { useStore, useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName, generateCategoryId } from '../../store/useStore.ts'
+import { useStore, useCategoryMetadata, getCategoryNameFromId, generateCategoryId } from '../../store/useStore.ts'
 
 const CategoryBarChart = ({ categories }: { categories: Record<string, number> }) => {
   const categoryEntries = Object.entries(categories)
@@ -144,11 +144,11 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
     if (selectionType === 'all') {
       return 'All Data'
     } else if (selectionType === 'year' && selectedYear !== null) {
-      return `Year ${selectedYear.toString()}`
+      return `Year ${String(selectedYear)}`
     } else {
       const summary = summaries.find(s => s.year === selectedMonth.year && s.month === selectedMonth.month)
       if (summary) {
-        return `${monthNames[summary.month - 1]} ${summary.year.toString()}`
+        return `${monthNames[summary.month - 1] ?? ''} ${String(summary.year)}`
       }
       return ''
     }
@@ -157,8 +157,8 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
   const displaySummary = getDisplaySummary()
 
   const monthOptions = summaries.map(s => ({
-    value: `${s.year.toString()}-${s.month.toString()}`,
-    label: `${monthNames[s.month - 1]} ${s.year.toString()}`
+    value: `${String(s.year)}-${String(s.month)}`,
+    label: `${monthNames[s.month - 1] ?? ''} ${String(s.year)}`
   }))
 
   // Process categories with low-value threshold and/or category percentage threshold if enabled
@@ -265,7 +265,7 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
     }
 
     return categories
-  }, [displaySummary, treatLowValueAsOthers, lowValueThreshold, mergeSmallCategories, categoryThresholdPercent, transactions, selectionType, selectedMonth, selectedYear])
+  }, [displaySummary, treatLowValueAsOthers, lowValueThreshold, mergeSmallCategories, categoryThresholdPercent, transactions, selectionType, selectedMonth, selectedYear, categoryMetadata, othersCategoryId])
 
   // Get top 10 expenses for the selected period
   const topExpenses = useMemo(() => {
@@ -510,16 +510,10 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
                 budgetMultiplier = 12 // Yearly budget = monthly * 12
               } else if (selectionType === 'all') {
                 // Calculate number of months in the data
-                const months = new Set(summaries.map(s => `${s.year}-${s.month}`)).size
+                const months = new Set(summaries.map(s => `${String(s.year)}-${String(s.month)}`)).size
                 budgetMultiplier = months
               }
               // For 'month', multiplier is 1 (already monthly)
-              
-              // Get all categories that have transactions
-              const categoriesWithTransactions = new Set(Object.keys(processedCategories))
-              
-              // Get all categories that have budgets
-              const categoriesWithBudgets = new Set(Object.keys(budgets))
               
               // Combine: categories with transactions + categories with budgets (even if no transactions)
               const allCategories = new Set([
@@ -527,7 +521,13 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
                 ...Object.keys(budgets)
               ])
               
-              const budgetComparison = Array.from(allCategories)
+              const budgetComparison: Array<{
+                category: string
+                actual: number
+                budget: number
+                difference: number
+                percentage: number
+              }> = Array.from(allCategories)
                 .map((category) => {
                   const actual = processedCategories[category] || 0 // Default to 0 if no transactions
                   const monthlyBudget = budgets[category] || 0 // Default to 0 if not set
@@ -542,13 +542,6 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
                     percentage
                   }
                 })
-                .filter(item => item !== null) as Array<{
-                  category: string
-                  actual: number
-                  budget: number
-                  difference: number
-                  percentage: number
-                }>
               
               if (budgetComparison.length === 0) {
                 return <p style={{ color: '#666' }}>No categories found for this period.</p>
@@ -559,7 +552,7 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
                   <p style={{ marginBottom: '1rem', color: '#666', fontSize: '0.875rem' }}>
                     {selectionType === 'month' && 'Monthly budget comparison'}
                     {selectionType === 'year' && 'Yearly budget comparison (monthly budget × 12)'}
-                    {selectionType === 'all' && `Budget comparison for ${budgetMultiplier} month(s)`}
+                    {selectionType === 'all' && `Budget comparison for ${String(budgetMultiplier)} month(s)`}
                   </p>
                   <ul className="category-list">
                     {budgetComparison

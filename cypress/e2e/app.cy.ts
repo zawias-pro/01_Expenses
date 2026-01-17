@@ -408,11 +408,14 @@ describe('Expense Analyzer App', () => {
     
     // Filter by month
     cy.contains('label', 'Month:').parent().find('select').then(($select) => {
-      const options = Array.from($select[0].options).map(opt => opt.text)
-      if (options.length > 1) {
-        cy.wrap($select).select(1) // Select first available month
-        cy.wait(300)
-        cy.get('table tbody tr').should('have.length.at.least', 1)
+      const selectElement = $select[0] as { options?: Array<{ text?: string }> }
+      if (selectElement.options) {
+        const options = Array.from(selectElement.options).map((opt: { text?: string }) => opt.text || '')
+        if (options.length > 1) {
+          cy.wrap($select).select(1) // Select first available month
+          cy.wait(300)
+          cy.get('table tbody tr').should('have.length.at.least', 1)
+        }
       }
     })
     
@@ -456,7 +459,7 @@ describe('Expense Analyzer App', () => {
     cy.wait(300)
     cy.get('table tbody tr').first().find('td').eq(2).invoke('text').then((firstDate) => {
       cy.get('table tbody tr').eq(1).find('td').eq(2).invoke('text').then((secondDate) => {
-        expect(firstDate <= secondDate).to.be.true
+        expect(firstDate <= secondDate).to.equal(true)
       })
     })
     

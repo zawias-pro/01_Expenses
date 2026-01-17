@@ -30,7 +30,7 @@ const processTransactions = (
       const amount = parsePolishAmount(t.amount)
       // Use the transaction's category ID if it was manually overridden
       // Otherwise, classify based on description (defaults to "others" ID if no match)
-      const categoryId = t.overridden ? t.category : classifyDescription(t.description, rules, metadata)
+      const categoryId = t.overridden ? t.category : classifyDescription(t.description, rules)
       // Convert ID to name for display in summary
       const categoryName = getCategoryNameFromId(categoryId, metadata)
 

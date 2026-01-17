@@ -9,7 +9,7 @@ const formatPolishNumber = (num: number): string => {
   const fixed = abs.toFixed(2) // e.g. "1234.56"
   const [intPart, frac] = fixed.split('.')
 
-  return `${sign}${intPart},${frac}`
+  return `${sign}${intPart ?? ''},${frac ?? ''}`
 }
 
 export { formatPolishNumber }

@@ -88,10 +88,10 @@ const TransactionsTable = ({
       try {
         const year = getYearFromDate(t.date)
         const month = getMonthFromDate(t.date)
-        const key = `${year}-${month.toString().padStart(2, '0')}`
+        const key = `${String(year)}-${String(month).padStart(2, '0')}`
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
         if (!monthMap.has(key)) {
-          monthMap.set(key, `${monthNames[month - 1]} ${year}`)
+          monthMap.set(key, `${monthNames[month - 1] ?? ''} ${String(year)}`)
         }
       } catch {
         // Skip invalid dates
@@ -109,12 +109,13 @@ const TransactionsTable = ({
       const query = searchQuery.toLowerCase()
       filtered = filtered.filter(t => {
         const categoryName = getCategoryNameFromId(t.category, categoryMetadata)
-        return 
+        return (
           t.description.toLowerCase().includes(query) ||
           categoryName.toLowerCase().includes(query) ||
           t.date.includes(query) ||
           t.amount.includes(query) ||
-          (t.hash && t.hash.toLowerCase().includes(query))
+          t.hash.toLowerCase().includes(query)
+        )
       })
     }
 
@@ -143,10 +144,9 @@ const TransactionsTable = ({
         const amount = parseAmount(t.amount)
         if (amountFilterType === 'less') {
           return amount < amountFilterValue
-        } else if (amountFilterType === 'greater') {
-          return amount > amountFilterValue
         }
-        return true
+        // amountFilterType === 'greater' is guaranteed here
+        return amount > amountFilterValue
       })
     }
 
@@ -164,9 +164,10 @@ const TransactionsTable = ({
           comparison = aName.localeCompare(bName)
         } else if (sortColumn === 'amount') {
           comparison = parseAmount(a.amount) - parseAmount(b.amount)
-        } else if (sortColumn === 'addedAt') {
-          const aTime = a.addedAt || ''
-          const bTime = b.addedAt || ''
+        } else {
+          // sortColumn === 'addedAt'
+          const aTime = a.addedAt ?? ''
+          const bTime = b.addedAt ?? ''
           comparison = aTime.localeCompare(bTime)
         }
         return sortDirection === 'asc' ? comparison : -comparison
@@ -174,7 +175,7 @@ const TransactionsTable = ({
     }
 
     return filtered
-  }, [transactions, searchQuery, selectedCategory, selectedMonthFilter, amountFilterType, amountFilterValue, sortColumn, sortDirection])
+  }, [transactions, searchQuery, selectedCategory, selectedMonthFilter, amountFilterType, amountFilterValue, sortColumn, sortDirection, categoryMetadata])
 
   const handleSort = (column: 'date' | 'description' | 'category' | 'amount' | 'addedAt') => {
     if (sortColumn === column) {
@@ -241,7 +242,7 @@ const TransactionsTable = ({
 
     if (bulkAction === 'delete') {
       const count = selectedIds.size
-      if (window.confirm(`Are you sure you want to remove ${count} transaction(s)?`)) {
+      if (window.confirm(`Are you sure you want to remove ${String(count)} transaction(s)?`)) {
         selectedIds.forEach(id => { onRemoveTransaction(id) })
         setSelectedIds(new Set())
         setBulkAction(null)
@@ -439,7 +440,7 @@ const TransactionsTable = ({
         flexWrap: 'wrap',
         gap: '0.5rem'
       }}>
-        <span>Showing {filteredAndSortedTransactions.length} of {transactions.length} transactions</span>
+        <span>Showing {String(filteredAndSortedTransactions.length)} of {String(transactions.length)} transactions</span>
         {someSelected && (
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.875rem', flexWrap: 'wrap' }}>
             <span style={{ fontWeight: '500' }}>{selectedIds.size} selected</span>
@@ -653,7 +654,7 @@ const TransactionsTable = ({
                   color: t.excluded ? '#999' : 'inherit',
                   opacity: t.excluded ? 0.6 : 1
                 }}>
-                  {t.addedAt ? new Date(t.addedAt).toLocaleString() : 'N/A'}
+                  {t.addedAt !== undefined ? new Date(t.addedAt).toLocaleString() : 'N/A'}
                 </td>
                 <td style={{ 
                   padding: '0.375rem', 

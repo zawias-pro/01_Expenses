@@ -2,7 +2,6 @@ import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import type { Transaction, MonthlySummary } from '../parsing/types.ts'
 import { parseRules } from '../parsing/parseRules/parseRules.ts'
-import { getCategories } from '../parsing/getCategories/getCategories.ts'
 import { classifyDescription } from '../parsing/classifyDescription/classifyDescription.ts'
 import { processTransactions } from '../parsing/processTransactions/processTransactions.ts'
 import rulesContent from '../rules.csv?raw'
@@ -15,9 +14,6 @@ const STORAGE_KEY = 'expense-analyzer-data'
 import type { CategoryMetadata } from '../parsing/categoryTypes.ts'
 export type { CategoryMetadata }
 
-import { generateCategoryId, getCategoryIdFromName, getCategoryNameFromId } from '../parsing/categoryUtils.ts'
-
-// Helper functions for ID/name conversion (re-exported from categoryUtils)
 import { getCategoryIdFromName, getCategoryNameFromId } from '../parsing/categoryUtils.ts'
 
 const INITIAL_CATEGORY_METADATA = INITIAL_METADATA
@@ -281,11 +277,11 @@ const useStore = create<AppState>()(
       
       resetTransactionCategory: (id) => {
         const state = get()
-        const allRules = computeAllRules(state.customRules, state.categoryMetadata)
+        const allRules = computeAllRules(state.customRules)
         set({
           transactions: state.transactions.map((t) => {
             if (t.id === id) {
-              const newCategoryId = classifyDescription(t.description, allRules, state.categoryMetadata)
+              const newCategoryId = classifyDescription(t.description, allRules)
               const categoryOverridden = false
               const overridden = t.dateOverridden || false // Keep overridden true if date is still overridden
               return { 
@@ -359,17 +355,23 @@ const useStore = create<AppState>()(
           const newId = getCategoryIdFromName(newName, state.categoryMetadata)
           
           // Update metadata
-          const newMetadata = { ...state.categoryMetadata }
-          if (newMetadata[oldId]) {
-            delete newMetadata[oldId]
+          const newMetadata: CategoryMetadata = {}
+          for (const [id, name] of Object.entries(state.categoryMetadata)) {
+            if (id !== oldId) {
+              newMetadata[id] = name
+            }
           }
           newMetadata[newId] = newName
           
           // Update customRules if this category has rules
-          const newCustomRules = { ...state.customRules }
-          if (newCustomRules[oldId]) {
-            newCustomRules[newId] = newCustomRules[oldId]
-            delete newCustomRules[oldId]
+          const newCustomRules: Record<string, string[]> = {}
+          for (const [id, keywords] of Object.entries(state.customRules)) {
+            if (id !== oldId) {
+              newCustomRules[id] = keywords
+            }
+          }
+          if (state.customRules[oldId]) {
+            newCustomRules[newId] = state.customRules[oldId]
           }
           
           // Update transactions
@@ -381,10 +383,14 @@ const useStore = create<AppState>()(
           })
           
           // Update budgets
-          const newBudgets = { ...state.budgets }
-          if (newBudgets[oldId] !== undefined) {
-            newBudgets[newId] = newBudgets[oldId]
-            delete newBudgets[oldId]
+          const newBudgets: Record<string, number> = {}
+          for (const [id, amount] of Object.entries(state.budgets)) {
+            if (id !== oldId) {
+              newBudgets[id] = amount
+            }
+          }
+          if (state.budgets[oldId] !== undefined) {
+            newBudgets[newId] = state.budgets[oldId]
           }
           
           return {
@@ -424,7 +430,12 @@ const useStore = create<AppState>()(
       removeBudget: (categoryName) => {
         set((state) => {
           const categoryId = getCategoryIdFromName(categoryName, state.categoryMetadata)
-          const { [categoryId]: removed, ...rest } = state.budgets
+          const rest: Record<string, number> = {}
+          for (const [id, amount] of Object.entries(state.budgets)) {
+            if (id !== categoryId) {
+              rest[id] = amount
+            }
+          }
           return { budgets: rest }
         })
       },
@@ -442,13 +453,13 @@ const useStore = create<AppState>()(
         const state = get()
         if (state.transactions.length === 0) return
         
-        const allRules = computeAllRules(state.customRules, state.categoryMetadata)
+        const allRules = computeAllRules(state.customRules)
         set({
           transactions: state.transactions.map((t) => {
             if (t.categoryOverridden) {
               return t // Keep overridden categories
             }
-            const newCategoryId = classifyDescription(t.description, allRules, state.categoryMetadata)
+            const newCategoryId = classifyDescription(t.description, allRules)
             if (t.category === newCategoryId) {
               return t // No change needed
             }
@@ -503,7 +514,7 @@ const useStore = create<AppState>()(
 
 // Computed selectors
 // RULES already uses category IDs as keys
-const computeAllRules = (customRules: Record<string, string[]>, metadata: CategoryMetadata): Record<string, string[]> => {
+const computeAllRules = (customRules: Record<string, string[]>): Record<string, string[]> => {
   // Merge RULES (which uses IDs) with custom rules (which also use IDs)
   const merged: Record<string, string[]> = { ...RULES }
   for (const [categoryId, keywords] of Object.entries(customRules)) {
@@ -521,8 +532,7 @@ const computeAllRules = (customRules: Record<string, string[]>, metadata: Catego
 
 const useAllRules = () => {
   const customRules = useStore((state) => state.customRules)
-  const categoryMetadata = useStore((state) => state.categoryMetadata)
-  return computeAllRules(customRules, categoryMetadata)
+  return computeAllRules(customRules)
 }
 
 const useCategories = () => {
