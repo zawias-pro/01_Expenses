@@ -99,7 +99,7 @@ const Budget = () => {
             {categories
               .filter(cat => {
                 const categoryId = getCategoryIdFromName(cat, categoryMetadata)
-                return !budgetCategoryIds.has(categoryId)
+                return categoryId && !budgetCategoryIds.has(categoryId)
               })
               .map(cat => (
                 <option key={cat} value={cat}>{cat}</option>

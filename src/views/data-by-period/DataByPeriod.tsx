@@ -16,7 +16,7 @@ import { formatPolishNumber } from '../../parsing/formatPolishNumber/formatPolis
 import { parsePolishAmount } from '../../parsing/parsePolishAmount/parsePolishAmount.ts'
 import { getYearFromDate } from '../../parsing/getYearFromDate/getYearFromDate.ts'
 import { getMonthFromDate } from '../../parsing/getMonthFromDate/getMonthFromDate.ts'
-import { useStore, useCategoryMetadata, getCategoryNameFromId, generateCategoryId } from '../../store/useStore.ts'
+import { useStore, useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName } from '../../store/useStore.ts'
 
 const CategoryBarChart = ({ categories }: { categories: Record<string, number> }) => {
   const categoryEntries = Object.entries(categories)
@@ -88,7 +88,8 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
   const setSelectedMonth = useStore((state) => state.setSelectedMonth)
   const budgets = useStore((state) => state.budgets)
   const categoryMetadata = useCategoryMetadata()
-  const othersCategoryId = generateCategoryId('others')
+  // Look up 'others' category ID - it should always exist
+  const othersCategoryId = getCategoryIdFromName('others', categoryMetadata) || ''
   
   // Initialize selectedYear from selectedMonth if not set
   useEffect(() => {

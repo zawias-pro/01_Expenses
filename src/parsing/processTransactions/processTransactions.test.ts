@@ -6,7 +6,7 @@ import { generateCategoryId } from '../categoryUtils.ts'
 import type { CategoryMetadata } from '../categoryTypes.ts'
 
 test('processTransactions - processes transactions correctly', () => {
-  const category1Id = generateCategoryId('Category1')
+  const category1Id = generateCategoryId()
   const transactions: Transaction[] = [
     {
       id: '1',
@@ -45,10 +45,11 @@ test('processTransactions - processes transactions correctly', () => {
       overrideMode: false,
     },
   ]
-  const rules = { [category1Id]: ['test'] }
+  const othersId = generateCategoryId()
+  const rules = { [category1Id]: ['test'], [othersId]: [] }
   const metadata: CategoryMetadata = {
     [category1Id]: 'Category1',
-    [generateCategoryId('others')]: 'others'
+    [othersId]: 'others'
   }
   const result = processTransactions(transactions, rules, metadata)
 
@@ -68,7 +69,7 @@ test('processTransactions - processes transactions correctly', () => {
 })
 
 test('processTransactions - processes all transactions passed to it', () => {
-  const category1Id = generateCategoryId('Category1')
+  const category1Id = generateCategoryId()
   const transactions: Transaction[] = [
     {
       id: '1',
@@ -95,10 +96,11 @@ test('processTransactions - processes all transactions passed to it', () => {
       overrideMode: false,
     },
   ]
-  const rules = {}
+  const othersId = generateCategoryId()
+  const rules = { [othersId]: [] }
   const metadata: CategoryMetadata = {
     [category1Id]: 'Category1',
-    [generateCategoryId('others')]: 'others'
+    [othersId]: 'others'
   }
   // Note: processTransactions processes all transactions - filtering excluded ones
   // should happen before calling this function
@@ -112,9 +114,9 @@ test('processTransactions - processes all transactions passed to it', () => {
 })
 
 test('processTransactions - classifies categories from description and respects overrides', () => {
-  const groceryId = generateCategoryId('grocery')
-  const othersId = generateCategoryId('others')
-  const customCategoryId = generateCategoryId('custom-category')
+  const groceryId = generateCategoryId()
+  const othersId = generateCategoryId()
+  const customCategoryId = generateCategoryId()
   const transactions: Transaction[] = [
     {
       id: '1',
@@ -153,7 +155,7 @@ test('processTransactions - classifies categories from description and respects 
       overrideMode: false,
     },
   ]
-  const rules = { [groceryId]: ['biedronka'] }
+  const rules = { [groceryId]: ['biedronka'], [othersId]: [] }
   const metadata: CategoryMetadata = {
     [groceryId]: 'grocery',
     [othersId]: 'others',

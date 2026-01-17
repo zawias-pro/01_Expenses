@@ -69,7 +69,8 @@ const TransactionsTable = ({
   const [quickAddKeyword, setQuickAddKeyword] = useState<string>('')
   
   const categoryMetadata = useCategoryMetadata()
-  const othersCategoryId = generateCategoryId('others')
+  // Look up 'others' category ID - it should always exist
+  const othersCategoryId = getCategoryIdFromName('others', categoryMetadata) || ''
 
   // Parse amount string to number
   const parseAmount = (amountStr: string): number => {
