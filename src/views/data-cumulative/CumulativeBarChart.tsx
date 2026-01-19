@@ -4,6 +4,7 @@ import { CategoryFilter } from './components/CategoryFilter.tsx'
 import { CumulativeChart } from './components/CumulativeChart.tsx'
 import { SectionHeader } from '../../components/Header/Header.tsx'
 import { Button } from '../../components/Button/Button.tsx'
+import styles from './CumulativeBarChart.module.css'
 
 const monthNames = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -58,11 +59,11 @@ const CumulativeBarChart = ({ summaries, onBack }: {
 
   if (chartData.length === 0) {
     return (
-      <div className="section">
+      <div className={styles.section}>
         <SectionHeader>Cumulative Bar Chart</SectionHeader>
         <p>No data available</p>
         {onBack && (
-          <div className="action-buttons">
+          <div className={styles.actionButtons}>
             <Button variant="outline" onClick={onBack}>Back</Button>
           </div>
         )}

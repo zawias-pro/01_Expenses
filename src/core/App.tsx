@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import './App.css'
+import styles from './App.module.css'
 import { parseCSVLine } from '../parsing/parseCSVLine/parseCSVLine.ts'
 import { classifyDescription } from '../parsing/classifyDescription/classifyDescription.ts'
 import { parsePolishAmount } from '../parsing/parsePolishAmount/parsePolishAmount.ts'
@@ -357,57 +358,57 @@ const App = () => {
   }
 
   return (
-    <div className="app-container">
+    <div className={styles['appContainer']}>
       {/* Sidebar */}
-      <div className="sidebar">
-        <div className="sidebar-header">
+      <div className={styles['sidebar']}>
+        <div className={styles['sidebarHeader']}>
           <h1>Expense Analyzer</h1>
           <div style={{ display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
-            <button className="btn btn-primary" onClick={handleSave}>
+            <button className={styles['btnPrimary']} onClick={handleSave}>
               Save
             </button>
-            <button className="btn btn-secondary" onClick={handleExport}>
+            <button className={styles['btnSecondary']} onClick={handleExport}>
               Export State
             </button>
-            <button className="btn btn-secondary" onClick={handleImport}>
+            <button className={styles['btnSecondary']} onClick={handleImport}>
               Import State
             </button>
-            <button className="btn btn-danger" onClick={handleClear}>
+            <button className={styles['btnDanger']} onClick={handleClear}>
               Clear & Start Over
             </button>
           </div>
         </div>
 
-        <nav className="sidebar-nav">
-          <button className="sidebar-btn" onClick={() => { setView('csv') }}>
+        <nav className={styles['sidebarNav']}>
+          <button className={styles['sidebarBtn']} onClick={() => { setView('csv') }}>
             CSV Input
           </button>
           <button 
-            className="sidebar-btn"
+            className={styles['sidebarBtn']}
             onClick={() => { setView('categories') }}
           >
             Categories
           </button>
           <button 
-            className="sidebar-btn"
+            className={styles['sidebarBtn']}
             onClick={() => { setView('transactions') }}
           >
             Transactions Table
           </button>
           <button
-            className="sidebar-btn"
+            className={styles['sidebarBtn']}
             onClick={() => { setView('summary') }}
           >
             Data by Period
           </button>
           <button
-            className="sidebar-btn"
+            className={styles['sidebarBtn']}
             onClick={() => { setView('chart') }}
           >
             Cumulative Bar Chart
           </button>
           <button
-            className="sidebar-btn"
+            className={styles['sidebarBtn']}
             onClick={() => { setView('budget') }}
           >
             Budget
@@ -416,7 +417,7 @@ const App = () => {
       </div>
 
       {/* Main Content */}
-      <div className="main-content">
+      <div className={styles['mainContent']}>
         {view === 'csv' && (
           <CSVInputPreview
             csvContent={csvContent}

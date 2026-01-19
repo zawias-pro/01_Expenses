@@ -5,6 +5,7 @@ import { AddCategoryForm } from './components/AddCategoryForm.tsx'
 import { CategoryRow } from './components/CategoryRow.tsx'
 import { Button } from '../../components/Button/Button.tsx'
 import { SectionHeader, SectionSubheader } from '../../components/Header/Header.tsx'
+import styles from './Categories.module.css'
 
 const Categories = ({
   rules,
@@ -65,7 +66,7 @@ const Categories = ({
 
   return (
     <>
-      <div className="section">
+      <div className={styles.section}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <SectionHeader style={{ margin: 0, borderBottom: 'none', paddingBottom: 0 }}>Categories</SectionHeader>
           <Button
@@ -80,19 +81,19 @@ const Categories = ({
       
         <div>
           <SectionSubheader>Expense Categories</SectionSubheader>
-          <div className="table-container">
-            <table className="table">
+          <div className={styles.tableContainer}>
+            <table className={styles.table}>
               <thead>
                 <tr>
                   <th 
-                    className="sortable-header" 
+                    className={styles.sortableHeader} 
                     onClick={() => { handleSort('name') }}
                     style={{ cursor: 'pointer', userSelect: 'none' }}
                   >
                     Category {sortColumn === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
                   </th>
                   <th
-                    className="sortable-header"
+                    className={styles.sortableHeader}
                     onClick={() => { handleSort('count') }}
                     style={{ cursor: 'pointer', userSelect: 'none' }}
                   >

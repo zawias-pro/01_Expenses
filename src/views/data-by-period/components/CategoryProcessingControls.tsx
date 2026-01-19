@@ -1,6 +1,7 @@
 import { useStore } from '../../../store/useStore.ts'
 import { Checkbox } from '../../../components/Checkbox/Checkbox.tsx'
 import { Input } from '../../../components/Input/Input.tsx'
+import styles from './CategoryProcessingControls.module.css'
 
 const CategoryProcessingControls = () => {
   const treatLowValueAsOthers = useStore((state) => state.treatLowValueAsOthers)
@@ -24,7 +25,7 @@ const CategoryProcessingControls = () => {
         />
         {treatLowValueAsOthers && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <label htmlFor="low-value-threshold" className="form-label" style={{ margin: 0 }}>
+            <label htmlFor="low-value-threshold" className={styles.formLabel} style={{ margin: 0 }}>
               Threshold:
             </label>
             <Input
@@ -50,7 +51,7 @@ const CategoryProcessingControls = () => {
         />
         {mergeSmallCategories && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <label htmlFor="category-threshold" className="form-label" style={{ margin: 0 }}>
+            <label htmlFor="category-threshold" className={styles.formLabel} style={{ margin: 0 }}>
               Category threshold:
             </label>
             <Input

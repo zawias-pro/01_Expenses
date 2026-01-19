@@ -1,5 +1,6 @@
 import { Input } from '../../../components/Input/Input.tsx'
 import { Select } from '../../../components/Select/Select.tsx'
+import styles from './CSVConfigControls.module.css'
 
 interface CSVConfigControlsProps {
   delimiter: string
@@ -23,9 +24,9 @@ const CSVConfigControls = ({
   onAmountIndexChange
 }: CSVConfigControlsProps) => {
   return (
-    <div className="form-group">
-      <div className="form-group-row">
-        <div className="form-group">
+    <div className={styles.formGroup}>
+      <div className={styles.formGroupRow}>
+        <div className={styles.formGroup}>
           <Select
             id="delimiter-select"
             label="CSV Delimiter:"
@@ -39,7 +40,7 @@ const CSVConfigControls = ({
             <option value="|">Pipe (|)</option>
           </Select>
         </div>
-        <div className="form-group-small">
+        <div className={styles.formGroupSmall}>
           <Input
             id="date-index"
             label="Date Column:"
@@ -50,7 +51,7 @@ const CSVConfigControls = ({
             style={{ marginBottom: 0 }}
           />
         </div>
-        <div className="form-group-small">
+        <div className={styles.formGroupSmall}>
           <Input
             id="description-index"
             label="Description Column:"
@@ -61,7 +62,7 @@ const CSVConfigControls = ({
             style={{ marginBottom: 0 }}
           />
         </div>
-        <div className="form-group-small">
+        <div className={styles.formGroupSmall}>
           <Input
             id="amount-index"
             label="Amount Column:"

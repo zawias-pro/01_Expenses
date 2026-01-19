@@ -7,6 +7,7 @@ import { CSVPreviewTable } from './components/CSVPreviewTable.tsx'
 import { SectionHeader } from '../../components/Header/Header.tsx'
 import { Button } from '../../components/Button/Button.tsx'
 import { TextArea } from '../../components/Input/Input.tsx'
+import styles from './CSVInputPreview.module.css'
 
 const CSVInputPreview = ({ 
   csvContent, 
@@ -72,7 +73,7 @@ const CSVInputPreview = ({
   }
 
   return (
-    <div className="section">
+    <div className={styles.section}>
       <SectionHeader>CSV Input</SectionHeader>
       <p style={{ marginBottom: '1rem', color: '#666' }}>
         Paste CSV data below to add transactions to your existing data. Transactions will be appended, not replaced.
@@ -89,7 +90,7 @@ const CSVInputPreview = ({
         onAmountIndexChange={onAmountIndexChange}
       />
 
-      <div className="form-group">
+      <div className={styles.formGroup}>
         <TextArea
           value={csvContent}
           onChange={e => { onCsvChange(e.target.value) }}

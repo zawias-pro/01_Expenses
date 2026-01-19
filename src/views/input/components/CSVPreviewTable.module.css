@@ -1,0 +1,81 @@
+.previewContainer {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+}
+
+.sectionSubheader {
+  margin: 1.5rem 0 1rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--surface);
+}
+
+.table thead {
+  background-color: var(--surface-hover);
+}
+
+.table th {
+  padding: 0.875rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.table tbody tr:hover {
+  background-color: var(--surface-hover);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.statusValid {
+  background-color: var(--success-bg);
+  color: var(--success-text);
+}
+
+.statusError {
+  background-color: var(--error-bg);
+  color: var(--error-text);
+}
+
+.statusWarning {
+  background-color: var(--warning-bg);
+  color: var(--warning-text);
+}
+
+.formCheckbox {
+  width: 1.125rem;
+  height: 1.125rem;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+}
