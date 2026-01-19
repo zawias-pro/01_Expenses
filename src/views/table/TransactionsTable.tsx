@@ -10,6 +10,7 @@ import { TransactionsTableHeader } from './components/TransactionsTableHeader.ts
 import { TransactionRow } from './components/TransactionRow.tsx'
 import { EditTransactionModal } from './components/EditTransactionModal.tsx'
 import { QuickAddCategoryModal } from './components/QuickAddCategoryModal.tsx'
+import styles from './components/TransactionsTable.module.css'
 
 type BulkAction = 'delete' | 'exclude' | 'unexclude' | 'setCategory' | null
 
@@ -301,8 +302,8 @@ const TransactionsTable = ({
   }
 
   return (
-    <div className="section">
-      <h2 className="section-header">Transactions Table</h2>
+    <div className={styles.section}>
+      <h2 className={styles.header}>Transactions Table</h2>
 
       <TransactionsFilters availableMonths={availableMonths} />
 
@@ -319,8 +320,8 @@ const TransactionsTable = ({
       />
 
       {/* Compact Table */}
-      <div className="table-container" style={{ maxHeight: '70vh', overflow: 'auto' }}>
-        <table className="table" style={{ fontSize: '0.8125rem' }}>
+      <div className={styles.tableContainer}>
+        <table className={styles.table}>
           <TransactionsTableHeader
             allSelected={allSelected}
             someSelected={someSelected}

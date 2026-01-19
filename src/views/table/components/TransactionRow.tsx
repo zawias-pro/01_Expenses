@@ -1,5 +1,6 @@
 import type { Transaction } from '../../../parsing/types.ts'
 import { useStore, useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName } from '../../../store/useStore.ts'
+import styles from './TransactionRow.module.css'
 
 interface TransactionRowProps {
   transaction: Transaction
@@ -36,30 +37,21 @@ export const TransactionRow = ({
 
   return (
     <tr>
-      <td style={{ padding: '0.375rem' }}>
+      <td className={styles.cell}>
         <input
           type="checkbox"
-          className="form-checkbox"
+          className={styles.formCheckbox}
           checked={isSelected}
           onChange={onToggleSelect}
-          style={{ width: '14px', height: '14px' }}
         />
       </td>
-      <td style={{ padding: '0.375rem', ...excludedStyle }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+      <td className={`${styles.cell} ${transaction.excluded ? styles.cellExcluded : styles.cellNormal}`}>
+        <div className={styles.dateCell}>
           <span>{transaction.date}</span>
           {transaction.dateOverridden && (
             <button
               onClick={() => { resetTransactionDate(transaction.id) }}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: '0.125rem',
-                fontSize: '0.75rem',
-                color: '#ff9800',
-                opacity: 1
-              }}
+              className={styles.resetButton}
               title="Reset date to original"
             >
               🔄
@@ -67,24 +59,16 @@ export const TransactionRow = ({
           )}
         </div>
       </td>
-      <td style={{ padding: '0.375rem', ...excludedStyle }}>
+      <td className={`${styles.cell} ${styles.descriptionCell}`}>
         {transaction.description}
       </td>
-      <td style={{ padding: '0.375rem', ...excludedStyle }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      <td className={`${styles.cell} ${transaction.excluded ? styles.cellExcluded : styles.cellNormal}`}>
+        <div className={styles.categoryCell}>
           <span>{getCategoryNameFromId(transaction.category, categoryMetadata)}</span>
           {transaction.category === othersCategoryId && !transaction.categoryOverridden && (
             <button
               onClick={() => { onQuickAddCategory(transaction.id, transaction.description) }}
-              style={{
-                fontSize: '0.75rem',
-                padding: '0.125rem 0.375rem',
-                background: '#007bff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '3px',
-                cursor: 'pointer'
-              }}
+              className={styles.addButton}
               title="Quick add category"
             >
               + Add
@@ -93,15 +77,7 @@ export const TransactionRow = ({
           {transaction.categoryOverridden && (
             <button
               onClick={() => { resetTransactionCategory(transaction.id) }}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: '0.125rem',
-                fontSize: '0.75rem',
-                color: '#ff9800',
-                opacity: 1
-              }}
+              className={styles.resetButton}
               title="Reset category to auto-classified"
             >
               🔄
@@ -109,25 +85,18 @@ export const TransactionRow = ({
           )}
         </div>
       </td>
-      <td style={{ padding: '0.375rem', ...excludedStyle }}>
+      <td className={`${styles.cell} ${styles.amountCell}`}>
         {transaction.amount}
       </td>
-      <td style={{ padding: '0.375rem', ...excludedStyle }}>
+      <td className={`${styles.cell} ${styles.addedAtCell}`}>
         {transaction.addedAt !== undefined ? new Date(transaction.addedAt).toLocaleString() : 'N/A'}
       </td>
-      <td style={{ padding: '0.375rem', ...excludedStyle }}>
-        <code style={{ 
-          fontSize: '0.6875rem', 
-          fontFamily: 'monospace',
-          color: '#666',
-          backgroundColor: '#f5f5f5',
-          padding: '1px 3px',
-          borderRadius: '2px'
-        }}>
+      <td className={`${styles.cell} ${transaction.excluded ? styles.cellExcluded : styles.cellNormal}`}>
+        <code className={styles.hashCode}>
           {transaction.hash || 'N/A'}
         </code>
       </td>
-      <td style={{ padding: '0.375rem', textAlign: 'center', opacity: 1 }}>
+      <td className={styles.commentCell}>
         {transaction.comment && (
           <span
             style={{
@@ -140,32 +109,18 @@ export const TransactionRow = ({
           </span>
         )}
       </td>
-      <td style={{ padding: '0.375rem', textAlign: 'center', opacity: 1 }}>
-        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+      <td className={styles.actionsCell}>
+        <div className={styles.actions}>
           <button
             onClick={() => { onEdit(transaction) }}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '0.25rem',
-              fontSize: '0.875rem',
-              color: '#007bff'
-            }}
+            className={`${styles.actionButton} ${styles.editButton}`}
             title="Edit transaction"
           >
             ✏️
           </button>
           <button
             onClick={handleRemove}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '0.25rem',
-              fontSize: '0.875rem',
-              color: '#dc3545'
-            }}
+            className={`${styles.actionButton} ${styles.deleteButton}`}
             title="Remove transaction"
           >
             🗑️

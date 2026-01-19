@@ -1,4 +1,5 @@
 import { useCategories } from '../../../store/useStore.ts'
+import styles from './TransactionsBulkActions.module.css'
 
 type BulkAction = 'delete' | 'exclude' | 'unexclude' | 'setCategory' | null
 
@@ -29,32 +30,19 @@ export const TransactionsBulkActions = ({
 
   if (selectedCount === 0) {
     return (
-      <div style={{ 
-        marginBottom: '0.5rem', 
-        fontSize: '0.875rem', 
-        color: '#666',
-      }}>
+      <div className={styles.bulkActions}>
         <span>Showing {String(filteredCount)} of {String(totalCount)} transactions</span>
       </div>
     )
   }
 
   return (
-    <div style={{ 
-      marginBottom: '0.5rem', 
-      fontSize: '0.875rem', 
-      color: '#666',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      flexWrap: 'wrap',
-      gap: '0.5rem'
-    }}>
+    <div className={styles.bulkActions}>
       <span>Showing {String(filteredCount)} of {String(totalCount)} transactions</span>
-      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.875rem', flexWrap: 'wrap' }}>
-        <span style={{ fontWeight: '500' }}>{selectedCount} selected</span>
+      <div className={styles.controls}>
+        <span className={styles.selectedText}>{selectedCount} selected</span>
         <select
-          className="form-select"
+          className={styles.select}
           value={bulkAction || ''}
           onChange={e => {
             const action = e.target.value as BulkAction
@@ -63,7 +51,6 @@ export const TransactionsBulkActions = ({
               onBulkCategoryChange('')
             }
           }}
-          style={{ fontSize: '0.875rem', padding: '0.375rem' }}
         >
           <option value="">Choose action...</option>
           <option value="exclude">Exclude</option>
@@ -73,10 +60,10 @@ export const TransactionsBulkActions = ({
         </select>
         {bulkAction === 'setCategory' && (
           <select
-            className="form-select"
+            className={styles.select}
             value={bulkCategory}
             onChange={e => { onBulkCategoryChange(e.target.value) }}
-            style={{ fontSize: '0.875rem', padding: '0.375rem', minWidth: '150px' }}
+            style={{ minWidth: '150px' }}
           >
             <option value="">Select category...</option>
             {categories.map(cat => (
@@ -86,18 +73,16 @@ export const TransactionsBulkActions = ({
         )}
         {bulkAction && (
           <button
-            className="btn btn-primary"
+            className={styles.btnPrimary}
             onClick={onApplyBulkAction}
             disabled={bulkAction === 'setCategory' && !bulkCategory}
-            style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
           >
             Apply
           </button>
         )}
         <button
-          className="btn btn-outline"
+          className={styles.btnOutline}
           onClick={onClearSelection}
-          style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
         >
           Clear
         </button>

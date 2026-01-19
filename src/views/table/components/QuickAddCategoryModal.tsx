@@ -3,6 +3,7 @@ import { Modal } from '../../../components/Modal/Modal.tsx'
 import { Button } from '../../../components/Button/Button.tsx'
 import { Input } from '../../../components/Input/Input.tsx'
 import { Select } from '../../../components/Select/Select.tsx'
+import styles from './QuickAddCategoryModal.module.css'
 
 interface QuickAddCategoryModalProps {
   transactionId: string | null
@@ -49,19 +50,19 @@ const QuickAddCategoryModal = ({
         </>
       }
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+      <div className={styles.form}>
         <Select
           label="Category:"
           value={selectedCategory}
           onChange={e => { onSelectedCategoryChange(e.target.value) }}
-          style={{ width: '100%', fontSize: '0.875rem', padding: '0.375rem' }}
+          className={styles.select}
         >
           <option value="new">New category</option>
           {categories.filter(cat => cat !== 'others').map(cat => (
             <option key={cat} value={cat}>{cat}</option>
           ))}
         </Select>
-        
+
         {selectedCategory === 'new' && (
           <Input
             label="Custom Category Name:"
@@ -69,17 +70,17 @@ const QuickAddCategoryModal = ({
             value={customCategory}
             onChange={e => { onCustomCategoryChange(e.target.value) }}
             placeholder="Enter category name"
-            style={{ width: '100%', fontSize: '0.875rem', padding: '0.375rem' }}
+            className={styles.input}
           />
         )}
-        
+
         <Input
           label="Keyword (comma-separated):"
           type="text"
           value={keyword}
           onChange={e => { onKeywordChange(e.target.value) }}
           placeholder="Enter keywords"
-          style={{ width: '100%', fontSize: '0.875rem', padding: '0.375rem' }}
+          className={styles.input}
         />
       </div>
     </Modal>

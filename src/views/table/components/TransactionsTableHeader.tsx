@@ -1,4 +1,5 @@
 import { useStore } from '../../../store/useStore.ts'
+import styles from './TransactionsTableHeader.module.css'
 
 interface TransactionsTableHeaderProps {
   allSelected: boolean
@@ -44,52 +45,51 @@ export const TransactionsTableHeader = ({
   return (
     <thead>
       <tr>
-        <th style={{ padding: '0.375rem', fontSize: '0.8125rem', width: '30px' }}>
+        <th className={styles.tableHeader}>
           <input
             type="checkbox"
-            className="form-checkbox"
+            className={styles.formCheckbox}
             checked={allSelected}
             ref={(input) => {
               if (input) input.indeterminate = someSelected && !allSelected
             }}
             onChange={e => { onSelectAll(e.target.checked) }}
-            style={{ width: '14px', height: '14px' }}
             title="Select all"
           />
         </th>
-        <th 
-          style={{ padding: '0.375rem', fontSize: '0.8125rem', cursor: 'pointer', userSelect: 'none' }}
+        <th
+          className={`${styles.tableHeader} ${styles.sortable}`}
           onClick={() => { handleSort('date') }}
         >
           Date{getSortIndicator('date')}
         </th>
-        <th 
-          style={{ padding: '0.375rem', fontSize: '0.8125rem', cursor: 'pointer', userSelect: 'none' }}
+        <th
+          className={`${styles.tableHeader} ${styles.sortable}`}
           onClick={() => { handleSort('description') }}
         >
           Description{getSortIndicator('description')}
         </th>
-        <th 
-          style={{ padding: '0.375rem', fontSize: '0.8125rem', cursor: 'pointer', userSelect: 'none' }}
+        <th
+          className={`${styles.tableHeader} ${styles.sortable}`}
           onClick={() => { handleSort('category') }}
         >
           Category{getSortIndicator('category')}
         </th>
-        <th 
-          style={{ padding: '0.375rem', fontSize: '0.8125rem', cursor: 'pointer', userSelect: 'none' }}
+        <th
+          className={`${styles.tableHeader} ${styles.sortable}`}
           onClick={() => { handleSort('amount') }}
         >
           Amount{getSortIndicator('amount')}
         </th>
-        <th 
-          style={{ padding: '0.375rem', fontSize: '0.8125rem', cursor: 'pointer', userSelect: 'none' }}
+        <th
+          className={`${styles.tableHeader} ${styles.sortable}`}
           onClick={() => { handleSort('addedAt') }}
         >
           Added At{getSortIndicator('addedAt')}
         </th>
-        <th style={{ padding: '0.375rem', fontSize: '0.8125rem' }}>Hash</th>
-        <th style={{ padding: '0.375rem', fontSize: '0.8125rem', width: '40px' }}>Comment</th>
-        <th style={{ padding: '0.375rem', fontSize: '0.8125rem', width: '80px' }}>Actions</th>
+        <th className={styles.tableHeader}>Hash</th>
+        <th className={styles.tableHeader} style={{ width: '40px' }}>Comment</th>
+        <th className={styles.tableHeader} style={{ width: '80px' }}>Actions</th>
       </tr>
     </thead>
   )

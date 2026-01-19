@@ -3,6 +3,7 @@ import { useStore, useCategories, useCategoryMetadata, getCategoryIdFromName } f
 import { Input } from '../../../components/Input/Input.tsx'
 import { Select } from '../../../components/Select/Select.tsx'
 import { Button } from '../../../components/Button/Button.tsx'
+import styles from './TransactionsFilters.module.css'
 
 interface TransactionsFiltersProps {
   availableMonths: Array<[string, string]>
@@ -34,13 +35,7 @@ const TransactionsFilters = ({ availableMonths }: TransactionsFiltersProps) => {
   }
 
   return (
-    <div style={{ 
-      display: 'grid', 
-      gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', 
-      gap: '0.75rem',
-      marginBottom: '1rem',
-      fontSize: '0.875rem'
-    }}>
+    <div className={styles.filters}>
       {/* Search */}
       <Input
         label="Search:"

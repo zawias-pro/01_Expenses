@@ -4,6 +4,7 @@ import { Button } from '../../../components/Button/Button.tsx'
 import { Input, TextArea } from '../../../components/Input/Input.tsx'
 import { Select } from '../../../components/Select/Select.tsx'
 import { Checkbox } from '../../../components/Checkbox/Checkbox.tsx'
+import styles from './EditTransactionModal.module.css'
 
 interface EditTransactionModalProps {
   transactionId: string | null
@@ -53,16 +54,16 @@ const EditTransactionModal = ({
         </>
       }
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+      <div className={styles.form}>
         <Input
           label="Date:"
           type="text"
           value={date}
           onChange={e => { onDateChange(e.target.value) }}
           placeholder="YYYY-MM-DD"
-          style={{ width: '100%', fontSize: '0.875rem', padding: '0.375rem' }}
+          className={styles.input}
         />
-        
+
         <Select
           label="Category:"
           value={getCategoryNameFromId(category || othersCategoryId, categoryMetadata)}
@@ -71,26 +72,27 @@ const EditTransactionModal = ({
             const categoryId = getCategoryIdFromName(categoryName, categoryMetadata)
             onCategoryChange(categoryId || othersCategoryId)
           }}
-          style={{ width: '100%', fontSize: '0.875rem', padding: '0.375rem' }}
+          className={styles.input}
         >
           {categories.map(cat => (
             <option key={cat} value={cat}>{cat}</option>
           ))}
         </Select>
-        
+
         <TextArea
           label="Comment:"
           value={comment}
           onChange={e => { onCommentChange(e.target.value) }}
           placeholder="Enter a comment for this transaction..."
           rows={4}
-          style={{ width: '100%', fontSize: '0.875rem', padding: '0.375rem', fontFamily: 'inherit', resize: 'vertical' }}
+          className={styles.textarea}
         />
-        
+
         <Checkbox
           label="Exclude from calculations"
           checked={excluded}
           onChange={e => { onExcludedChange(e.target.checked) }}
+          className={styles.checkbox}
         />
       </div>
     </Modal>
