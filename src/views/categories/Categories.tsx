@@ -75,45 +75,31 @@ const Categories = ({
 
   return (
     <>
-      <div className={styles.section}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <SectionHeader style={{ margin: 0, borderBottom: 'none', paddingBottom: 0 }}>Categories</SectionHeader>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <Button
-              variant="outline"
-              onClick={() => { setShowImportModal(true) }}
-            >
-              Import CSV
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => { setShowExportModal(true) }}
-            >
-              Export CSV
-            </Button>
-          </div>
+        <div>
+          <SectionHeader>Categories</SectionHeader>
+          <Button onClick={() => { setShowImportModal(true) }}>
+            Import
+          </Button>
+          <Button onClick={() => { setShowExportModal(true) }}>
+            Export
+          </Button>
         </div>
 
         <AddCategoryForm onUpdateCategory={onUpdateCategory} />
       
         <div>
           <SectionSubheader>Expense Categories</SectionSubheader>
-          <div className={styles.tableContainer}>
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th 
-                    className={styles.sortableHeader} 
+                  <th
                     onClick={() => { handleSort('name') }}
-                    style={{ cursor: 'pointer', userSelect: 'none' }}
                   >
                     Category {sortColumn === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
                   </th>
                   <th>Category ID</th>
                   <th
-                    className={styles.sortableHeader}
                     onClick={() => { handleSort('count') }}
-                    style={{ cursor: 'pointer', userSelect: 'none' }}
                   >
                     Transactions {sortColumn === 'count' && (sortDirection === 'asc' ? '↑' : '↓')}
                   </th>
@@ -138,9 +124,6 @@ const Categories = ({
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
-
       {showExportModal && <ExportCategoriesModal rules={rules} />}
       {showImportModal && <ImportCategoriesModal onImport={handleImport} />}
     </>

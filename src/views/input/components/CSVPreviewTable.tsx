@@ -1,17 +1,16 @@
 import type { Transaction } from '../../../parsing/types.ts'
 import styles from './CSVPreviewTable.module.css'
 
-interface CSVPreviewTableProps {
+const CSVPreviewTable = ({
+  transactions
+}: {
   transactions: Transaction[]
-}
-
-const CSVPreviewTable = ({ transactions }: CSVPreviewTableProps) => {
+}) => {
   if (transactions.length === 0) return null
 
   return (
     <div>
-      <h3 className={styles.sectionSubheader}>Preview (first 3 rows):</h3>
-      <div className={styles.previewContainer}>
+      <div>Preview (first 3 rows):</div>
         <table className={styles.table}>
           <thead>
             <tr>
@@ -29,7 +28,6 @@ const CSVPreviewTable = ({ transactions }: CSVPreviewTableProps) => {
                 <td>
                   <input
                     type="checkbox"
-                    className={styles.formCheckbox}
                     checked={t.excluded}
                     disabled
                     readOnly
@@ -40,19 +38,12 @@ const CSVPreviewTable = ({ transactions }: CSVPreviewTableProps) => {
                 <td>{t.category}</td>
                 <td>{t.amount}</td>
                 <td>
-                  {t.isValid ? (
-                    <span className={`${styles.statusBadge} ${styles.statusValid}`}>✓ Valid</span>
-                  ) : (
-                    <span className={`${styles.statusBadge} ${styles.statusError}`}>
-                      ✗ Error: {t.validationError}
-                    </span>
-                  )}
+                  {t.isValid ? 'ok' : 'invalid: '+t.validationError}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
     </div>
   )
 }

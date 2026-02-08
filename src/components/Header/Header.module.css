@@ -4,6 +4,7 @@
   font-weight: 600;
   color: var(--text-primary);
   border-bottom: 1px solid var(--border-color);
+  width: 100%;
 }
 
 .sectionSubheader {

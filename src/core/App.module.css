@@ -13,7 +13,6 @@
   background-color: var(--sidebar-bg);
   color: var(--sidebar-text);
   box-shadow: var(--shadow-md);
-  z-index: 10;
 }
 
 .sidebarHeader {

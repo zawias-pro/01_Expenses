@@ -1,75 +1,9 @@
-.section {
-  background-color: var(--surface);
-  border-radius: 8px;
-  padding: 2rem;
-  margin-bottom: 2rem;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-color);
-}
-
-.tableContainer {
-  overflow-x: auto;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  margin-top: 1rem;
-}
-
 .table {
   width: 100%;
   border-collapse: collapse;
   background-color: var(--surface);
-}
 
-.table thead {
-  background-color: var(--surface-hover);
-}
-
-.table th {
-  padding: 0.875rem 1rem;
-  text-align: left;
-  font-weight: 600;
-  font-size: 0.8125rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-secondary);
-  border-bottom: 2px solid var(--border-color);
-}
-
-.table th.sortable-header {
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.table th.sortable-header:hover {
-  background-color: var(--border-color);
-  color: var(--text-primary);
-}
-
-.table td {
-  padding: 0.875rem 1rem;
-  border-bottom: 1px solid var(--border-color);
-  color: var(--text-primary);
-}
-
-.table tbody tr:hover {
-  background-color: var(--surface-hover);
-}
-
-.table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.sortableHeader {
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.sortableHeader:hover {
-  background-color: var(--border-color);
-  color: var(--text-primary);
-}
-
-.actionButtons {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  margin-top: 1.5rem;
+  th, td {
+    border: 1px solid black;
+  }
 }
