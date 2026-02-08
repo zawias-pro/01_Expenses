@@ -2,6 +2,7 @@ import { useStore } from '../../../store/useStore.ts'
 import { Button } from '../../../components/Button/Button.tsx'
 import { Input } from '../../../components/Input/Input.tsx'
 import { SectionHeader } from '../../../components/SectionHeader/SectionHeader.tsx'
+import { FormGroup } from "../../../components/FormGroup/FormGroup.tsx"
 
 interface AddCategoryFormProps {
   onUpdateCategory: (categoryName: string, keywords: string[]) => void
@@ -23,12 +24,13 @@ const AddCategoryForm = ({ onUpdateCategory }: AddCategoryFormProps) => {
   }
 
   return (
-    <>
-      <SectionHeader>Add New Category</SectionHeader>
+    <div style={{display: 'flex', flexDirection: 'column', gap: '.5rem', alignItems: 'flex-start'}}>
+<FormGroup>
           <Input
+            id={'category'}
             label="Category"
             type="text"
-            placeholder="e.g., 'entertainment'"
+            placeholder="entertainment"
             value={newCategory}
             onChange={e => { setNewCategory(e.target.value) }}
             onKeyDown={e => {
@@ -36,12 +38,12 @@ const AddCategoryForm = ({ onUpdateCategory }: AddCategoryFormProps) => {
                 handleAddCategory()
               }
             }}
-            style={{ padding: '0.5rem', fontSize: '0.875rem' }}
           />
           <Input
+            id={'keywords'}
             label="Keywords (comma-separated)"
             type="text"
-            placeholder="e.g., 'netflix, spotify, hbo'"
+            placeholder="netflix, spotify, hbo"
             value={newKeywords}
             onChange={e => { setNewKeywords(e.target.value) }}
             onKeyDown={e => {
@@ -49,16 +51,16 @@ const AddCategoryForm = ({ onUpdateCategory }: AddCategoryFormProps) => {
                 handleAddCategory()
               }
             }}
-            style={{ padding: '0.5rem', fontSize: '0.875rem' }}
           />
-          <Button
-            onClick={handleAddCategory}
-            disabled={!newCategory.trim() || !newKeywords.trim()}
-            style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
-          >
-            Add Category
-          </Button>
-    </>
+</FormGroup>
+
+  <Button
+    onClick={handleAddCategory}
+    disabled={!newCategory.trim() || !newKeywords.trim()}
+  >
+    Add Category
+  </Button>
+  </div>
   )
 }
 

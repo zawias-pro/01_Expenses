@@ -29,11 +29,11 @@ const Categories = ({
   const transactions = useStore((state) => state.transactions)
   const showExportModal = useStore((state) => state.showExportModal)
   const showImportModal = useStore((state) => state.showImportModal)
-  
+
   // Sorting state
   const [sortColumn, setSortColumn] = useState<'name' | 'count'>('name')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
-  
+
   // Store actions
   const setShowExportModal = useStore((state) => state.setShowExportModal)
   const setShowImportModal = useStore((state) => state.setShowImportModal)
@@ -64,7 +64,7 @@ const Categories = ({
     })
     .sort((a, b) => {
       if (sortColumn === 'name') {
-        return sortDirection === 'asc' 
+        return sortDirection === 'asc'
           ? a.name.localeCompare(b.name)
           : b.name.localeCompare(a.name)
       } else {
@@ -76,60 +76,61 @@ const Categories = ({
 
   return (
     <>
-          <SectionHeader>Categories</SectionHeader>
+      <SectionHeader>Categories</SectionHeader>
 
-          <Panel>
-          <Button onClick={() => { setShowImportModal(true) }}>
+      <Panel title={'Import/Export'}>
+        <div style={{ display: 'flex', gap: '.5rem' }}>
+          <Button onClick={() => {setShowImportModal(true)}}>
             Import
           </Button>
-          <Button onClick={() => { setShowExportModal(true) }}>
+          <Button onClick={() => {setShowExportModal(true)}}>
             Export
           </Button>
-          </Panel>
-
-      <Panel>
-        <AddCategoryForm onUpdateCategory={onUpdateCategory} />
+        </div>
       </Panel>
-      
-        <Panel>
-          <SectionHeader>Expense Categories</SectionHeader>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th
-                    onClick={() => { handleSort('name') }}
-                  >
-                    Category {sortColumn === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
-                  </th>
-                  <th>Category ID</th>
-                  <th
-                    onClick={() => { handleSort('count') }}
-                  >
-                    Transactions {sortColumn === 'count' && (sortDirection === 'asc' ? '↑' : '↓')}
-                  </th>
-                  <th>Keywords</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {categoryEntries.map(({ id, name, keywords, count }) => (
-                  <CategoryRow
-                    key={id}
-                    id={id}
-                    name={name}
-                    keywords={keywords}
-                    count={count}
-                    isCustom={id in customRules}
-                    onUpdateCategory={onUpdateCategory}
-                    onRemoveCategory={onRemoveCategory}
-                    onRenameCategory={onRenameCategory}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </Panel>
-      {showExportModal && <ExportCategoriesModal rules={rules} />}
-      {showImportModal && <ImportCategoriesModal onImport={handleImport} />}
+
+      <Panel title={'Add New Category'}>
+        <AddCategoryForm onUpdateCategory={onUpdateCategory}/>
+      </Panel>
+
+      <Panel title={'Expense Categories'}>
+        <table className={styles.table}>
+          <thead>
+          <tr>
+            <th
+              onClick={() => {handleSort('name')}}
+            >
+              Category {sortColumn === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
+            </th>
+            <th>Category ID</th>
+            <th
+              onClick={() => {handleSort('count')}}
+            >
+              Transactions {sortColumn === 'count' && (sortDirection === 'asc' ? '↑' : '↓')}
+            </th>
+            <th>Keywords</th>
+            <th>Action</th>
+          </tr>
+          </thead>
+          <tbody>
+          {categoryEntries.map(({ id, name, keywords, count }) => (
+            <CategoryRow
+              key={id}
+              id={id}
+              name={name}
+              keywords={keywords}
+              count={count}
+              isCustom={id in customRules}
+              onUpdateCategory={onUpdateCategory}
+              onRemoveCategory={onRemoveCategory}
+              onRenameCategory={onRenameCategory}
+            />
+          ))}
+          </tbody>
+        </table>
+      </Panel>
+      {showExportModal && <ExportCategoriesModal rules={rules}/>}
+      {showImportModal && <ImportCategoriesModal onImport={handleImport}/>}
     </>
   )
 }

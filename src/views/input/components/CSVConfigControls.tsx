@@ -1,7 +1,7 @@
 import { useStore } from '../../../store/useStore.ts'
 import { Input } from '../../../components/Input/Input.tsx'
 import { Select } from '../../../components/Select/Select.tsx'
-import styles from './CSVConfigControls.module.css'
+import { FormGroup } from "../../../components/FormGroup/FormGroup.tsx"
 
 const CSVConfigControls = () => {
   const delimiter = useStore((state) => state.delimiter)
@@ -14,14 +14,12 @@ const CSVConfigControls = () => {
   const setAmountIndex = useStore((state) => state.setAmountIndex)
 
   return (
-    <div className={styles.formGroup}>
-      <div className={styles.formGroupRow}>
-        <div className={styles.formGroup}>
+    <FormGroup>
           <Select
             id="delimiter-select"
             label="CSV Delimiter:"
             value={delimiter}
-            onChange={e => { setDelimiter(e.target.value) }}
+            onChange={event => { setDelimiter(event.target.value) }}
             style={{ marginBottom: 0 }}
           >
             <option value=";">Semicolon (;)</option>
@@ -29,8 +27,6 @@ const CSVConfigControls = () => {
             <option value="\t">Tab</option>
             <option value="|">Pipe (|)</option>
           </Select>
-        </div>
-        <div className={styles.formGroupSmall}>
           <Input
             id="date-index"
             label="Date Column:"
@@ -40,8 +36,6 @@ const CSVConfigControls = () => {
             min="0"
             style={{ marginBottom: 0 }}
           />
-        </div>
-        <div className={styles.formGroupSmall}>
           <Input
             id="description-index"
             label="Description Column:"
@@ -51,8 +45,6 @@ const CSVConfigControls = () => {
             min="0"
             style={{ marginBottom: 0 }}
           />
-        </div>
-        <div className={styles.formGroupSmall}>
           <Input
             id="amount-index"
             label="Amount Column:"
@@ -62,9 +54,7 @@ const CSVConfigControls = () => {
             min="0"
             style={{ marginBottom: 0 }}
           />
-        </div>
-      </div>
-    </div>
+    </FormGroup>
   )
 }
 

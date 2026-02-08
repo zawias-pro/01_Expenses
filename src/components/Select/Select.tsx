@@ -4,12 +4,13 @@ import styles from './Select.module.css'
 const Select = ({
   id,
   label,
-  children
+  children,
+  ...props
 }: {
   id: string
   label: string
   children: ReactNode
-}) => (
+} & React.SelectHTMLAttributes<HTMLSelectElement>) => (
   <div className={styles['formGroup']}>
     <label
       htmlFor={id}
@@ -20,6 +21,7 @@ const Select = ({
     <select
       id={id}
       className={styles['select']}
+      {...props}
     >
       {children}
     </select>

@@ -1,7 +1,14 @@
-.label {
-  font-size: 0.875rem;
-}
-
 .input {
   width: 100%;
+
+  .label {
+    font-size: 0.75rem;
+    font-weight: bold;
+    display: block;
+  }
+
+  .control {
+    width: 100%;
+    display: block;
+  }
 }

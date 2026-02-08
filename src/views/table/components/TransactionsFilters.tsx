@@ -3,7 +3,7 @@ import { useStore, useCategories, useCategoryMetadata, getCategoryIdFromName } f
 import { Input } from '../../../components/Input/Input.tsx'
 import { Select } from '../../../components/Select/Select.tsx'
 import { Button } from '../../../components/Button/Button.tsx'
-import styles from './TransactionsFilters.module.css'
+import { FormGroup } from "../../../components/FormGroup/FormGroup.tsx"
 
 interface TransactionsFiltersProps {
   availableMonths: Array<[string, string]>
@@ -35,19 +35,18 @@ const TransactionsFilters = ({ availableMonths }: TransactionsFiltersProps) => {
   }
 
   return (
-    <div className={styles.filters}>
-      {/* Search */}
+    <FormGroup>
       <Input
+        id={'search'}
         label="Search:"
         type="text"
         value={searchQuery}
         onChange={e => { setSearchQuery(e.target.value) }}
         placeholder="Search transactions..."
-        style={{ width: '100%', fontSize: '0.875rem', padding: '0.375rem', marginBottom: 0 }}
       />
 
-      {/* Category Filter */}
       <Select
+        id={'category'}
         label="Category:"
         value={selectedCategory || ''}
         onChange={e => {
@@ -76,8 +75,7 @@ const TransactionsFilters = ({ availableMonths }: TransactionsFiltersProps) => {
         ))}
       </Select>
 
-      {/* Amount Filter */}
-      <div style={{ gridColumn: '1 / -1' }}>
+      <div>
         <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>
           Amount:
         </label>
@@ -100,7 +98,7 @@ const TransactionsFilters = ({ availableMonths }: TransactionsFiltersProps) => {
             <option value="greater">&gt; Greater than</option>
           </Select>
           {amountFilterType && amountFilterType !== 'none' && (
-            <>
+            <div>
               <Input
                 type="number"
                 value={amountFilterInput}
@@ -114,11 +112,13 @@ const TransactionsFilters = ({ availableMonths }: TransactionsFiltersProps) => {
               >
                 Apply
               </Button>
-            </>
+            </div>
           )}
         </div>
       </div>
-    </div>
+
+      <div>hello</div>
+    </FormGroup>
   )
 }
 
