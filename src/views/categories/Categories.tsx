@@ -5,7 +5,7 @@ import { ImportCategoriesModal } from './components/ImportCategoriesModal.tsx'
 import { AddCategoryForm } from './components/AddCategoryForm.tsx'
 import { CategoryRow } from './components/CategoryRow.tsx'
 import { Button } from '../../components/Button/Button.tsx'
-import { SectionHeader, SectionSubheader } from '../../components/Header/Header.tsx'
+import { SectionHeader } from '../../components/SectionHeader/SectionHeader.tsx'
 import styles from './Categories.module.css'
 
 const Categories = ({
@@ -88,7 +88,7 @@ const Categories = ({
         <AddCategoryForm onUpdateCategory={onUpdateCategory} />
       
         <div>
-          <SectionSubheader>Expense Categories</SectionSubheader>
+          <SectionHeader>Expense Categories</SectionHeader>
             <table className={styles.table}>
               <thead>
                 <tr>

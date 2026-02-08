@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { MonthlySummary } from '../../parsing/types.ts'
 import { CategoryFilter } from './components/CategoryFilter.tsx'
 import { CumulativeChart } from './components/CumulativeChart.tsx'
-import { SectionHeader } from '../../components/Header/Header.tsx'
+import { SectionHeader } from '../../components/SectionHeader/SectionHeader.tsx'
 import { Button } from '../../components/Button/Button.tsx'
 import styles from './CumulativeBarChart.module.css'
 

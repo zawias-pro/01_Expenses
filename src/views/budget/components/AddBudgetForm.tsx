@@ -4,7 +4,7 @@ import { parsePolishAmount } from '../../../parsing/parsePolishAmount/parsePolis
 import { Button } from '../../../components/Button/Button.tsx'
 import { Input } from '../../../components/Input/Input.tsx'
 import { Select } from '../../../components/Select/Select.tsx'
-import { SectionSubheader } from '../../../components/Header/Header.tsx'
+import { SectionHeader } from "../../../components/SectionHeader/SectionHeader.tsx"
 
 const AddBudgetForm = () => {
   const categories = useCategories()
@@ -39,7 +39,7 @@ const AddBudgetForm = () => {
       backgroundColor: '#f5f5f5', 
       borderRadius: '4px' 
     }}>
-      <SectionSubheader style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1rem' }}>Add New Budget</SectionSubheader>
+      <SectionHeader>Add New Budget</SectionHeader>
       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
         <Select
           value={newCategory}

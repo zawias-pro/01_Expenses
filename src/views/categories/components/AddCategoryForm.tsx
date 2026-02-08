@@ -1,7 +1,7 @@
 import { useStore } from '../../../store/useStore.ts'
 import { Button } from '../../../components/Button/Button.tsx'
 import { Input } from '../../../components/Input/Input.tsx'
-import { SectionSubheader } from '../../../components/Header/Header.tsx'
+import { SectionHeader } from '../../../components/SectionHeader/SectionHeader.tsx'
 
 interface AddCategoryFormProps {
   onUpdateCategory: (categoryName: string, keywords: string[]) => void
@@ -24,7 +24,7 @@ const AddCategoryForm = ({ onUpdateCategory }: AddCategoryFormProps) => {
 
   return (
     <div style={{ marginBottom: '2rem', padding: '1.25rem', backgroundColor: 'var(--surface-hover)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-      <SectionSubheader style={{ marginTop: 0, marginBottom: '1rem' }}>Add New Category</SectionSubheader>
+      <SectionHeader>Add New Category</SectionHeader>
       <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
         <div style={{ flex: '1', minWidth: '200px' }}>
           <Input

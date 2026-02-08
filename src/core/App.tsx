@@ -14,6 +14,7 @@ import {
   exportState,
   importState,
 } from '../store/useStore.ts'
+import { ErrorBoundary } from "../components/ErrorBoundary/ErrorBoundary.tsx"
 
 const App = () => {
   // Store state
@@ -110,6 +111,7 @@ const App = () => {
   }
 
   return (
+    <ErrorBoundary>
     <div className={styles['appContainer']}>
       {/* Sidebar */}
       <div className={styles['sidebar']}>
@@ -216,6 +218,7 @@ const App = () => {
         </div>
       </div>
     </div>
+    </ErrorBoundary>
   )
 }
 

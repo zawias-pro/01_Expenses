@@ -11,7 +11,7 @@ import { TransactionRow } from './components/TransactionRow.tsx'
 import { EditTransactionModal } from './components/EditTransactionModal.tsx'
 import { QuickAddCategoryModal } from './components/QuickAddCategoryModal.tsx'
 import styles from './components/TransactionsTable.module.css'
-import { SectionHeader } from "../../components/Header/Header.tsx"
+import { SectionHeader } from "../../components/SectionHeader/SectionHeader.tsx"
 
 type BulkAction = 'delete' | 'exclude' | 'unexclude' | 'setCategory' | null
 

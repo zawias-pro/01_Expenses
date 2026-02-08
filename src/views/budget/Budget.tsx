@@ -1,7 +1,7 @@
 import { useStore, useCategoryMetadata, getCategoryNameFromId } from '../../store/useStore.ts'
 import { AddBudgetForm } from './components/AddBudgetForm.tsx'
 import { BudgetRow } from './components/BudgetRow.tsx'
-import { SectionHeader, SectionSubheader } from '../../components/Header/Header.tsx'
+import { SectionHeader } from '../../components/SectionHeader/SectionHeader.tsx'
 
 const Budget = () => {
   const categoryMetadata = useCategoryMetadata()
@@ -28,7 +28,7 @@ const Budget = () => {
 
       {/* Budget List */}
       <div>
-        <SectionSubheader style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1rem' }}>Current Budgets</SectionSubheader>
+        <SectionHeader>Current Budgets</SectionHeader>
         {budgetEntries.length === 0 ? (
           <p style={{ color: '#666' }}>No budgets defined yet.</p>
         ) : (
