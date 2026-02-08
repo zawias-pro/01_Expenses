@@ -4,11 +4,10 @@ import type { Transaction, MonthlySummary } from '../parsing/types.ts'
 import { parseRules } from '../parsing/parseRules/parseRules.ts'
 import { classifyDescription } from '../parsing/classifyDescription/classifyDescription.ts'
 import { processTransactions } from '../parsing/processTransactions/processTransactions.ts'
-import rulesContent from '../rules.csv?raw'
 
 // NOTE: This is a development app, not production. No migrations needed.
-// Handle everything in-memory only.
-const { rules: RULES, metadata: INITIAL_METADATA } = parseRules(rulesContent)
+// Start with empty categories (only "others"). User imports or adds categories.
+const { rules: RULES, metadata: INITIAL_METADATA } = parseRules('')
 const STORAGE_KEY = 'expense-analyzer-data'
 
 import type { CategoryMetadata } from '../parsing/categoryTypes.ts'
@@ -102,6 +101,7 @@ interface AppState {
   updateCategory: (categoryName: string, keywords: string[]) => void
   removeCategory: (categoryName: string) => void
   renameCategory: (oldName: string, newName: string) => void
+  replaceCategories: (categories: Record<string, string[]>) => void
   
   // DataByPeriod actions
   setSelectionType: (type: SelectionType) => void
@@ -424,6 +424,21 @@ const useStore = create<AppState>()(
         })
       },
       
+      replaceCategories: (categories) => {
+        const metadata: CategoryMetadata = {}
+        const rules: Record<string, string[]> = {}
+        for (const [categoryName, keywords] of Object.entries(categories)) {
+          const id = getOrCreateCategoryId(categoryName, metadata)
+          metadata[id] = categoryName
+          rules[id] = keywords
+        }
+        const othersId = getOrCreateCategoryId('others', metadata)
+        metadata[othersId] = 'others'
+        if (!(othersId in rules)) rules[othersId] = []
+        set({ customRules: rules, categoryMetadata: metadata, budgets: {} })
+        get().reclassifyTransactions()
+      },
+      
       clearAll: () => {
         set({
           ...initialState,
@@ -461,6 +476,7 @@ const useStore = create<AppState>()(
         transactions: state.transactions,
         view: state.view,
         customRules: state.customRules,
+        categoryMetadata: state.categoryMetadata,
         selectedMonth: state.selectedMonth,
         dateIndex: state.dateIndex,
         descriptionIndex: state.descriptionIndex,
@@ -550,6 +566,7 @@ const exportState = (): string => {
     transactions: state.transactions,
     view: state.view,
     customRules: state.customRules,
+    categoryMetadata: state.categoryMetadata,
     selectedMonth: state.selectedMonth,
     dateIndex: state.dateIndex,
     descriptionIndex: state.descriptionIndex,
@@ -588,6 +605,7 @@ const importState = (jsonString: string): boolean => {
       transactions: data.transactions,
       view: data.view,
       customRules: data.customRules,
+      categoryMetadata: data.categoryMetadata ?? INITIAL_CATEGORY_METADATA,
       selectedMonth: data.selectedMonth,
       dateIndex: data.dateIndex,
       descriptionIndex: data.descriptionIndex,

@@ -36,7 +36,6 @@
 }
 
 .table th {
-  padding: 0.875rem 1rem;
   text-align: left;
   font-weight: 600;
   font-size: 0.8125rem;
@@ -56,7 +55,6 @@
 }
 
 .table td {
-  padding: 0.875rem 1rem;
   border-bottom: 1px solid var(--border-color);
   color: var(--text-primary);
 }

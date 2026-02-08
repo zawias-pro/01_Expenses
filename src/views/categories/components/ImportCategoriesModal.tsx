@@ -39,17 +39,8 @@ const ImportCategoriesModal = ({ onImport }: ImportCategoriesModalProps) => {
         return null
       }
       
-      const keywordsStr = parts[1]?.trim()
-      if (!keywordsStr) {
-        setError(`Line ${i + 1}: Keywords are empty`)
-        return null
-      }
-      
-      const keywords = keywordsStr.split(',').map(k => k.trim()).filter(k => k)
-      if (keywords.length === 0) {
-        setError(`Line ${i + 1}: No valid keywords found`)
-        return null
-      }
+      const keywordsStr = parts[1]?.trim() ?? ''
+      const keywords = keywordsStr ? keywordsStr.split(',').map(k => k.trim()).filter(k => k) : []
       
       // If category already exists in this import, merge keywords
       if (categories[categoryName]) {
@@ -101,7 +92,7 @@ const ImportCategoriesModal = ({ onImport }: ImportCategoriesModalProps) => {
         Paste CSV content in the format: <code>categoryname;keyword1,keyword2,keyword3</code>
       </p>
       <p style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-        Note: This will merge with existing categories. Transactions will be automatically reclassified.
+        Note: This will replace all categories (except &quot;others&quot;). Transactions will be automatically reclassified.
       </p>
       <TextArea
         value={csvContent}

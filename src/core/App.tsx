@@ -172,6 +172,7 @@ const App = () => {
   const updateCategory = useStore((state) => state.updateCategory)
   const removeCategory = useStore((state) => state.removeCategory)
   const renameCategory = useStore((state) => state.renameCategory)
+  const replaceCategories = useStore((state) => state.replaceCategories)
   const clearAll = useStore((state) => state.clearAll)
   
   // Computed values
@@ -444,6 +445,7 @@ const App = () => {
             onUpdateCategory={updateCategory}
             onRemoveCategory={removeCategory}
             onRenameCategory={renameCategory}
+            onReplaceCategories={replaceCategories}
           />
         )}
 

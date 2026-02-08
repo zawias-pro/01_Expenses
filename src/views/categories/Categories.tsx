@@ -13,13 +13,15 @@ const Categories = ({
   customRules,
   onUpdateCategory,
   onRemoveCategory,
-  onRenameCategory
+  onRenameCategory,
+  onReplaceCategories
 }: {
   rules: Record<string, string[]> // category ID -> keywords
   customRules: Record<string, string[]> // category ID -> keywords
   onUpdateCategory: (categoryName: string, keywords: string[]) => void
   onRemoveCategory: (categoryName: string) => void
   onRenameCategory: (oldName: string, newName: string) => void
+  onReplaceCategories: (categories: Record<string, string[]>) => void
 }) => {
   // Store state
   const categoryMetadata = useCategoryMetadata()
@@ -36,10 +38,7 @@ const Categories = ({
   const setShowImportModal = useStore((state) => state.setShowImportModal)
 
   const handleImport = (categories: Record<string, string[]>) => {
-    // Import each category (this will merge with existing categories)
-    for (const [categoryName, keywords] of Object.entries(categories)) {
-      onUpdateCategory(categoryName, keywords)
-    }
+    onReplaceCategories(categories)
   }
 
   const handleSort = (column: 'name' | 'count') => {
