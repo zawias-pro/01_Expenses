@@ -434,15 +434,13 @@ const useStore = create<AppState>()(
         if (state.transactions.length === 0) return
         
         const allRules = computeAllRules(state.customRules)
+        // Always create new transaction objects to ensure React detects changes
         set({
           transactions: state.transactions.map((t) => {
             if (t.categoryOverridden) {
-              return t // Keep overridden categories
+              return { ...t } // Create new object even for overridden categories
             }
             const newCategoryId = classifyDescription(t.description, allRules, state.categoryMetadata)
-            if (t.category === newCategoryId) {
-              return t // No change needed
-            }
             return {
               ...t,
               category: newCategoryId,

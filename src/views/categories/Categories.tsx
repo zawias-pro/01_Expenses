@@ -92,6 +92,7 @@ const Categories = ({
                   >
                     Category {sortColumn === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
                   </th>
+                  <th>Category ID</th>
                   <th
                     className={styles.sortableHeader}
                     onClick={() => { handleSort('count') }}

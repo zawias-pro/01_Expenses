@@ -104,6 +104,18 @@ const CategoryRow = ({
         )}
       </td>
       <td style={{ padding: '0.5rem 1rem' }}>
+        <code style={{ 
+          fontSize: '0.75rem', 
+          fontFamily: 'monospace',
+          color: '#666',
+          backgroundColor: '#f5f5f5',
+          padding: '2px 6px',
+          borderRadius: '3px'
+        }}>
+          {id}
+        </code>
+      </td>
+      <td style={{ padding: '0.5rem 1rem' }}>
         <span style={{ color: '#666', fontSize: '0.875rem' }}>
           {count}
         </span>
