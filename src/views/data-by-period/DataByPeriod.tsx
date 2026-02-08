@@ -13,6 +13,8 @@ import { CategoryProcessingControls } from './components/CategoryProcessingContr
 import { BudgetComparison } from './components/BudgetComparison.tsx'
 import { SectionHeader } from '../../components/SectionHeader/SectionHeader.tsx'
 import styles from './DataByPeriod.module.css'
+import { Panel } from "../../components/Panel/Panel.tsx"
+import { FormGroup } from "../../components/FormGroup/FormGroup.tsx"
 
 const monthNames = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -237,51 +239,51 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
   }, [transactions, selectionType, selectedMonth, selectedYear])
 
   return (
-    <div className={styles.section}>
+    <>
       <SectionHeader>Data Aggregated by Period</SectionHeader>
 
-      <PeriodSelection
-        availableYears={availableYears}
-        monthOptions={monthOptions}
-        selectedMonth={selectedMonth}
-        onSelectionChange={onSelectionChange}
-      />
+      <Panel>
+        <FormGroup>
+        <PeriodSelection
+          availableYears={availableYears}
+          monthOptions={monthOptions}
+          selectedMonth={selectedMonth}
+          onSelectionChange={onSelectionChange}
+        />
+        <CategoryProcessingControls />
+        </FormGroup>
+      </Panel>
 
       {displaySummary && (
-        <div>
-          <SectionHeader>{getDisplayTitle()}</SectionHeader>
-          
-          <CategoryProcessingControls />
-          
-          {/* Tab Navigation */}
+          <Panel title={getDisplayTitle()}>
           <div className={styles.tabs}>
             <button
-              className={`${styles.tab} ${activeTab === 'expenses' ? styles.active : ''}`}
+              className={activeTab === 'expenses' ? styles.active : ''}
               onClick={() => { setActiveTab('expenses') }}
             >
               Top 10 Expenses
             </button>
             <button
-              className={`${styles.tab} ${activeTab === 'chart' ? styles.active : ''}`}
+              className={activeTab === 'chart' ? styles.active : ''}
               onClick={() => { setActiveTab('chart') }}
             >
               Category Chart
             </button>
             <button
-              className={`${styles.tab} ${activeTab === 'categories' ? styles.active : ''}`}
+              className={activeTab === 'categories' ? styles.active : ''}
               onClick={() => { setActiveTab('categories') }}
             >
               Categories
             </button>
             <button
-              className={`${styles.tab} ${activeTab === 'budget' ? styles.active : ''}`}
+              className={activeTab === 'budget' ? styles.active : ''}
               onClick={() => { setActiveTab('budget') }}
             >
               Vs Budget
             </button>
           </div>
-          
-          {/* Tab Content: Top 10 Expenses */}
+
+            {activeTab === 'expenses'&&(
           <div className={`${styles.tabContent} ${activeTab === 'expenses' ? styles.active : ''}`}>
             {topExpenses.length > 0 ? (
               <ul className={styles.categoryList}>
@@ -300,16 +302,11 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
               <p>No expenses found for this period.</p>
             )}
           </div>
-          
-          {/* Tab Content: Chart */}
-          <div className={`${styles.tabContent} ${activeTab === 'chart' ? styles.active : ''}`}>
-            <div className={styles.chartContainer}>
+            )}
+            {activeTab === 'chart'&&(
               <CategoryBarChart categories={processedCategories} />
-            </div>
-          </div>
-          
-          {/* Tab Content: Categories */}
-          <div className={`${styles.tabContent} ${activeTab === 'categories' ? styles.active : ''}`}>
+            )}
+            {activeTab === 'categories'&&(
             <ul className={styles.categoryList}>
               {Object.entries(processedCategories)
                 .sort(([, a], [, b]) => b - a)
@@ -320,16 +317,14 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
                 </li>
               ))}
             </ul>
-          </div>
-          
-          {/* Tab Content: Vs Budget */}
-          <div className={`${styles.tabContent} ${activeTab === 'budget' ? styles.active : ''}`}>
-            <BudgetComparison processedCategories={processedCategories} summaries={summaries} />
-          </div>
-        </div>
+            )}
+            {activeTab === 'budget'&&(
+              <BudgetComparison processedCategories={processedCategories} summaries={summaries} />
+            )}
+          </Panel>
       )}
 
-    </div>
+    </>
   )
 }
 

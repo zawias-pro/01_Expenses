@@ -2,7 +2,7 @@ import React from 'react'
 import styles from './Button.module.css'
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'danger'
+  variant?: 'primary' | 'secondary' | 'danger'
 }
 
 const Button = ({ 
@@ -10,8 +10,8 @@ const Button = ({
   children, 
   ...props 
 }: ButtonProps) => {
-  const variantClass = styles[variant]
-  const classes = [styles['btn'], variantClass].filter(Boolean).join(' ')
+  const classes = [styles['btn'], styles[variant]].filter(Boolean).join(' ')
+
   return (
     <button 
       className={classes} 

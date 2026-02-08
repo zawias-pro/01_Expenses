@@ -1,21 +1,10 @@
 import { useCategories } from '../../../store/useStore.ts'
 import styles from './TransactionsBulkActions.module.css'
+import { Button } from "../../../components/Button/Button.tsx"
 
 type BulkAction = 'delete' | 'exclude' | 'unexclude' | 'setCategory' | null
 
-interface TransactionsBulkActionsProps {
-  selectedCount: number
-  totalCount: number
-  filteredCount: number
-  bulkAction: BulkAction
-  onBulkActionChange: (action: BulkAction) => void
-  bulkCategory: string
-  onBulkCategoryChange: (category: string) => void
-  onApplyBulkAction: () => void
-  onClearSelection: () => void
-}
-
-export const TransactionsBulkActions = ({
+const TransactionsBulkActions = ({
   selectedCount,
   totalCount,
   filteredCount,
@@ -25,21 +14,23 @@ export const TransactionsBulkActions = ({
   onBulkCategoryChange,
   onApplyBulkAction,
   onClearSelection,
-}: TransactionsBulkActionsProps) => {
+}: {
+  selectedCount: number
+  totalCount: number
+  filteredCount: number
+  bulkAction: BulkAction
+  onBulkActionChange: (action: BulkAction) => void
+  bulkCategory: string
+  onBulkCategoryChange: (category: string) => void
+  onApplyBulkAction: () => void
+  onClearSelection: () => void
+}) => {
   const categories = useCategories()
 
-  if (selectedCount === 0) {
-    return (
-      <div className={styles.bulkActions}>
-        <span>Showing {String(filteredCount)} of {String(totalCount)} transactions</span>
-      </div>
-    )
-  }
-
   return (
-    <div className={styles.bulkActions}>
+    <div>
       <span>Showing {String(filteredCount)} of {String(totalCount)} transactions</span>
-      <div className={styles.controls}>
+      <div>
         <span className={styles.selectedText}>{selectedCount} selected</span>
         <select
           className={styles.select}
@@ -72,21 +63,19 @@ export const TransactionsBulkActions = ({
           </select>
         )}
         {bulkAction && (
-          <button
-            className={styles.btnPrimary}
+          <Button
             onClick={onApplyBulkAction}
             disabled={bulkAction === 'setCategory' && !bulkCategory}
           >
             Apply
-          </button>
+          </Button>
         )}
-        <button
-          className={styles.btnOutline}
-          onClick={onClearSelection}
-        >
+        <Button onClick={onClearSelection}>
           Clear
-        </button>
+        </Button>
       </div>
     </div>
   )
 }
+
+export { TransactionsBulkActions }

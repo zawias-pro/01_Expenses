@@ -89,11 +89,11 @@ const Categories = ({
         </div>
       </Panel>
 
-      <Panel title={'Add New Category'}>
+      <Panel title={'Add new category'}>
         <AddCategoryForm onUpdateCategory={onUpdateCategory}/>
       </Panel>
 
-      <Panel title={'Expense Categories'}>
+      <Panel title={'Expense categories'}>
         <table className={styles.table}>
           <thead>
           <tr>

@@ -2,6 +2,7 @@ import { useStore, useCategoryMetadata, getCategoryNameFromId } from '../../stor
 import { AddBudgetForm } from './components/AddBudgetForm.tsx'
 import { BudgetRow } from './components/BudgetRow.tsx'
 import { SectionHeader } from '../../components/SectionHeader/SectionHeader.tsx'
+import { Panel } from "../../components/Panel/Panel.tsx"
 
 const Budget = () => {
   const categoryMetadata = useCategoryMetadata()
@@ -17,14 +18,15 @@ const Budget = () => {
     .sort((a, b) => a.name.localeCompare(b.name))
 
   return (
-    <div style={{ padding: '1.5rem' }}>
+    <>
       <SectionHeader>Monthly Budget</SectionHeader>
-      <p style={{ color: '#666', marginBottom: '1.5rem' }}>
+      <p>
         Define monthly budgets for each category. Amounts should be in PLN format (e.g., "1 000,00 PLN" or "500,00").
       </p>
 
-      {/* Add New Budget */}
+      <Panel title={'Add new budget'}>
       <AddBudgetForm />
+      </Panel>
 
       {/* Budget List */}
       <div>
@@ -39,7 +41,7 @@ const Budget = () => {
           </div>
         )}
       </div>
-    </div>
+    </>
   )
 }
 

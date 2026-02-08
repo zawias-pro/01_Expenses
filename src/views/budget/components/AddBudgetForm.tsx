@@ -5,6 +5,7 @@ import { Button } from '../../../components/Button/Button.tsx'
 import { Input } from '../../../components/Input/Input.tsx'
 import { Select } from '../../../components/Select/Select.tsx'
 import { SectionHeader } from "../../../components/SectionHeader/SectionHeader.tsx"
+import { FormGroup } from "../../../components/FormGroup/FormGroup.tsx"
 
 const AddBudgetForm = () => {
   const categories = useCategories()
@@ -33,18 +34,13 @@ const AddBudgetForm = () => {
   const budgetCategoryIds = new Set(Object.keys(budgets))
 
   return (
-    <div style={{ 
-      marginBottom: '2rem', 
-      padding: '1rem', 
-      backgroundColor: '#f5f5f5', 
-      borderRadius: '4px' 
-    }}>
-      <SectionHeader>Add New Budget</SectionHeader>
-      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+    <div>
+      <FormGroup>
         <Select
+          id={'category'}
+          label={'Category'}
           value={newCategory}
-          onChange={e => { setNewCategory(e.target.value) }}
-          style={{ minWidth: '200px', fontSize: '0.875rem', padding: '0.375rem' }}
+          onChange={event => { setNewCategory(event.target.value) }}
         >
           <option value="">Select category...</option>
           {categories
@@ -57,20 +53,22 @@ const AddBudgetForm = () => {
             ))}
         </Select>
         <Input
+          id={'amount'}
+          label={'Amount'}
           type="text"
           value={newAmount}
-          onChange={e => { setNewAmount(e.target.value) }}
-          placeholder="Amount (e.g., 1 000,00 PLN)"
-          style={{ minWidth: '150px', fontSize: '0.875rem', padding: '0.375rem' }}
+          onChange={event => { setNewAmount(event.target.value) }}
+          placeholder="1000,00"
         />
-        <Button
-          onClick={handleAddBudget}
-          disabled={!newCategory.trim() || !newAmount.trim()}
-          style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
-        >
-          Add
-        </Button>
-      </div>
+      </FormGroup>
+
+      <Button
+        onClick={handleAddBudget}
+        disabled={!newCategory.trim() || !newAmount.trim()}
+        style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
+      >
+        Add
+      </Button>
     </div>
   )
 }

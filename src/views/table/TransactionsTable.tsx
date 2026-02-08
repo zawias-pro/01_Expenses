@@ -12,6 +12,7 @@ import { EditTransactionModal } from './components/EditTransactionModal.tsx'
 import { QuickAddCategoryModal } from './components/QuickAddCategoryModal.tsx'
 import styles from './components/TransactionsTable.module.css'
 import { SectionHeader } from "../../components/SectionHeader/SectionHeader.tsx"
+import { Panel } from "../../components/Panel/Panel.tsx"
 
 type BulkAction = 'delete' | 'exclude' | 'unexclude' | 'setCategory' | null
 
@@ -308,6 +309,7 @@ const TransactionsTable = ({
 
       <TransactionsFilters availableMonths={availableMonths} />
 
+    <Panel>
       <TransactionsBulkActions
         selectedCount={selectedIds.size}
         totalCount={transactions.length}
@@ -319,7 +321,9 @@ const TransactionsTable = ({
         onApplyBulkAction={handleApplyBulkAction}
         onClearSelection={handleClearSelection}
       />
+    </Panel>
 
+      <Panel>
         <table className={styles.table}>
           <TransactionsTableHeader
             allSelected={allSelected}
@@ -339,6 +343,7 @@ const TransactionsTable = ({
             ))}
           </tbody>
         </table>
+      </Panel>
 
       <EditTransactionModal
         transactionId={editTransactionId}

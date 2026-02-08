@@ -45,3 +45,18 @@ body {
   overflow: hidden;
 }
 
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--surface);
+  font-size: 0.75rem;
+
+  th, td {
+    border: 1px solid #cecece;
+    padding: 0.25rem;
+  }
+
+  th {
+    text-align: left;
+  }
+}

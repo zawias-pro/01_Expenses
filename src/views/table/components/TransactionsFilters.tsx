@@ -4,6 +4,7 @@ import { Input } from '../../../components/Input/Input.tsx'
 import { Select } from '../../../components/Select/Select.tsx'
 import { Button } from '../../../components/Button/Button.tsx'
 import { FormGroup } from "../../../components/FormGroup/FormGroup.tsx"
+import { Panel } from "../../../components/Panel/Panel.tsx"
 
 interface TransactionsFiltersProps {
   availableMonths: Array<[string, string]>
@@ -12,7 +13,6 @@ interface TransactionsFiltersProps {
 const TransactionsFilters = ({ availableMonths }: TransactionsFiltersProps) => {
   const [amountFilterInput, setAmountFilterInput] = useState<string>('')
 
-  // Store state
   const searchQuery = useStore((state) => state.searchQuery)
   const selectedCategory = useStore((state) => state.selectedCategory)
   const selectedMonthFilter = useStore((state) => state.selectedMonthFilter)
@@ -21,7 +21,6 @@ const TransactionsFilters = ({ availableMonths }: TransactionsFiltersProps) => {
   const categoryMetadata = useCategoryMetadata()
   const categories = useCategories()
 
-  // Store actions
   const setSearchQuery = useStore((state) => state.setSearchQuery)
   const setSelectedCategory = useStore((state) => state.setSelectedCategory)
   const setSelectedMonthFilter = useStore((state) => state.setSelectedMonthFilter)
@@ -35,26 +34,25 @@ const TransactionsFilters = ({ availableMonths }: TransactionsFiltersProps) => {
   }
 
   return (
+    <Panel>
     <FormGroup>
       <Input
         id={'search'}
-        label="Search:"
+        label="Search"
         type="text"
         value={searchQuery}
         onChange={e => { setSearchQuery(e.target.value) }}
-        placeholder="Search transactions..."
       />
 
       <Select
         id={'category'}
-        label="Category:"
+        label="Category"
         value={selectedCategory || ''}
         onChange={e => {
           const categoryName = e.target.value
           const categoryId = categoryName ? getCategoryIdFromName(categoryName, categoryMetadata) : null
           setSelectedCategory(categoryId)
         }}
-        style={{ width: '100%', fontSize: '0.875rem', padding: '0.375rem', marginBottom: 0 }}
       >
         <option value="">All categories</option>
         {categories.map(cat => (
@@ -62,12 +60,10 @@ const TransactionsFilters = ({ availableMonths }: TransactionsFiltersProps) => {
         ))}
       </Select>
 
-      {/* Month Filter */}
       <Select
-        label="Month:"
+        label="Month"
         value={selectedMonthFilter || ''}
         onChange={e => { setSelectedMonthFilter(e.target.value || null) }}
-        style={{ width: '100%', fontSize: '0.875rem', padding: '0.375rem', marginBottom: 0 }}
       >
         <option value="">All months</option>
         {availableMonths.map(([key, label]) => (
@@ -76,11 +72,8 @@ const TransactionsFilters = ({ availableMonths }: TransactionsFiltersProps) => {
       </Select>
 
       <div>
-        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', fontSize: '0.875rem' }}>
-          Amount:
-        </label>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <Select
+            label={'Amount'}
             value={amountFilterType || 'none'}
             onChange={e => {
               const type = e.target.value as 'none' | 'less' | 'greater'
@@ -91,34 +84,30 @@ const TransactionsFilters = ({ availableMonths }: TransactionsFiltersProps) => {
                 setAmountFilter(type, amountFilterValue)
               }
             }}
-            style={{ fontSize: '0.875rem', padding: '0.375rem', minWidth: '110px', marginBottom: 0 }}
           >
             <option value="none">None</option>
             <option value="less">&lt; Less than</option>
             <option value="greater">&gt; Greater than</option>
           </Select>
+
           {amountFilterType && amountFilterType !== 'none' && (
             <div>
               <Input
+                label={'Value'}
+                id={'amount'}
                 type="number"
                 value={amountFilterInput}
-                onChange={e => { setAmountFilterInput(e.target.value) }}
-                placeholder="Amount"
-                style={{ fontSize: '0.875rem', padding: '0.375rem', width: '120px', marginBottom: 0 }}
+                onChange={event => { setAmountFilterInput(event.target.value) }}
+                placeholder="100,00"
               />
-              <Button
-                onClick={handleAmountFilterApply}
-                style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
-              >
+              <Button onClick={handleAmountFilterApply} variant={'primary'}>
                 Apply
               </Button>
             </div>
           )}
-        </div>
       </div>
-
-      <div>hello</div>
     </FormGroup>
+    </Panel>
   )
 }
 

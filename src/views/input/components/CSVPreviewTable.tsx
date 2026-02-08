@@ -9,8 +9,6 @@ const CSVPreviewTable = ({
   if (transactions.length === 0) return null
 
   return (
-    <div>
-      <div>Preview (first 3 rows):</div>
         <table className={styles.table}>
           <thead>
             <tr>
@@ -44,7 +42,6 @@ const CSVPreviewTable = ({
             ))}
           </tbody>
         </table>
-    </div>
   )
 }
 

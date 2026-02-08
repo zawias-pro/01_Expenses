@@ -1,5 +1,6 @@
 import { useStore } from '../../../store/useStore.ts'
 import { Select } from '../../../components/Select/Select.tsx'
+import { FormGroup } from "../../../components/FormGroup/FormGroup.tsx"
 
 const PeriodSelection = ({ 
   availableYears, 
@@ -53,11 +54,10 @@ const PeriodSelection = ({
   }
 
   return (
-    <div className="selection-controls">
+    <>
       <Select
         id="selection-type-select"
         label="View:"
-        style={{ width: 'auto', minWidth: '150px' }}
         value={selectionType}
         onChange={handleSelectionTypeChange}
       >
@@ -68,8 +68,8 @@ const PeriodSelection = ({
 
       {selectionType === 'year' && (
         <Select
+          label={'Year'}
           id="year-select"
-          style={{ width: 'auto', minWidth: '120px' }}
           value={selectedYear || ''}
           onChange={handleYearChange}
         >
@@ -83,8 +83,8 @@ const PeriodSelection = ({
 
       {selectionType === 'month' && (
         <Select
+          label={'Month'}
           id="month-select"
-          style={{ width: 'auto', minWidth: '200px' }}
           value={`${selectedMonth.year.toString()}-${selectedMonth.month.toString()}`}
           onChange={handleMonthChange}
         >
@@ -95,7 +95,7 @@ const PeriodSelection = ({
           ))}
         </Select>
       )}
-    </div>
+    </>
   )
 }
 

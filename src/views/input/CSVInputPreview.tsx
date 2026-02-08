@@ -150,6 +150,7 @@ const CSVInputPreview = () => {
 
       <Panel>
         <Textarea
+          id={'csv'}
           label={'CSV'}
           value={csvContent}
           onChange={e => { setCsvContent(e.target.value) }}
@@ -159,7 +160,9 @@ const CSVInputPreview = () => {
         />
       </Panel>
 
+      <Panel title={'Preview'}>
       <CSVPreviewTable transactions={previewTransactions} />
+      </Panel>
 
       <div className="action-buttons">
         <Button onClick={handleFillExample}>

@@ -41,9 +41,9 @@ const AddCategoryForm = ({ onUpdateCategory }: AddCategoryFormProps) => {
           />
           <Input
             id={'keywords'}
-            label="Keywords (comma-separated)"
+            label="Keywords"
             type="text"
-            placeholder="netflix, spotify, hbo"
+            placeholder="netflix,spotify,hbo"
             value={newKeywords}
             onChange={e => { setNewKeywords(e.target.value) }}
             onKeyDown={e => {
@@ -58,7 +58,7 @@ const AddCategoryForm = ({ onUpdateCategory }: AddCategoryFormProps) => {
     onClick={handleAddCategory}
     disabled={!newCategory.trim() || !newKeywords.trim()}
   >
-    Add Category
+    Add
   </Button>
   </div>
   )
