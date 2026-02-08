@@ -57,6 +57,7 @@ interface AppState {
   
   // Categories UI state
   showExportModal: boolean
+  showImportModal: boolean
   editingCategory: string | null // category ID
   editingKeywords: string
   newCategory: string // category name (for UI)
@@ -113,6 +114,7 @@ interface AppState {
   
   // Categories UI actions
   setShowExportModal: (show: boolean) => void
+  setShowImportModal: (show: boolean) => void
   setEditingCategory: (category: string | null) => void
   setEditingKeywords: (keywords: string) => void
   setNewCategory: (category: string) => void
@@ -155,6 +157,7 @@ const initialState = {
   mergeSmallCategories: true,
   categoryThresholdPercent: 1,
   showExportModal: false,
+  showImportModal: false,
   editingCategory: null,
   editingKeywords: '',
   newCategory: '',
@@ -385,6 +388,7 @@ const useStore = create<AppState>()(
       setCategoryThresholdPercent: (percent) => set({ categoryThresholdPercent: percent }),
       
       setShowExportModal: (show) => set({ showExportModal: show }),
+      setShowImportModal: (show) => set({ showImportModal: show }),
       setEditingCategory: (category) => set({ editingCategory: category }),
       setEditingKeywords: (keywords) => set({ editingKeywords: keywords }),
       setNewCategory: (category) => set({ newCategory: category }),

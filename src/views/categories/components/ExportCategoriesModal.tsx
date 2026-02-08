@@ -15,9 +15,8 @@ const ExportCategoriesModal = ({ rules }: ExportCategoriesModalProps) => {
     const lines: string[] = []
     for (const [categoryId, keywords] of Object.entries(rules)) {
       const categoryName = getCategoryNameFromId(categoryId, categoryMetadata)
-      for (const keyword of keywords) {
-        lines.push(`${keyword};${categoryName}`)
-      }
+      const keywordsStr = keywords.join(',')
+      lines.push(`${categoryName};${keywordsStr}`)
     }
     return lines.sort().join('\n')
   }
@@ -35,7 +34,7 @@ const ExportCategoriesModal = ({ rules }: ExportCategoriesModalProps) => {
       }
     >
       <p style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--text-secondary)' }}>
-        All categories in export format (keyword;category):
+        All categories in CSV format (categoryname;keyword1,keyword2,keyword3):
       </p>
       <TextArea
         value={exportRules()}

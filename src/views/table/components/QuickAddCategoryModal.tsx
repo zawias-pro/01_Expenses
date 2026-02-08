@@ -38,7 +38,7 @@ const QuickAddCategoryModal = ({
       onClose={onCancel}
       footer={
         <>
-          <Button variant="outline" onClick={onCancel}>
+          <Button onClick={onCancel}>
             Cancel
           </Button>
           <Button 

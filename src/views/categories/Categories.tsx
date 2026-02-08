@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useStore, useCategoryMetadata, getCategoryNameFromId } from '../../store/useStore.ts'
 import { ExportCategoriesModal } from './components/ExportCategoriesModal.tsx'
+import { ImportCategoriesModal } from './components/ImportCategoriesModal.tsx'
 import { AddCategoryForm } from './components/AddCategoryForm.tsx'
 import { CategoryRow } from './components/CategoryRow.tsx'
 import { Button } from '../../components/Button/Button.tsx'
@@ -24,6 +25,7 @@ const Categories = ({
   const categoryMetadata = useCategoryMetadata()
   const transactions = useStore((state) => state.transactions)
   const showExportModal = useStore((state) => state.showExportModal)
+  const showImportModal = useStore((state) => state.showImportModal)
   
   // Sorting state
   const [sortColumn, setSortColumn] = useState<'name' | 'count'>('name')
@@ -31,6 +33,14 @@ const Categories = ({
   
   // Store actions
   const setShowExportModal = useStore((state) => state.setShowExportModal)
+  const setShowImportModal = useStore((state) => state.setShowImportModal)
+
+  const handleImport = (categories: Record<string, string[]>) => {
+    // Import each category (this will merge with existing categories)
+    for (const [categoryName, keywords] of Object.entries(categories)) {
+      onUpdateCategory(categoryName, keywords)
+    }
+  }
 
   const handleSort = (column: 'name' | 'count') => {
     if (sortColumn === column) {
@@ -69,12 +79,20 @@ const Categories = ({
       <div className={styles.section}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <SectionHeader style={{ margin: 0, borderBottom: 'none', paddingBottom: 0 }}>Categories</SectionHeader>
-          <Button
-            variant="outline"
-            onClick={() => { setShowExportModal(true) }}
-          >
-            Export
-          </Button>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <Button
+              variant="outline"
+              onClick={() => { setShowImportModal(true) }}
+            >
+              Import CSV
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => { setShowExportModal(true) }}
+            >
+              Export CSV
+            </Button>
+          </div>
         </div>
 
         <AddCategoryForm onUpdateCategory={onUpdateCategory} />
@@ -125,6 +143,7 @@ const Categories = ({
       </div>
 
       {showExportModal && <ExportCategoriesModal rules={rules} />}
+      {showImportModal && <ImportCategoriesModal onImport={handleImport} />}
     </>
   )
 }
