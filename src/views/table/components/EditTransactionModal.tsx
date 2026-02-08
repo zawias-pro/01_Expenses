@@ -1,10 +1,11 @@
 import { useCategories, useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName } from '../../../store/useStore.ts'
 import { Modal } from '../../../components/Modal/Modal.tsx'
 import { Button } from '../../../components/Button/Button.tsx'
-import { Input, TextArea } from '../../../components/Input/Input.tsx'
+import { Input } from '../../../components/Input/Input.tsx'
 import { Select } from '../../../components/Select/Select.tsx'
 import { Checkbox } from '../../../components/Checkbox/Checkbox.tsx'
 import styles from './EditTransactionModal.module.css'
+import { Textarea } from "../../../components/Textarea/Textarea.tsx"
 
 interface EditTransactionModalProps {
   transactionId: string | null
@@ -79,7 +80,7 @@ const EditTransactionModal = ({
           ))}
         </Select>
 
-        <TextArea
+        <Textarea
           label="Comment:"
           value={comment}
           onChange={e => { onCommentChange(e.target.value) }}

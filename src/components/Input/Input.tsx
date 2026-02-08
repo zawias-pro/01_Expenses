@@ -21,24 +21,4 @@ const Input = ({
     )
 }
 
-const TextArea = ({
-  label,
-  ...props
-}: {
-  label: string
-} & React.TextareaHTMLAttributes<HTMLTextAreaElement>) => {
-  return (
-    <div className={styles['formGroup']}>
-      <label htmlFor={props.id} className={styles['label']}>
-        {label}
-      </label>
-      <textarea
-        id={props.id}
-        className={styles['textarea']}
-        {...props}
-      />
-    </div>
-  )
-}
-
-export { Input, TextArea }
+export { Input }

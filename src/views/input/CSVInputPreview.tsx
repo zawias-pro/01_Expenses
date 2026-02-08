@@ -8,9 +8,10 @@ import { CSVConfigControls } from './components/CSVConfigControls.tsx'
 import { CSVPreviewTable } from './components/CSVPreviewTable.tsx'
 import { SectionHeader } from '../../components/SectionHeader/SectionHeader.tsx'
 import { Button } from '../../components/Button/Button.tsx'
-import { TextArea } from '../../components/Input/Input.tsx'
 import { EXAMPLE_CSV } from './exampleCsv.ts'
 import styles from './CSVInputPreview.module.css'
+import { Textarea } from "../../components/Textarea/Textarea.tsx"
+import { Panel } from "../../components/Panel/Panel.tsx"
 
 const CSVInputPreview = () => {
   const csvContent = useStore((state) => state.csvContent)
@@ -139,20 +140,24 @@ const CSVInputPreview = () => {
       <SectionHeader>
         CSV Input
       </SectionHeader>
+
+      <Panel>
       <p>
         Paste CSV data below to add transactions. Transactions will be appended, not replaced.
       </p>
       <CSVConfigControls />
+      </Panel>
 
-      <div className={styles['formGroup']}>
-        <TextArea
+      <Panel>
+        <Textarea
+          label={'CSV'}
           value={csvContent}
           onChange={e => { setCsvContent(e.target.value) }}
           rows={10}
           placeholder="Paste your CSV data here..."
           style={{ marginBottom: 0 }}
         />
-      </div>
+      </Panel>
 
       <CSVPreviewTable transactions={previewTransactions} />
 

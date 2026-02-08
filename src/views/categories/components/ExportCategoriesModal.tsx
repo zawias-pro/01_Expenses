@@ -1,7 +1,7 @@
 import { useStore, getCategoryNameFromId, useCategoryMetadata } from '../../../store/useStore.ts'
 import { Modal } from '../../../components/Modal/Modal.tsx'
 import { Button } from '../../../components/Button/Button.tsx'
-import { TextArea } from '../../../components/Input/Input.tsx'
+import { Textarea } from "../../../components/Textarea/Textarea.tsx"
 
 interface ExportCategoriesModalProps {
   rules: Record<string, string[]>
@@ -28,15 +28,16 @@ const ExportCategoriesModal = ({ rules }: ExportCategoriesModalProps) => {
       title="Export Categories"
       onClose={handleClose}
       footer={
-        <Button variant="outline" onClick={handleClose}>
+        <Button onClick={handleClose}>
           Close
         </Button>
       }
     >
-      <p style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--text-secondary)' }}>
+      <p>
         All categories in CSV format (categoryname;keyword1,keyword2,keyword3):
       </p>
-      <TextArea
+      <Textarea
+        label={'Categories'}
         value={exportRules()}
         readOnly
         onClick={e => { (e.target as HTMLTextAreaElement).select() }}

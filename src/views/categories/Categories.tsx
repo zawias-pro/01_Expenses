@@ -7,6 +7,7 @@ import { CategoryRow } from './components/CategoryRow.tsx'
 import { Button } from '../../components/Button/Button.tsx'
 import { SectionHeader } from '../../components/SectionHeader/SectionHeader.tsx'
 import styles from './Categories.module.css'
+import { Panel } from "../../components/Panel/Panel.tsx"
 
 const Categories = ({
   rules,
@@ -75,19 +76,22 @@ const Categories = ({
 
   return (
     <>
-        <div>
           <SectionHeader>Categories</SectionHeader>
+
+          <Panel>
           <Button onClick={() => { setShowImportModal(true) }}>
             Import
           </Button>
           <Button onClick={() => { setShowExportModal(true) }}>
             Export
           </Button>
-        </div>
+          </Panel>
 
+      <Panel>
         <AddCategoryForm onUpdateCategory={onUpdateCategory} />
+      </Panel>
       
-        <div>
+        <Panel>
           <SectionHeader>Expense Categories</SectionHeader>
             <table className={styles.table}>
               <thead>
@@ -123,7 +127,7 @@ const Categories = ({
                 ))}
               </tbody>
             </table>
-          </div>
+          </Panel>
       {showExportModal && <ExportCategoriesModal rules={rules} />}
       {showImportModal && <ImportCategoriesModal onImport={handleImport} />}
     </>

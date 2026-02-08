@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useStore } from '../../../store/useStore.ts'
 import { Modal } from '../../../components/Modal/Modal.tsx'
 import { Button } from '../../../components/Button/Button.tsx'
-import { TextArea } from '../../../components/Input/Input.tsx'
+import { Textarea } from "../../../components/Textarea/Textarea.tsx"
 
 interface ImportCategoriesModalProps {
   onImport: (categories: Record<string, string[]>) => void
@@ -82,7 +82,7 @@ const ImportCategoriesModal = ({ onImport }: ImportCategoriesModalProps) => {
           <Button onClick={handleImport}>
             Import
           </Button>
-          <Button variant="outline" onClick={handleClose}>
+          <Button onClick={handleClose}>
             Cancel
           </Button>
         </>
@@ -94,7 +94,8 @@ const ImportCategoriesModal = ({ onImport }: ImportCategoriesModalProps) => {
       <p style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
         Note: This will replace all categories (except &quot;others&quot;). Transactions will be automatically reclassified.
       </p>
-      <TextArea
+      <Textarea
+        label={'Categories'}
         value={csvContent}
         onChange={e => {
           setCsvContent(e.target.value)

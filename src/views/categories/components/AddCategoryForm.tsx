@@ -23,10 +23,8 @@ const AddCategoryForm = ({ onUpdateCategory }: AddCategoryFormProps) => {
   }
 
   return (
-    <div style={{ marginBottom: '2rem', padding: '1.25rem', backgroundColor: 'var(--surface-hover)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+    <>
       <SectionHeader>Add New Category</SectionHeader>
-      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-        <div style={{ flex: '1', minWidth: '200px' }}>
           <Input
             label="Category"
             type="text"
@@ -40,8 +38,6 @@ const AddCategoryForm = ({ onUpdateCategory }: AddCategoryFormProps) => {
             }}
             style={{ padding: '0.5rem', fontSize: '0.875rem' }}
           />
-        </div>
-        <div style={{ flex: '1', minWidth: '200px' }}>
           <Input
             label="Keywords (comma-separated)"
             type="text"
@@ -55,8 +51,6 @@ const AddCategoryForm = ({ onUpdateCategory }: AddCategoryFormProps) => {
             }}
             style={{ padding: '0.5rem', fontSize: '0.875rem' }}
           />
-        </div>
-        <div style={{ marginBottom: '1.5rem' }}>
           <Button
             onClick={handleAddCategory}
             disabled={!newCategory.trim() || !newKeywords.trim()}
@@ -64,9 +58,7 @@ const AddCategoryForm = ({ onUpdateCategory }: AddCategoryFormProps) => {
           >
             Add Category
           </Button>
-        </div>
-      </div>
-    </div>
+    </>
   )
 }
 
