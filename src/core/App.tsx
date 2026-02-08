@@ -419,6 +419,7 @@ const App = () => {
 
       {/* Main Content */}
       <div className={styles['mainContent']}>
+        <div className={styles['contentContainer']}>
         {view === 'csv' && (
           <CSVInputPreview
             csvContent={csvContent}
@@ -478,6 +479,7 @@ const App = () => {
         {view === 'budget' && (
           <Budget />
         )}
+        </div>
       </div>
     </div>
   )

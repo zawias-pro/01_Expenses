@@ -1,15 +1,13 @@
 import React from 'react'
 import styles from './Header.module.css'
 
-interface HeaderProps {
+const SectionHeader = ({
+  children,
+}: {
   children: React.ReactNode
-  className?: string
-  style?: React.CSSProperties
-}
-
-const SectionHeader = ({ children, className = '', style }: HeaderProps) => {
+}) => {
   return (
-    <h2 className={[styles['sectionHeader'], className].filter(Boolean).join(' ')} style={style}>
+    <h2 className={styles['sectionHeader']}>
       {children}
     </h2>
   )

@@ -73,12 +73,13 @@ const CSVInputPreview = ({
   }
 
   return (
-    <div className={styles.section}>
-      <SectionHeader>CSV Input</SectionHeader>
-      <p style={{ marginBottom: '1rem', color: '#666' }}>
-        Paste CSV data below to add transactions to your existing data. Transactions will be appended, not replaced.
+    <>
+      <SectionHeader>
+        CSV Input
+      </SectionHeader>
+      <p>
+        Paste CSV data below to add transactions. Transactions will be appended, not replaced.
       </p>
-
       <CSVConfigControls
         delimiter={delimiter}
         dateIndex={dateIndex}
@@ -113,7 +114,7 @@ const CSVInputPreview = ({
           Add transactions
         </Button>
       </div>
-    </div>
+    </>
   ) 
 }
 
