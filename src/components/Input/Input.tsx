@@ -1,60 +1,44 @@
 import React from 'react'
 import styles from './Input.module.css'
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string
-  id?: string
-}
-
-const Input = ({ label, id, className = '', ...props }: InputProps) => {
-  const inputElement = (
-    <input
-      id={id}
-      className={[styles['input'], className].filter(Boolean).join(' ')}
-      {...props}
-    />
-  )
-
-  if (label) {
+const Input = ({
+  label,
+  ...props
+}: {
+  label: string
+} & React.InputHTMLAttributes<HTMLInputElement>) => {
     return (
       <div className={styles['formGroup']}>
-        <label htmlFor={id} className={styles['label']}>
+        <label htmlFor={props.id} className={styles['label']}>
           {label}
         </label>
-        {inputElement}
+        <input
+          id={props.id}
+          className={styles['input']}
+          {...props}
+        />
       </div>
     )
-  }
-
-  return inputElement
 }
 
-interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  label?: string
-  id?: string
-}
-
-const TextArea = ({ label, id, className = '', ...props }: TextAreaProps) => {
-  const textAreaElement = (
-    <textarea
-      id={id}
-      className={[styles['textarea'], className].filter(Boolean).join(' ')}
-      {...props}
-    />
+const TextArea = ({
+  label,
+  ...props
+}: {
+  label: string
+} & React.TextareaHTMLAttributes<HTMLTextAreaElement>) => {
+  return (
+    <div className={styles['formGroup']}>
+      <label htmlFor={props.id} className={styles['label']}>
+        {label}
+      </label>
+      <textarea
+        id={props.id}
+        className={styles['textarea']}
+        {...props}
+      />
+    </div>
   )
-
-  if (label) {
-    return (
-      <div className={styles['formGroup']}>
-        <label htmlFor={id} className={styles['label']}>
-          {label}
-        </label>
-        {textAreaElement}
-      </div>
-    )
-  }
-
-  return textAreaElement
 }
 
 export { Input, TextArea }

@@ -8,16 +8,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  padding: 1rem;
+  z-index: 1;
 }
 
 .modal {
   background-color: var(--surface);
   border-radius: 8px;
   box-shadow: var(--shadow-lg);
-  max-width: 600px;
-  width: 100%;
+  width: 600px;
   max-height: 80vh;
   display: flex;
   flex-direction: column;
@@ -25,7 +23,7 @@
 }
 
 .modalHeader {
-  padding: 1.5rem;
+  padding: .5rem 1rem;
   border-bottom: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
@@ -52,7 +50,6 @@
   align-items: center;
   justify-content: center;
   border-radius: 4px;
-  transition: background-color 0.2s ease;
 }
 
 .modalClose:hover {
@@ -61,13 +58,13 @@
 }
 
 .modalBody {
-  padding: 1.5rem;
+  padding: 1rem;
   overflow-y: auto;
   flex: 1;
 }
 
 .modalFooter {
-  padding: 1rem 1.5rem;
+  padding: 1rem;
   border-top: 1px solid var(--border-color);
   display: flex;
   justify-content: flex-end;

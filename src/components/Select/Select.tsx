@@ -1,34 +1,29 @@
-import React from 'react'
+import { type ReactNode } from 'react'
 import styles from './Select.module.css'
 
-interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
-  label?: string
-  id?: string
-}
-
-const Select = ({ label, id, className = '', children, ...props }: SelectProps) => {
-  const selectElement = (
+const Select = ({
+  id,
+  label,
+  children
+}: {
+  id: string
+  label: string
+  children: ReactNode
+}) => (
+  <div className={styles['formGroup']}>
+    <label
+      htmlFor={id}
+      className={styles['label']}
+    >
+      {label}
+    </label>
     <select
       id={id}
-      className={[styles['select'], className].filter(Boolean).join(' ')}
-      {...props}
+      className={styles['select']}
     >
       {children}
     </select>
-  )
-
-  if (label) {
-    return (
-      <div className={styles['formGroup']}>
-        <label htmlFor={id} className={styles['label']}>
-          {label}
-        </label>
-        {selectElement}
-      </div>
-    )
-  }
-
-  return selectElement
-}
+  </div>
+)
 
 export { Select }
