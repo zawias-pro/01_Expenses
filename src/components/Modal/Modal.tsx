@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import styles from './Modal.module.css'
 
 interface ModalProps {
@@ -10,11 +10,32 @@ interface ModalProps {
 }
 
 const Modal = ({ title, children, onClose, footer, maxWidth }: ModalProps) => {
+  const overlayRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [onClose])
+
+  const handleOverlayPointerDown = (e: React.PointerEvent) => {
+    if (e.target === overlayRef.current) {
+      onClose()
+    }
+  }
+
   return (
-    <div className={styles['modalOverlay']} onClick={onClose}>
-      <div 
-        className={styles['modal']} 
-        onClick={(e) => { e.stopPropagation() }}
+    <div
+      ref={overlayRef}
+      className={styles['modalOverlay']}
+      onPointerDown={handleOverlayPointerDown}
+    >
+      <div
+        className={styles['modal']}
         style={maxWidth ? { maxWidth } : undefined}
       >
         <div className={styles['modalHeader']}>
