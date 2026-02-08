@@ -1,28 +1,18 @@
+import { useStore } from '../../../store/useStore.ts'
 import { Input } from '../../../components/Input/Input.tsx'
 import { Select } from '../../../components/Select/Select.tsx'
 import styles from './CSVConfigControls.module.css'
 
-interface CSVConfigControlsProps {
-  delimiter: string
-  dateIndex: number
-  descriptionIndex: number
-  amountIndex: number
-  onDelimiterChange: (delimiter: string) => void
-  onDateIndexChange: (index: number) => void
-  onDescriptionIndexChange: (index: number) => void
-  onAmountIndexChange: (index: number) => void
-}
+const CSVConfigControls = () => {
+  const delimiter = useStore((state) => state.delimiter)
+  const dateIndex = useStore((state) => state.dateIndex)
+  const descriptionIndex = useStore((state) => state.descriptionIndex)
+  const amountIndex = useStore((state) => state.amountIndex)
+  const setDelimiter = useStore((state) => state.setDelimiter)
+  const setDateIndex = useStore((state) => state.setDateIndex)
+  const setDescriptionIndex = useStore((state) => state.setDescriptionIndex)
+  const setAmountIndex = useStore((state) => state.setAmountIndex)
 
-const CSVConfigControls = ({
-  delimiter,
-  dateIndex,
-  descriptionIndex,
-  amountIndex,
-  onDelimiterChange,
-  onDateIndexChange,
-  onDescriptionIndexChange,
-  onAmountIndexChange
-}: CSVConfigControlsProps) => {
   return (
     <div className={styles.formGroup}>
       <div className={styles.formGroupRow}>
@@ -31,7 +21,7 @@ const CSVConfigControls = ({
             id="delimiter-select"
             label="CSV Delimiter:"
             value={delimiter}
-            onChange={e => { onDelimiterChange(e.target.value) }}
+            onChange={e => { setDelimiter(e.target.value) }}
             style={{ marginBottom: 0 }}
           >
             <option value=";">Semicolon (;)</option>
@@ -46,7 +36,7 @@ const CSVConfigControls = ({
             label="Date Column:"
             type="number"
             value={dateIndex}
-            onChange={e => { onDateIndexChange(parseInt(e.target.value) || 0) }}
+            onChange={e => { setDateIndex(parseInt(e.target.value) || 0) }}
             min="0"
             style={{ marginBottom: 0 }}
           />
@@ -57,7 +47,7 @@ const CSVConfigControls = ({
             label="Description Column:"
             type="number"
             value={descriptionIndex}
-            onChange={e => { onDescriptionIndexChange(parseInt(e.target.value) || 0) }}
+            onChange={e => { setDescriptionIndex(parseInt(e.target.value) || 0) }}
             min="0"
             style={{ marginBottom: 0 }}
           />
@@ -68,7 +58,7 @@ const CSVConfigControls = ({
             label="Amount Column:"
             type="number"
             value={amountIndex}
-            onChange={e => { onAmountIndexChange(parseInt(e.target.value) || 0) }}
+            onChange={e => { setAmountIndex(parseInt(e.target.value) || 0) }}
             min="0"
             style={{ marginBottom: 0 }}
           />
