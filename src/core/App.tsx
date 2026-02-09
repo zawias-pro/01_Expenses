@@ -25,8 +25,7 @@ const App = () => {
 
   const allRules = useAllRules()
   const summaries = useSummaries()
-  
-  // Validate selectedMonth when summaries change
+
   useEffect(() => {
     if (summaries && summaries.length > 0) {
       const firstSummary = summaries[0]

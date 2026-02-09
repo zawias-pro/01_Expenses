@@ -1,6 +1,5 @@
 .sidebar {
-  width: 280px;
-  overflow-y: auto;
+  width: 400px;
   display: flex;
   flex-direction: column;
   background-color: var(--sidebar-bg);
@@ -8,15 +7,14 @@
   box-shadow: var(--shadow-md);
 
   h1 {
-    margin: 0 0 1rem 0;
+    margin: 1rem;
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--surface);
   }
 
   button {
-    margin: .2rem 0.5rem;
-    width: 100%;
+    margin: 0 1rem;
     padding: 1rem;
     text-align: left;
     background-color: transparent;
@@ -26,6 +24,10 @@
     font-size: 0.875rem;
     cursor: pointer;
     transition: all 0.2s ease;
+
+    &:not(:last-child) {
+      margin-bottom: .5rem;
+    }
 
     &.active {
       border: 1px solid var(--sidebar-hover);
