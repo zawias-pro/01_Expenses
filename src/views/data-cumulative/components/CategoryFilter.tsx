@@ -10,7 +10,7 @@ const CategoryFilter = ({ categories, selectedCategory, onCategoryChange }: Cate
   return (
     <div style={{ marginBottom: '1.5rem' }}>
       <Select
-        label="Filter by Category:"
+        label="Category"
         value={selectedCategory || ''}
         onChange={e => { onCategoryChange(e.target.value || null) }}
         style={{ fontSize: '0.875rem', padding: '0.375rem', minWidth: '200px' }}

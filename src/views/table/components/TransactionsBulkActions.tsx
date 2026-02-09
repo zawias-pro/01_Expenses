@@ -1,6 +1,8 @@
 import { useCategories } from '../../../store/useStore.ts'
 import styles from './TransactionsBulkActions.module.css'
 import { Button } from "../../../components/Button/Button.tsx"
+import { Select } from "../../../components/Select/Select.tsx"
+import { FormGroup } from "../../../components/FormGroup/FormGroup.tsx"
 
 type BulkAction = 'delete' | 'exclude' | 'unexclude' | 'setCategory' | null
 
@@ -28,12 +30,19 @@ const TransactionsBulkActions = ({
   const categories = useCategories()
 
   return (
+    <>
     <div>
       <span>Showing {String(filteredCount)} of {String(totalCount)} transactions</span>
       <div>
         <span className={styles.selectedText}>{selectedCount} selected</span>
-        <select
-          className={styles.select}
+      </div>
+    </div>
+    <div>
+      <FormGroup>
+        <div>
+        <Select
+          id={'bulk-action'}
+          label={'Action'}
           value={bulkAction || ''}
           onChange={e => {
             const action = e.target.value as BulkAction
@@ -48,33 +57,35 @@ const TransactionsBulkActions = ({
           <option value="unexclude">Include</option>
           <option value="setCategory">Set Category</option>
           <option value="delete">Delete</option>
-        </select>
+        </Select>
         {bulkAction === 'setCategory' && (
-          <select
-            className={styles.select}
+          <Select
+            label={'Category'}
+            id={'category'}
             value={bulkCategory}
             onChange={e => { onBulkCategoryChange(e.target.value) }}
-            style={{ minWidth: '150px' }}
           >
             <option value="">Select category...</option>
             {categories.map(cat => (
               <option key={cat} value={cat}>{cat}</option>
             ))}
-          </select>
+          </Select>
         )}
-        {bulkAction && (
-          <Button
-            onClick={onApplyBulkAction}
-            disabled={bulkAction === 'setCategory' && !bulkCategory}
-          >
-            Apply
-          </Button>
-        )}
-        <Button onClick={onClearSelection}>
-          Clear
+        </div>
+      </FormGroup>
+      {bulkAction && (
+        <Button
+          onClick={onApplyBulkAction}
+          disabled={bulkAction === 'setCategory' && !bulkCategory}
+        >
+          Apply
         </Button>
-      </div>
+      )}
+      <Button onClick={onClearSelection}>
+        Clear
+      </Button>
     </div>
+    </>
   )
 }
 

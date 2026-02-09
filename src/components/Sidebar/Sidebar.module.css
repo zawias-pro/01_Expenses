@@ -1,0 +1,38 @@
+.sidebar {
+  width: 280px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  box-shadow: var(--shadow-md);
+
+  h1 {
+    margin: 0 0 1rem 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--surface);
+  }
+
+  button {
+    margin: .2rem 0.5rem;
+    width: 100%;
+    padding: 1rem;
+    text-align: left;
+    background-color: transparent;
+    border: none;
+    border-radius: 6px;
+    color: var(--sidebar-text);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &.active {
+      border: 1px solid var(--sidebar-hover);
+    }
+
+    &:hover {
+      background-color: var(--sidebar-hover);
+    }
+  }
+}

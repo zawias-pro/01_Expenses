@@ -28,9 +28,7 @@ const Budget = () => {
       <AddBudgetForm />
       </Panel>
 
-      {/* Budget List */}
-      <div>
-        <SectionHeader>Current Budgets</SectionHeader>
+      <Panel title={'Current Budgets'}>
         {budgetEntries.length === 0 ? (
           <p style={{ color: '#666' }}>No budgets defined yet.</p>
         ) : (
@@ -40,7 +38,7 @@ const Budget = () => {
             ))}
           </div>
         )}
-      </div>
+      </Panel>
     </>
   )
 }

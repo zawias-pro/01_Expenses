@@ -5,6 +5,7 @@ import { CumulativeChart } from './components/CumulativeChart.tsx'
 import { SectionHeader } from '../../components/SectionHeader/SectionHeader.tsx'
 import { Button } from '../../components/Button/Button.tsx'
 import styles from './CumulativeBarChart.module.css'
+import { Panel } from "../../components/Panel/Panel.tsx"
 
 const monthNames = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -74,19 +75,19 @@ const CumulativeBarChart = ({ summaries, onBack }: {
   return (
     <div className="section">
       <SectionHeader>Cumulative Bar Chart</SectionHeader>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-        Expense trends by category over time
-      </p>
 
       {/* Category Filter */}
+      <Panel>
       <CategoryFilter
         categories={categoriesList}
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}
       />
+      </Panel>
 
-      <CumulativeChart data={chartData} categories={categoryColors} />
-
+      <Panel>
+        <CumulativeChart data={chartData} categories={categoryColors} />
+      </Panel>
     </div> 
   )
 }
