@@ -91,7 +91,7 @@ const ImportCategoriesModal = ({ onImport, onClose }: ImportCategoriesModalProps
         Paste CSV content in the format: <code>categoryname;keyword1,keyword2,keyword3</code>
       </p>
       <p style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-        Note: This will replace all categories (except &quot;others&quot;). Transactions will be automatically reclassified.
+        Note: This will replace all categories. Transactions will be automatically reclassified.
       </p>
       <Textarea
         label={'Categories'}

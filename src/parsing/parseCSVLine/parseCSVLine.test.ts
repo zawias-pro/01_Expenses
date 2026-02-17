@@ -9,8 +9,8 @@ test('parseCSVLine - parses valid CSV line', () => {
   assert.strictEqual(result.description, 'Description')
   // Account field is ignored and always set to empty string
   assert.strictEqual(result.account, '')
-  // Category from CSV is ignored, always defaults to "others" (as a placeholder, will be converted to ID during classification)
-  assert.strictEqual(result.category, 'others')
+  // Category from CSV is ignored; set on classification (null = no category)
+  assert.strictEqual(result.category, null)
   assert.strictEqual(result.amount, '-5 000,00 PLN')
   assert.strictEqual(result.excluded, false)
   assert.strictEqual(result.isValid, true)

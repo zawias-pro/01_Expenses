@@ -26,12 +26,6 @@ const parseRules = (content: string): { rules: Record<string, string[]>, metadat
       }
     }
   }
-  // Always include 'others' category
-  const othersId = getOrCreateCategoryId('others', metadata)
-  if (!(othersId in rules)) {
-    rules[othersId] = []
-    metadata[othersId] = 'others'
-  }
   return { rules, metadata }
 }
 

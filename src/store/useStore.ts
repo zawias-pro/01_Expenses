@@ -6,7 +6,7 @@ import { classifyDescription } from '../parsing/classifyDescription/classifyDesc
 import { processTransactions } from '../parsing/processTransactions/processTransactions.ts'
 
 // NOTE: This is a development app, not production. No migrations needed.
-// Start with empty categories (only "others"). User imports or adds categories.
+// Start with 0 categories. User imports or adds categories.
 const { rules: RULES, metadata: INITIAL_METADATA } = parseRules('')
 const STORAGE_KEY = 'expense-analyzer-data'
 
@@ -28,7 +28,7 @@ interface AppState {
 
   setTransactions: (transactions: Transaction[]) => void
   updateTransactionExcluded: (id: string, excluded: boolean) => void
-  updateTransactionCategory: (id: string, categoryId: string) => void
+  updateTransactionCategory: (id: string, categoryId: string | null) => void
   updateTransactionDate: (id: string, date: string) => void
   updateTransactionOverrideMode: (id: string, overrideMode: boolean) => void
   updateTransactionComment: (id: string, comment: string) => void
@@ -72,14 +72,14 @@ const useStore = create<AppState>()(
         }))
       },
 
-      updateTransactionCategory: (id, category) => {
+      updateTransactionCategory: (id, categoryId) => {
         set((state) => ({
           transactions: state.transactions.map((t) => {
             if (t.id === id) {
-              const originalCategory = t.originalCategory || (!t.categoryOverridden ? t.category : undefined)
+              const originalCategory = t.originalCategory ?? (!t.categoryOverridden ? t.category : undefined)
               return {
                 ...t,
-                category,
+                category: categoryId,
                 categoryOverridden: true,
                 overridden: true,
                 originalCategory,
@@ -235,9 +235,6 @@ const useStore = create<AppState>()(
           metadata[id] = categoryName
           rules[id] = keywords
         }
-        const othersId = getOrCreateCategoryId('others', metadata)
-        metadata[othersId] = 'others'
-        if (!(othersId in rules)) rules[othersId] = []
         set({ customRules: rules, categoryMetadata: metadata, budgets: {} })
         get().reclassifyTransactions()
       },

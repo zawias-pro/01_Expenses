@@ -1,10 +1,15 @@
+/** Display label and summary key for transactions with no category */
+export const NO_CATEGORY_KEY = '(no category)'
+/** Sentinel value for "filter by no category" in UI (not a real category ID) */
+export const NO_CATEGORY_FILTER_VALUE = '__no_category__'
+
 interface Transaction {
   id: string
   hash: string
   date: string
   description: string
   account: string
-  category: string
+  category: string | null
   amount: string
   excluded: boolean
   isValid: boolean

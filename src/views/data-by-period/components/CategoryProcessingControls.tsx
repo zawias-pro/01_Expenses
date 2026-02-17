@@ -24,7 +24,7 @@ const CategoryProcessingControls = ({
     <>
       <div>
         <Checkbox
-          label='Treat low-value expenses as "others"'
+          label='Treat low-value expenses as uncategorized'
           checked={treatLowValueAsOthers}
           onChange={e => { onTreatLowValueAsOthersChange(e.target.checked) }}
         />
@@ -44,7 +44,7 @@ const CategoryProcessingControls = ({
 
       <div>
         <Checkbox
-          label='Merge small categories into "others"'
+          label='Merge small categories into uncategorized'
           checked={mergeSmallCategories}
           onChange={e => { onMergeSmallCategoriesChange(e.target.checked) }}
         />

@@ -34,8 +34,9 @@ const getOrCreateCategoryId = (name: string, metadata: CategoryMetadata): string
   return generateCategoryId()
 }
 
-const getCategoryNameFromId = (id: string, metadata: CategoryMetadata): string => {
-  return metadata[id] || 'others'
+const getCategoryNameFromId = (id: string | null, metadata: CategoryMetadata): string => {
+  if (id === null || id === '') return '(no category)'
+  return metadata[id] ?? '(no category)'
 }
 
 export { generateCategoryId, getCategoryIdFromName, getCategoryNameFromId, getOrCreateCategoryId }

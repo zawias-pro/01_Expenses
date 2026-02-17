@@ -167,8 +167,8 @@ test('processTransactions - classifies categories from description and respects 
   const dec = result[0]
   // BIEDRONKA should be classified as "grocery"
   assert.strictEqual(dec.categories['grocery'], 100)
-  // Random transaction should default to "others"
-  assert.strictEqual(dec.categories['others'], 50)
+  // Random transaction has no keyword match → (no category)
+  assert.strictEqual(dec.categories['(no category)'], 50)
   // Overridden transaction should use the overridden category
   assert.strictEqual(dec.categories['custom-category'], 25)
 })

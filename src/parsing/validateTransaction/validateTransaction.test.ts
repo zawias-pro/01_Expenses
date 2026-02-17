@@ -32,10 +32,15 @@ test('validateTransaction - missing description', () => {
   assert.strictEqual(result.error, 'Description is required')
 })
 
-test('validateTransaction - missing category', () => {
+test('validateTransaction - no category is valid', () => {
   const result = validateTransaction('2025-12-12', 'Description', '', '-5000,00 PLN', 'line')
-  assert.strictEqual(result.isValid, false)
-  assert.strictEqual(result.error, 'Category is required')
+  assert.strictEqual(result.isValid, true)
+  assert.strictEqual(result.error, undefined)
+})
+
+test('validateTransaction - null category is valid', () => {
+  const result = validateTransaction('2025-12-12', 'Description', null, '-5000,00 PLN', 'line')
+  assert.strictEqual(result.isValid, true)
 })
 
 test('validateTransaction - missing amount', () => {

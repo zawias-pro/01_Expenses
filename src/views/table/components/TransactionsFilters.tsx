@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { NO_CATEGORY_KEY, NO_CATEGORY_FILTER_VALUE } from '../../../parsing/types.ts'
 import { useCategories, useCategoryMetadata, getCategoryIdFromName, getCategoryNameFromId } from '../../../store/useStore.ts'
 import { Input } from '../../../components/Input/Input.tsx'
 import { Select } from '../../../components/Select/Select.tsx'
@@ -56,14 +57,20 @@ const TransactionsFilters = ({
         <Select
           id={'category'}
           label="Category"
-          value={selectedCategory ? getCategoryNameFromId(selectedCategory, categoryMetadata) ?? '' : ''}
+          value={selectedCategory === NO_CATEGORY_FILTER_VALUE ? NO_CATEGORY_KEY : (selectedCategory ? getCategoryNameFromId(selectedCategory, categoryMetadata) ?? '' : '')}
           onChange={e => {
-            const categoryName = e.target.value
-            const categoryId = categoryName ? getCategoryIdFromName(categoryName, categoryMetadata) : null
-            onSelectedCategoryChange(categoryId)
+            const value = e.target.value
+            if (value === '') {
+              onSelectedCategoryChange(null)
+            } else if (value === NO_CATEGORY_FILTER_VALUE) {
+              onSelectedCategoryChange(NO_CATEGORY_FILTER_VALUE)
+            } else {
+              onSelectedCategoryChange(getCategoryIdFromName(value, categoryMetadata))
+            }
           }}
         >
           <option value="">All categories</option>
+          <option value={NO_CATEGORY_FILTER_VALUE}>{NO_CATEGORY_KEY}</option>
           {categories.map(cat => (
             <option key={cat} value={cat}>{cat}</option>
           ))}

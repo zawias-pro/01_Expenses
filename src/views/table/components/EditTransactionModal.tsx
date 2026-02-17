@@ -1,3 +1,4 @@
+import { NO_CATEGORY_KEY } from '../../../parsing/types.ts'
 import { useCategories, useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName } from '../../../store/useStore.ts'
 import { Modal } from '../../../components/Modal/Modal.tsx'
 import { Button } from '../../../components/Button/Button.tsx'
@@ -10,11 +11,11 @@ import { Textarea } from "../../../components/Textarea/Textarea.tsx"
 interface EditTransactionModalProps {
   transactionId: string | null
   date: string
-  category: string
+  category: string | null
   comment: string
   excluded: boolean
   onDateChange: (date: string) => void
-  onCategoryChange: (category: string) => void
+  onCategoryChange: (category: string | null) => void
   onCommentChange: (comment: string) => void
   onExcludedChange: (excluded: boolean) => void
   onSave: () => void
@@ -36,7 +37,6 @@ const EditTransactionModal = ({
 }: EditTransactionModalProps) => {
   const categories = useCategories()
   const categoryMetadata = useCategoryMetadata()
-  const othersCategoryId = getCategoryIdFromName('others', categoryMetadata) || ''
 
   if (!transactionId) return null
 
@@ -67,14 +67,18 @@ const EditTransactionModal = ({
 
         <Select
           label="Category:"
-          value={getCategoryNameFromId(category || othersCategoryId, categoryMetadata)}
+          value={getCategoryNameFromId(category, categoryMetadata)}
           onChange={e => {
             const categoryName = e.target.value
-            const categoryId = getCategoryIdFromName(categoryName, categoryMetadata)
-            onCategoryChange(categoryId || othersCategoryId)
+            if (categoryName === NO_CATEGORY_KEY) {
+              onCategoryChange(null)
+            } else {
+              onCategoryChange(getCategoryIdFromName(categoryName, categoryMetadata) ?? null)
+            }
           }}
           className={styles.input}
         >
+          <option value={NO_CATEGORY_KEY}>{NO_CATEGORY_KEY}</option>
           {categories.map(cat => (
             <option key={cat} value={cat}>{cat}</option>
           ))}

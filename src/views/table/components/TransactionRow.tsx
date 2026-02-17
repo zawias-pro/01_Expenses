@@ -1,5 +1,5 @@
 import type { Transaction } from '../../../parsing/types.ts'
-import { useStore, useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName } from '../../../store/useStore.ts'
+import { useStore, useCategoryMetadata, getCategoryNameFromId } from '../../../store/useStore.ts'
 import styles from './TransactionRow.module.css'
 
 interface TransactionRowProps {
@@ -18,7 +18,6 @@ export const TransactionRow = ({
   onEdit,
 }: TransactionRowProps) => {
   const categoryMetadata = useCategoryMetadata()
-  const othersCategoryId = getCategoryIdFromName('others', categoryMetadata) || ''
   const resetTransactionDate = useStore((state) => state.resetTransactionDate)
   const resetTransactionCategory = useStore((state) => state.resetTransactionCategory)
   const removeTransaction = useStore((state) => state.removeTransaction)
@@ -65,7 +64,7 @@ export const TransactionRow = ({
       <td className={`${styles.cell} ${transaction.excluded ? styles.cellExcluded : styles.cellNormal}`}>
         <div className={styles.categoryCell}>
           <span>{getCategoryNameFromId(transaction.category, categoryMetadata)}</span>
-          {transaction.category === othersCategoryId && !transaction.categoryOverridden && (
+          {transaction.category === null && !transaction.categoryOverridden && (
             <button
               onClick={() => { onQuickAddCategory(transaction.id, transaction.description) }}
               className={styles.addButton}

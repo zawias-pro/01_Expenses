@@ -58,7 +58,7 @@ const QuickAddCategoryModal = ({
           className={styles.select}
         >
           <option value="new">New category</option>
-          {categories.filter(cat => cat !== 'others').map(cat => (
+          {categories.map(cat => (
             <option key={cat} value={cat}>{cat}</option>
           ))}
         </Select>

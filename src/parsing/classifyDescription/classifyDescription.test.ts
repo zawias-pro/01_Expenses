@@ -7,26 +7,20 @@ import type { CategoryMetadata } from '../categoryTypes.ts'
 test('classifyDescription - matches keywords correctly', () => {
   const housingId = generateCategoryId()
   const financeId = generateCategoryId()
-  const othersId = generateCategoryId()
-  const rules = { [housingId]: ['czynsz'], [financeId]: ['revolut'], [othersId]: [] }
+  const rules = { [housingId]: ['czynsz'], [financeId]: ['revolut'] }
   const metadata: CategoryMetadata = {
     [housingId]: 'housing',
-    [financeId]: 'finance',
-    [othersId]: 'others'
+    [financeId]: 'finance'
   }
   assert.strictEqual(classifyDescription('PRZELEW ZA CZYNSZ', rules, metadata), housingId)
   assert.strictEqual(classifyDescription('Revolut**1234', rules, metadata), financeId)
-  assert.strictEqual(classifyDescription('some random transaction', rules, metadata), othersId)
+  assert.strictEqual(classifyDescription('some random transaction', rules, metadata), null)
 })
 
 test('classifyDescription - is case insensitive', () => {
   const housingId = generateCategoryId()
-  const othersId = generateCategoryId()
-  const rules = { [housingId]: ['czynsz'], [othersId]: [] }
-  const metadata: CategoryMetadata = {
-    [housingId]: 'housing',
-    [othersId]: 'others'
-  }
+  const rules = { [housingId]: ['czynsz'] }
+  const metadata: CategoryMetadata = { [housingId]: 'housing' }
   assert.strictEqual(classifyDescription('CZYNSZ', rules, metadata), housingId)
   assert.strictEqual(classifyDescription('czynsz', rules, metadata), housingId)
   assert.strictEqual(classifyDescription('Czynsz', rules, metadata), housingId)

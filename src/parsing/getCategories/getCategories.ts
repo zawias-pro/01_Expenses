@@ -1,12 +1,9 @@
 /**
- * Example:
- * Input: { "grocery": ["walmart"], "mobile": ["vodafone"], "transfers": ["transfer"] }
- * Output: ["grocery", "mobile", "others", "transfers"]
+ * Extracts unique category names from rules (rules are ID -> keywords; names come from metadata in practice).
+ * Example: given rules with IDs, returns sorted list of category names from metadata.
  */
 const getCategories = (rules: Record<string, string[]>): string[] => {
-  const categories = new Set(Object.keys(rules))
-  categories.add('others') // Always include the default category
-  return Array.from(categories).sort()
+  return Array.from(Object.keys(rules)).sort()
 }
 
 export { getCategories }

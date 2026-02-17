@@ -3,6 +3,7 @@ import {
   useStore, useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName, getOrCreateCategoryId
 } from '../../store/useStore.ts'
 import type { Transaction } from '../../parsing/types.ts'
+import { NO_CATEGORY_FILTER_VALUE } from '../../parsing/types.ts'
 import { getYearFromDate } from '../../parsing/getYearFromDate/getYearFromDate.ts'
 import { getMonthFromDate } from '../../parsing/getMonthFromDate/getMonthFromDate.ts'
 import { parsePolishAmount } from '../../parsing/parsePolishAmount/parsePolishAmount.ts'
@@ -45,7 +46,6 @@ const TransactionsTable = ({
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(null)
 
   const categoryMetadata = useCategoryMetadata()
-  const othersCategoryId = getCategoryIdFromName('others', categoryMetadata) || ''
 
   const updateTransactionExcluded = useStore((state) => state.updateTransactionExcluded)
   const updateTransactionCategory = useStore((state) => state.updateTransactionCategory)
@@ -102,9 +102,13 @@ const TransactionsTable = ({
       })
     }
 
-    // Category filter (selectedCategory is a category ID)
+    // Category filter (selectedCategory is category ID, or NO_CATEGORY_FILTER_VALUE for uncategorized)
     if (selectedCategory) {
-      filtered = filtered.filter(t => t.category === selectedCategory)
+      if (selectedCategory === NO_CATEGORY_FILTER_VALUE) {
+        filtered = filtered.filter(t => t.category === null)
+      } else {
+        filtered = filtered.filter(t => t.category === selectedCategory)
+      }
     }
 
     // Month filter
@@ -285,7 +289,7 @@ const TransactionsTable = ({
   const handleEdit = (transaction: Transaction) => {
     setEditTransactionId(transaction.id)
     setEditDate(transaction.date)
-    setEditCategory(transaction.category)
+    setEditCategory(transaction.category ?? '')
     setEditComment(transaction.comment || '')
     setEditExcluded(transaction.excluded)
   }
@@ -293,7 +297,7 @@ const TransactionsTable = ({
   const handleSaveEdit = () => {
     if (editTransactionId) {
       updateTransactionDate(editTransactionId, editDate)
-      updateTransactionCategory(editTransactionId, editCategory || othersCategoryId)
+      updateTransactionCategory(editTransactionId, editCategory === '' ? null : editCategory)
       updateTransactionComment(editTransactionId, editComment)
       updateTransactionExcluded(editTransactionId, editExcluded)
     }
@@ -349,7 +353,7 @@ const TransactionsTable = ({
       {filteredAndSortedTransactions.length > 0
         ? (
           <Panel>
-            <table className={styles.table}>
+            <table className={styles['table']}>
               <TransactionsTableHeader
                 allSelected={allSelected}
                 someSelected={someSelected}
@@ -382,11 +386,11 @@ const TransactionsTable = ({
       <EditTransactionModal
         transactionId={editTransactionId}
         date={editDate}
-        category={editCategory}
+        category={editCategory === '' ? null : editCategory}
         comment={editComment}
         excluded={editExcluded}
         onDateChange={setEditDate}
-        onCategoryChange={setEditCategory}
+        onCategoryChange={(id) => {setEditCategory(id ?? '')}}
         onCommentChange={setEditComment}
         onExcludedChange={setEditExcluded}
         onSave={handleSaveEdit}

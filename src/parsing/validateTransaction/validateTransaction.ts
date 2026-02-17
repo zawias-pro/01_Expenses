@@ -6,7 +6,7 @@ import { parsePolishAmount } from '../parsePolishAmount/parsePolishAmount.ts'
  * Input: "2025-12-12", "Description", "Category", "-5000,00 PLN", "original line"
  * Output: { isValid: true } or { isValid: false, error: "error message" }
  */
-const validateTransaction = (date: string, description: string, category: string, amount: string, originalLine: string): { isValid: boolean; error?: string } => {
+const validateTransaction = (date: string, description: string, category: string | null, amount: string, originalLine: string): { isValid: boolean; error?: string } => {
   if (!originalLine.trim()) {
     return { isValid: false, error: 'Empty line' }
   }
@@ -23,10 +23,6 @@ const validateTransaction = (date: string, description: string, category: string
 
   if (!description.trim()) {
     return { isValid: false, error: 'Description is required' }
-  }
-
-  if (!category.trim()) {
-    return { isValid: false, error: 'Category is required' }
   }
 
   if (!amount.trim()) {

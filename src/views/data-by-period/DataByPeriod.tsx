@@ -6,7 +6,8 @@ import { formatPolishNumber } from '../../parsing/formatPolishNumber/formatPolis
 import { parsePolishAmount } from '../../parsing/parsePolishAmount/parsePolishAmount.ts'
 import { getYearFromDate } from '../../parsing/getYearFromDate/getYearFromDate.ts'
 import { getMonthFromDate } from '../../parsing/getMonthFromDate/getMonthFromDate.ts'
-import { useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName } from '../../store/useStore.ts'
+import { NO_CATEGORY_KEY } from '../../parsing/types.ts'
+import { useCategoryMetadata, getCategoryNameFromId } from '../../store/useStore.ts'
 import { CategoryBarChart } from './components/CategoryBarChart.tsx'
 import { PeriodSelection } from './components/PeriodSelection.tsx'
 import { CategoryProcessingControls } from './components/CategoryProcessingControls.tsx'
@@ -38,7 +39,6 @@ const DataByPeriod = ({ summaries, transactions }: {
   const [categoryThresholdPercent, setCategoryThresholdPercent] = useState(1)
 
   const categoryMetadata = useCategoryMetadata()
-  const othersCategoryId = getCategoryIdFromName('others', categoryMetadata) || ''
 
   // Keep selectedMonth in sync with available summaries (local state, no hoisting)
   useEffect(() => {
@@ -143,24 +143,18 @@ const DataByPeriod = ({ summaries, transactions }: {
       }
       // For 'all', we already have all transactions filtered
 
-      // Re-aggregate categories, treating low-value expenses as "others"
-      // Use category names for display (MonthlySummary uses names)
+      // Re-aggregate categories, treating low-value expenses as uncategorized
       const processed: Record<string, number> = {}
-      
+
       periodTransactions.forEach(t => {
         try {
           const amount = parsePolishAmount(t.amount)
           if (amount < 0) {
-            // This is an expense
             const absAmount = Math.abs(amount)
-            let categoryId = t.category
-            
-            // If the expense is below threshold, treat it as "others"
+            let categoryId: string | null = t.category
             if (absAmount < lowValueThreshold) {
-              categoryId = othersCategoryId
+              categoryId = null
             }
-            
-            // Convert ID to name for display
             const categoryName = getCategoryNameFromId(categoryId, categoryMetadata)
             processed[categoryName] = (processed[categoryName] || 0) + absAmount
           }
@@ -177,42 +171,31 @@ const DataByPeriod = ({ summaries, transactions }: {
 
     // Apply category percentage threshold if enabled
     if (mergeSmallCategories) {
-      // Calculate total expenses
       const totalExpenses = Object.values(categories).reduce((sum, amount) => sum + amount, 0)
-      
       if (totalExpenses > 0) {
         const merged: Record<string, number> = {}
-        let othersAmount = categories['others'] || 0
-        
-        // Process each category
+        let noCategoryAmount = categories[NO_CATEGORY_KEY] || 0
+
         Object.entries(categories).forEach(([category, amount]) => {
-          if (category === 'others') {
-            // Don't process "others" itself, we'll add it at the end
+          if (category === NO_CATEGORY_KEY) {
             return
           }
-          
           const percentage = (amount / totalExpenses) * 100
-          
           if (percentage < categoryThresholdPercent) {
-            // Merge into "others"
-            othersAmount += amount
+            noCategoryAmount += amount
           } else {
-            // Keep as separate category
             merged[category] = amount
           }
         })
-        
-        // Add "others" category (including merged small categories)
-        if (othersAmount > 0) {
-          merged['others'] = othersAmount
+        if (noCategoryAmount > 0) {
+          merged[NO_CATEGORY_KEY] = noCategoryAmount
         }
-        
         categories = merged
       }
     }
 
     return categories
-  }, [displaySummary, treatLowValueAsOthers, lowValueThreshold, mergeSmallCategories, categoryThresholdPercent, transactions, selectionType, effectiveMonth, selectedYear, categoryMetadata, othersCategoryId])
+  }, [displaySummary, treatLowValueAsOthers, lowValueThreshold, mergeSmallCategories, categoryThresholdPercent, transactions, selectionType, effectiveMonth, selectedYear, categoryMetadata])
 
   // Get top 10 expenses for the selected period
   const topExpenses = useMemo(() => {
