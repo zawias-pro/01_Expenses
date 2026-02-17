@@ -41,7 +41,9 @@ const CSVInputPreview = () => {
 
   const previewTransactions = getPreviewTransactions()
 
-  const handleFillExample = () => setCsvContent(EXAMPLE_CSV)
+  const handleFillExample = () => {
+    setCsvContent(EXAMPLE_CSV)
+  }
 
   const handleAddTransactions = () => {
     if (!csvContent.trim()) {
@@ -140,19 +142,19 @@ const CSVInputPreview = () => {
       </SectionHeader>
 
       <Panel>
-      <p>
-        Paste CSV data below to add transactions. Transactions will be appended, not replaced.
-      </p>
-      <CSVConfigControls
-        delimiter={delimiter}
-        dateIndex={dateIndex}
-        descriptionIndex={descriptionIndex}
-        amountIndex={amountIndex}
-        onDelimiterChange={setDelimiter}
-        onDateIndexChange={setDateIndex}
-        onDescriptionIndexChange={setDescriptionIndex}
-        onAmountIndexChange={setAmountIndex}
-      />
+        <p>
+          Paste CSV data below to add transactions. Transactions will be appended, not replaced.
+        </p>
+        <CSVConfigControls
+          delimiter={delimiter}
+          dateIndex={dateIndex}
+          descriptionIndex={descriptionIndex}
+          amountIndex={amountIndex}
+          onDelimiterChange={setDelimiter}
+          onDateIndexChange={setDateIndex}
+          onDescriptionIndexChange={setDescriptionIndex}
+          onAmountIndexChange={setAmountIndex}
+        />
       </Panel>
 
       <Panel>
@@ -160,7 +162,7 @@ const CSVInputPreview = () => {
           id={'csv'}
           label={'CSV'}
           value={csvContent}
-          onChange={e => { setCsvContent(e.target.value) }}
+          onChange={e => {setCsvContent(e.target.value)}}
           rows={10}
           placeholder="Paste your CSV data here..."
           style={{ marginBottom: 0 }}
@@ -168,17 +170,14 @@ const CSVInputPreview = () => {
       </Panel>
 
       <Panel title={'Preview'}>
-      <CSVPreviewTable transactions={previewTransactions} />
+        <CSVPreviewTable transactions={previewTransactions}/>
       </Panel>
 
       <div className="action-buttons">
         <Button onClick={handleFillExample}>
-          Fill with Example Data
+          Fill with example data
         </Button>
-        <Button
-          onClick={handleAddTransactions}
-          disabled={csvContent.trim().length === 0}
-        >
+        <Button onClick={handleAddTransactions}>
           Add transactions
         </Button>
       </div>
