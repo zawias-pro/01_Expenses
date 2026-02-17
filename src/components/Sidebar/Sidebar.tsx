@@ -55,13 +55,13 @@ const Sidebar = () => {
 
       <div style={{display:'flex', flexDirection:'column'}}>
         <button onClick={handleExport}>
-          Export State
+          📤 Export State
         </button>
         <button onClick={handleImport}>
-          Import State
+          📥 Import State
         </button>
         <button onClick={handleClear}>
-          Clear & Start Over
+          🗑️ Clear & Start Over
         </button>
       </div>
 
@@ -72,37 +72,37 @@ const Sidebar = () => {
           className={view==='csv' ? styles['active'] : undefined}
           onClick={() => { setView('csv') }}
         >
-          CSV Input
+          📄 CSV Input
         </button>
         <button
           className={view==='categories' ? styles['active'] : undefined}
           onClick={() => { setView('categories') }}
         >
-          Categories
+          🏷️ Categories
         </button>
         <button
           className={view==='transactions' ? styles['active'] : undefined}
           onClick={() => { setView('transactions') }}
         >
-          Transactions Table
+          📋 Transactions Table
         </button>
         <button
           className={view==='summary' ? styles['active'] : undefined}
           onClick={() => { setView('summary') }}
         >
-          Data by Period
+          📅 Data by Period
         </button>
         <button
           className={view==='chart' ? styles['active'] : undefined}
           onClick={() => { setView('chart') }}
         >
-          Cumulative Bar Chart
+          📊 Cumulative Bar Chart
         </button>
         <button
           className={view==='budget' ? styles['active'] : undefined}
           onClick={() => { setView('budget') }}
         >
-          Budget
+          💰 Budget
         </button>
       </nav>
     </div>
