@@ -1,21 +1,12 @@
-.appContainer {
+.wrapper {
   display: flex;
   height: 100vh;
   overflow: hidden;
-}
 
-.mainContent {
-  flex: 1;
-  overflow-y: auto;
-  background-color: var(--background);
-  padding: 2rem;
-}
-
-.contentContainer {
-  background-color: var(--surface);
-  border-radius: 8px;
-  padding: 2rem;
-  margin-bottom: 2rem;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-color);
+  .main {
+    flex: 1;
+    overflow-y: auto;
+    background-color: var(--surface);
+    padding: 2rem;
+  }
 }

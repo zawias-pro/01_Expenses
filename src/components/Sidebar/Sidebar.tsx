@@ -56,8 +56,9 @@ const Sidebar = ({
 
   return (
     <div className={styles['sidebar']}>
-      <h1>Expense Analyzer</h1>
-
+      <h1>
+        Expense Analyzer
+      </h1>
       <div style={{display:'flex', flexDirection:'column'}}>
         <button onClick={handleExport}>
           📤 Export State
@@ -69,9 +70,9 @@ const Sidebar = ({
           🗑️ Clear & Start Over
         </button>
       </div>
-
-      <hr style={{width: '100%', borderColor: 'var(--sidebar-hover)' }}/>
-
+      <hr
+        style={{width: '100%', borderColor: 'var(--sidebar-hover)' }}
+      />
       <nav style={{display:'flex', flexDirection:'column'}}>
         <button
           className={view==='csv' ? styles['active'] : undefined}

@@ -5,14 +5,15 @@ import { parsePolishAmount } from '../../parsing/parsePolishAmount/parsePolishAm
 import { hashTransaction } from '../../parsing/hashTransaction/hashTransaction.ts'
 import type { Transaction } from '../../parsing/types.ts'
 import { useStore, useAllRules, useCategoryMetadata } from '../../store/useStore.ts'
-import { CSVConfigControls } from './components/CSVConfigControls.tsx'
 import { CSVPreviewTable } from './components/CSVPreviewTable.tsx'
 import { SectionHeader } from '../../components/SectionHeader/SectionHeader.tsx'
 import { Button } from '../../components/Button/Button.tsx'
 import { EXAMPLE_CSV } from './exampleCsv.ts'
-import styles from './CSVInputPreview.module.css'
 import { Textarea } from "../../components/Textarea/Textarea.tsx"
 import { Panel } from "../../components/Panel/Panel.tsx"
+import { Select } from "../../components/Select/Select.tsx"
+import { Input } from "../../components/Input/Input.tsx"
+import { FormGroup } from "../../components/FormGroup/FormGroup.tsx"
 
 const CSVInputPreview = () => {
   const [csvContent, setCsvContent] = useState('')
@@ -20,7 +21,6 @@ const CSVInputPreview = () => {
   const [dateIndex, setDateIndex] = useState(0)
   const [descriptionIndex, setDescriptionIndex] = useState(1)
   const [amountIndex, setAmountIndex] = useState(4)
-
   const transactions = useStore((state) => state.transactions)
   const setTransactions = useStore((state) => state.setTransactions)
   const allRules = useAllRules()
@@ -38,8 +38,6 @@ const CSVInputPreview = () => {
       }
     })
   }
-
-  const previewTransactions = getPreviewTransactions()
 
   const handleFillExample = () => {
     setCsvContent(EXAMPLE_CSV)
@@ -79,6 +77,7 @@ const CSVInputPreview = () => {
       } catch {
         // ignore
       }
+
       return {
         transaction: {
           ...t,
@@ -140,23 +139,52 @@ const CSVInputPreview = () => {
       <SectionHeader>
         CSV Input
       </SectionHeader>
-
       <Panel>
         <p>
           Paste CSV data below to add transactions. Transactions will be appended, not replaced.
         </p>
-        <CSVConfigControls
-          delimiter={delimiter}
-          dateIndex={dateIndex}
-          descriptionIndex={descriptionIndex}
-          amountIndex={amountIndex}
-          onDelimiterChange={setDelimiter}
-          onDateIndexChange={setDateIndex}
-          onDescriptionIndexChange={setDescriptionIndex}
-          onAmountIndexChange={setAmountIndex}
-        />
+        <FormGroup>
+          <Select
+            id="delimiter-select"
+            label="CSV Delimiter:"
+            value={delimiter}
+            onChange={event => { setDelimiter(event.target.value) }}
+            style={{ marginBottom: 0 }}
+          >
+            <option value=";">Semicolon (;)</option>
+            <option value=",">Comma (,)</option>
+            <option value="\t">Tab</option>
+            <option value="|">Pipe (|)</option>
+          </Select>
+          <Input
+            id="date-index"
+            label="Date Column:"
+            type="number"
+            value={dateIndex}
+            onChange={e => { setDateIndex(parseInt(e.target.value)) }}
+            min="0"
+            style={{ marginBottom: 0 }}
+          />
+          <Input
+            id="description-index"
+            label="Description Column:"
+            type="number"
+            value={descriptionIndex}
+            onChange={e => { setDescriptionIndex(parseInt(e.target.value)) }}
+            min="0"
+            style={{ marginBottom: 0 }}
+          />
+          <Input
+            id="amount-index"
+            label="Amount Column:"
+            type="number"
+            value={amountIndex}
+            onChange={e => { setAmountIndex(parseInt(e.target.value) || 0) }}
+            min="0"
+            style={{ marginBottom: 0 }}
+          />
+        </FormGroup>
       </Panel>
-
       <Panel>
         <Textarea
           id={'csv'}
@@ -168,11 +196,9 @@ const CSVInputPreview = () => {
           style={{ marginBottom: 0 }}
         />
       </Panel>
-
       <Panel title={'Preview'}>
-        <CSVPreviewTable transactions={previewTransactions}/>
+        <CSVPreviewTable transactions={getPreviewTransactions()}/>
       </Panel>
-
       <div className="action-buttons">
         <Button onClick={handleFillExample}>
           Fill with example data
