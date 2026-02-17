@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useStore, useCategories, useCategoryMetadata, getCategoryIdFromName } from '../../../store/useStore.ts'
+import { useCategories, useCategoryMetadata, getCategoryIdFromName, getCategoryNameFromId } from '../../../store/useStore.ts'
 import { Input } from '../../../components/Input/Input.tsx'
 import { Select } from '../../../components/Select/Select.tsx'
 import { Button } from '../../../components/Button/Button.tsx'
@@ -8,80 +8,91 @@ import { Panel } from "../../../components/Panel/Panel.tsx"
 
 interface TransactionsFiltersProps {
   availableMonths: Array<[string, string]>
+  searchQuery: string
+  selectedCategory: string | null
+  selectedMonthFilter: string | null
+  amountFilterType: 'none' | 'less' | 'greater' | null
+  amountFilterValue: number | null
+  onSearchQueryChange: (value: string) => void
+  onSelectedCategoryChange: (categoryId: string | null) => void
+  onSelectedMonthFilterChange: (value: string | null) => void
+  onAmountFilterChange: (type: 'none' | 'less' | 'greater' | null, value: number | null) => void
 }
 
-const TransactionsFilters = ({ availableMonths }: TransactionsFiltersProps) => {
+const TransactionsFilters = ({
+  availableMonths,
+  searchQuery,
+  selectedCategory,
+  selectedMonthFilter,
+  amountFilterType,
+  amountFilterValue,
+  onSearchQueryChange,
+  onSelectedCategoryChange,
+  onSelectedMonthFilterChange,
+  onAmountFilterChange,
+}: TransactionsFiltersProps) => {
   const [amountFilterInput, setAmountFilterInput] = useState<string>('')
-
-  const searchQuery = useStore((state) => state.searchQuery)
-  const selectedCategory = useStore((state) => state.selectedCategory)
-  const selectedMonthFilter = useStore((state) => state.selectedMonthFilter)
-  const amountFilterType = useStore((state) => state.amountFilterType)
-  const amountFilterValue = useStore((state) => state.amountFilterValue)
   const categoryMetadata = useCategoryMetadata()
   const categories = useCategories()
-
-  const setSearchQuery = useStore((state) => state.setSearchQuery)
-  const setSelectedCategory = useStore((state) => state.setSelectedCategory)
-  const setSelectedMonthFilter = useStore((state) => state.setSelectedMonthFilter)
-  const setAmountFilter = useStore((state) => state.setAmountFilter)
 
   const handleAmountFilterApply = () => {
     const value = parseFloat(amountFilterInput)
     if (!isNaN(value)) {
-      setAmountFilter(amountFilterType || 'less', value)
+      onAmountFilterChange(amountFilterType || 'less', value)
     }
   }
 
   return (
     <Panel>
-    <FormGroup>
-      <Input
-        id={'search'}
-        label="Search"
-        type="text"
-        value={searchQuery}
-        onChange={e => { setSearchQuery(e.target.value) }}
-      />
+      <FormGroup>
+        <Input
+          id={'search'}
+          label="Search"
+          type="text"
+          value={searchQuery}
+          onChange={e => { onSearchQueryChange(e.target.value) }}
+        />
 
-      <Select
-        id={'category'}
-        label="Category"
-        value={selectedCategory || ''}
-        onChange={e => {
-          const categoryName = e.target.value
-          const categoryId = categoryName ? getCategoryIdFromName(categoryName, categoryMetadata) : null
-          setSelectedCategory(categoryId)
-        }}
-      >
-        <option value="">All categories</option>
-        {categories.map(cat => (
-          <option key={cat} value={cat}>{cat}</option>
-        ))}
-      </Select>
+        <Select
+          id={'category'}
+          label="Category"
+          value={selectedCategory ? getCategoryNameFromId(selectedCategory, categoryMetadata) ?? '' : ''}
+          onChange={e => {
+            const categoryName = e.target.value
+            const categoryId = categoryName ? getCategoryIdFromName(categoryName, categoryMetadata) : null
+            onSelectedCategoryChange(categoryId)
+          }}
+        >
+          <option value="">All categories</option>
+          {categories.map(cat => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </Select>
 
-      <Select
-        label="Month"
-        value={selectedMonthFilter || ''}
-        onChange={e => { setSelectedMonthFilter(e.target.value || null) }}
-      >
-        <option value="">All months</option>
-        {availableMonths.map(([key, label]) => (
-          <option key={key} value={key}>{label}</option>
-        ))}
-      </Select>
+        <Select
+          label="Month"
+          id="month-filter"
+          value={selectedMonthFilter || ''}
+          onChange={e => { onSelectedMonthFilterChange(e.target.value || null) }}
+        >
+          <option value="">All months</option>
+          {availableMonths.map(([key, label]) => (
+            <option key={key} value={key}>{label}</option>
+          ))}
+        </Select>
 
-      <div>
+        <div>
           <Select
             label={'Amount'}
+            id="amount-filter-type"
             value={amountFilterType || 'none'}
             onChange={e => {
               const type = e.target.value as 'none' | 'less' | 'greater'
               if (type === 'none') {
-                setAmountFilter(null, null)
+                onAmountFilterChange(null, null)
                 setAmountFilterInput('')
               } else {
-                setAmountFilter(type, amountFilterValue)
+                onAmountFilterChange(type, amountFilterValue)
               }
             }}
           >
@@ -105,8 +116,8 @@ const TransactionsFilters = ({ availableMonths }: TransactionsFiltersProps) => {
               </Button>
             </div>
           )}
-      </div>
-    </FormGroup>
+        </div>
+      </FormGroup>
     </Panel>
   )
 }

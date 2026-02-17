@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useStore, getCategoryNameFromId, useCategoryMetadata } from '../../../store/useStore.ts'
+import { getCategoryNameFromId, useCategoryMetadata } from '../../../store/useStore.ts'
 import { Button } from '../../../components/Button/Button.tsx'
 import { Input } from '../../../components/Input/Input.tsx'
 
@@ -9,6 +9,10 @@ interface CategoryRowProps {
   keywords: string[]
   count: number
   isCustom: boolean
+  editingCategory: string | null
+  editingKeywords: string
+  onEditingCategoryChange: (id: string | null) => void
+  onEditingKeywordsChange: (value: string) => void
   onUpdateCategory: (categoryName: string, keywords: string[]) => void
   onRemoveCategory: (categoryName: string) => void
   onRenameCategory: (oldName: string, newName: string) => void
@@ -20,37 +24,36 @@ const CategoryRow = ({
   keywords,
   count,
   isCustom,
+  editingCategory,
+  editingKeywords,
+  onEditingCategoryChange,
+  onEditingKeywordsChange,
   onUpdateCategory,
   onRemoveCategory,
-  onRenameCategory
+  onRenameCategory,
 }: CategoryRowProps) => {
   const categoryMetadata = useCategoryMetadata()
-  const editingCategory = useStore((state) => state.editingCategory)
-  const editingKeywords = useStore((state) => state.editingKeywords)
-  const setEditingCategory = useStore((state) => state.setEditingCategory)
-  const setEditingKeywords = useStore((state) => state.setEditingKeywords)
-
   const [isRenaming, setIsRenaming] = useState(false)
   const [renamingCategoryName, setRenamingCategoryName] = useState('')
 
   const isEditing = editingCategory === id
 
   const handleStartEdit = () => {
-    setEditingCategory(id)
-    setEditingKeywords(keywords.join(', '))
+    onEditingCategoryChange(id)
+    onEditingKeywordsChange(keywords.join(', '))
   }
 
   const handleSaveEdit = () => {
     const categoryName = getCategoryNameFromId(id, categoryMetadata)
     const keywordsArray = editingKeywords.split(',').map(k => k.trim()).filter(k => k)
     onUpdateCategory(categoryName, keywordsArray)
-    setEditingCategory(null)
-    setEditingKeywords('')
+    onEditingCategoryChange(null)
+    onEditingKeywordsChange('')
   }
 
   const handleCancelEdit = () => {
-    setEditingCategory(null)
-    setEditingKeywords('')
+    onEditingCategoryChange(null)
+    onEditingKeywordsChange('')
   }
 
   const handleStartRename = () => {
@@ -125,7 +128,7 @@ const CategoryRow = ({
           <Input
             type="text"
             value={editingKeywords}
-            onChange={e => { setEditingKeywords(e.target.value) }}
+            onChange={e => { onEditingKeywordsChange(e.target.value) }}
             onKeyDown={e => {
               if (e.key === 'Enter') {
                 handleSaveEdit()

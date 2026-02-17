@@ -1,15 +1,15 @@
-import { useStore, getCategoryNameFromId, useCategoryMetadata } from '../../../store/useStore.ts'
+import { getCategoryNameFromId, useCategoryMetadata } from '../../../store/useStore.ts'
 import { Modal } from '../../../components/Modal/Modal.tsx'
 import { Button } from '../../../components/Button/Button.tsx'
 import { Textarea } from "../../../components/Textarea/Textarea.tsx"
 
 interface ExportCategoriesModalProps {
   rules: Record<string, string[]>
+  onClose: () => void
 }
 
-const ExportCategoriesModal = ({ rules }: ExportCategoriesModalProps) => {
+const ExportCategoriesModal = ({ rules, onClose }: ExportCategoriesModalProps) => {
   const categoryMetadata = useCategoryMetadata()
-  const setShowExportModal = useStore((state) => state.setShowExportModal)
 
   const exportRules = (): string => {
     const lines: string[] = []
@@ -21,14 +21,12 @@ const ExportCategoriesModal = ({ rules }: ExportCategoriesModalProps) => {
     return lines.sort().join('\n')
   }
 
-  const handleClose = () => { setShowExportModal(false) }
-
   return (
     <Modal
       title="Export Categories"
-      onClose={handleClose}
+      onClose={onClose}
       footer={
-        <Button onClick={handleClose}>
+        <Button onClick={onClose}>
           Close
         </Button>
       }

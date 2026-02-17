@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { parseCSVLine } from '../../parsing/parseCSVLine/parseCSVLine.ts'
 import { classifyDescription } from '../../parsing/classifyDescription/classifyDescription.ts'
 import { parsePolishAmount } from '../../parsing/parsePolishAmount/parsePolishAmount.ts'
@@ -14,15 +15,14 @@ import { Textarea } from "../../components/Textarea/Textarea.tsx"
 import { Panel } from "../../components/Panel/Panel.tsx"
 
 const CSVInputPreview = () => {
-  const csvContent = useStore((state) => state.csvContent)
-  const delimiter = useStore((state) => state.delimiter)
-  const dateIndex = useStore((state) => state.dateIndex)
-  const descriptionIndex = useStore((state) => state.descriptionIndex)
-  const amountIndex = useStore((state) => state.amountIndex)
-  const transactions = useStore((state) => state.transactions)
-  const setCsvContent = useStore((state) => state.setCsvContent)
-  const setTransactions = useStore((state) => state.setTransactions)
+  const [csvContent, setCsvContent] = useState('')
+  const [delimiter, setDelimiter] = useState(';')
+  const [dateIndex, setDateIndex] = useState(0)
+  const [descriptionIndex, setDescriptionIndex] = useState(1)
+  const [amountIndex, setAmountIndex] = useState(4)
 
+  const transactions = useStore((state) => state.transactions)
+  const setTransactions = useStore((state) => state.setTransactions)
   const allRules = useAllRules()
   const categoryMetadata = useCategoryMetadata()
 
@@ -41,9 +41,7 @@ const CSVInputPreview = () => {
 
   const previewTransactions = getPreviewTransactions()
 
-  const handleFillExample = () => {
-    setCsvContent(EXAMPLE_CSV)
-  }
+  const handleFillExample = () => setCsvContent(EXAMPLE_CSV)
 
   const handleAddTransactions = () => {
     if (!csvContent.trim()) {
@@ -145,7 +143,16 @@ const CSVInputPreview = () => {
       <p>
         Paste CSV data below to add transactions. Transactions will be appended, not replaced.
       </p>
-      <CSVConfigControls />
+      <CSVConfigControls
+        delimiter={delimiter}
+        dateIndex={dateIndex}
+        descriptionIndex={descriptionIndex}
+        amountIndex={amountIndex}
+        onDelimiterChange={setDelimiter}
+        onDateIndexChange={setDateIndex}
+        onDescriptionIndexChange={setDescriptionIndex}
+        onAmountIndexChange={setAmountIndex}
+      />
       </Panel>
 
       <Panel>

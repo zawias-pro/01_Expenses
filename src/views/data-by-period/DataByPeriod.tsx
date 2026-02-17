@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import type { MonthlySummary, Transaction } from '../../parsing/types.ts'
 import { aggregateByYear } from '../../parsing/aggregateByYear/aggregateByYear.ts'
 import { aggregateAllData } from '../../parsing/aggregateAllData/aggregateAllData.ts'
@@ -6,7 +6,7 @@ import { formatPolishNumber } from '../../parsing/formatPolishNumber/formatPolis
 import { parsePolishAmount } from '../../parsing/parsePolishAmount/parsePolishAmount.ts'
 import { getYearFromDate } from '../../parsing/getYearFromDate/getYearFromDate.ts'
 import { getMonthFromDate } from '../../parsing/getMonthFromDate/getMonthFromDate.ts'
-import { useStore, useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName } from '../../store/useStore.ts'
+import { useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName } from '../../store/useStore.ts'
 import { CategoryBarChart } from './components/CategoryBarChart.tsx'
 import { PeriodSelection } from './components/PeriodSelection.tsx'
 import { CategoryProcessingControls } from './components/CategoryProcessingControls.tsx'
@@ -16,41 +16,60 @@ import styles from './DataByPeriod.module.css'
 import { Panel } from "../../components/Panel/Panel.tsx"
 import { FormGroup } from "../../components/FormGroup/FormGroup.tsx"
 
+type SelectionType = 'month' | 'year' | 'all'
+type TabType = 'expenses' | 'chart' | 'categories' | 'budget'
+
 const monthNames = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'
 ]
 
-const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChange }: {
-  summaries: MonthlySummary[] 
-  selectedMonth: { year: number; month: number }
+const DataByPeriod = ({ summaries, transactions }: {
+  summaries: MonthlySummary[]
   transactions: Transaction[]
-  onSelectionChange: (type: 'month' | 'year' | 'all', year?: number, month?: number) => void
-  onBack?: () => void
-  onNext?: () => void
 }) => {
-  // Store state
-  const selectionType = useStore((state) => state.selectionType)
-  const selectedYear = useStore((state) => state.selectedYear)
-  const activeTab = useStore((state) => state.activeTab)
-  const treatLowValueAsOthers = useStore((state) => state.treatLowValueAsOthers)
-  const lowValueThreshold = useStore((state) => state.lowValueThreshold)
-  const mergeSmallCategories = useStore((state) => state.mergeSmallCategories)
-  const categoryThresholdPercent = useStore((state) => state.categoryThresholdPercent)
-  
-  // Store actions
-  const setSelectedYear = useStore((state) => state.setSelectedYear)
-  const setActiveTab = useStore((state) => state.setActiveTab)
+  const [selectionType, setSelectionType] = useState<SelectionType>('month')
+  const [selectedYear, setSelectedYear] = useState<number | null>(null)
+  const [selectedMonth, setSelectedMonth] = useState<{ year: number; month: number } | null>(null)
+  const [activeTab, setActiveTab] = useState<TabType>('expenses')
+  const [treatLowValueAsOthers, setTreatLowValueAsOthers] = useState(true)
+  const [lowValueThreshold, setLowValueThreshold] = useState(100)
+  const [mergeSmallCategories, setMergeSmallCategories] = useState(true)
+  const [categoryThresholdPercent, setCategoryThresholdPercent] = useState(1)
+
   const categoryMetadata = useCategoryMetadata()
-  // Look up 'others' category ID - it should always exist
   const othersCategoryId = getCategoryIdFromName('others', categoryMetadata) || ''
-  
-  // Initialize selectedYear from selectedMonth if not set
+
+  // Keep selectedMonth in sync with available summaries (local state, no hoisting)
   useEffect(() => {
-    if (selectedYear === null) {
-      setSelectedYear(selectedMonth.year)
+    if (summaries.length === 0) {
+      setSelectedMonth(null)
+      return
     }
-  }, [selectedMonth, selectedYear, setSelectedYear])
+    const first = summaries[0]
+    if (!first) return
+    if (selectedMonth === null) {
+      setSelectedMonth({ year: first.year, month: first.month })
+      setSelectedYear(first.year)
+    } else {
+      const exists = summaries.some(s => s.year === selectedMonth.year && s.month === selectedMonth.month)
+      if (!exists) {
+        setSelectedMonth({ year: first.year, month: first.month })
+        setSelectedYear(first.year)
+      }
+    }
+  }, [summaries, selectedMonth])
+
+  const handleSelectionChange = (type: 'month' | 'year' | 'all', year?: number, month?: number) => {
+    if (type === 'month' && year !== undefined && month !== undefined) {
+      setSelectedMonth({ year, month })
+      setSelectedYear(year)
+    } else if (type === 'year' && year !== undefined) {
+      setSelectedYear(year)
+    }
+  }
+
+  const effectiveMonth = selectedMonth ?? (summaries[0] ? { year: summaries[0].year, month: summaries[0].month } : null)
 
   const yearlySummaries = aggregateByYear(summaries)
   const allDataSummary = aggregateAllData(summaries)
@@ -62,9 +81,10 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
       return allDataSummary
     } else if (selectionType === 'year' && selectedYear !== null) {
       return yearlySummaries.find(s => s.year === selectedYear)
-    } else {
-      return summaries.find(s => s.year === selectedMonth.year && s.month === selectedMonth.month)
+    } else if (effectiveMonth) {
+      return summaries.find(s => s.year === effectiveMonth.year && s.month === effectiveMonth.month)
     }
+    return undefined
   }
 
   const getDisplayTitle = () => {
@@ -72,13 +92,13 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
       return 'All Data'
     } else if (selectionType === 'year' && selectedYear !== null) {
       return `Year ${String(selectedYear)}`
-    } else {
-      const summary = summaries.find(s => s.year === selectedMonth.year && s.month === selectedMonth.month)
+    } else if (effectiveMonth) {
+      const summary = summaries.find(s => s.year === effectiveMonth.year && s.month === effectiveMonth.month)
       if (summary) {
         return `${monthNames[summary.month - 1] ?? ''} ${String(summary.year)}`
       }
-      return ''
     }
+    return ''
   }
 
   const displaySummary = getDisplaySummary()
@@ -101,12 +121,12 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
       // Get transactions for the selected period
       let periodTransactions = transactions.filter(t => !t.excluded && t.isValid)
       
-      if (selectionType === 'month') {
+      if (selectionType === 'month' && effectiveMonth) {
         periodTransactions = periodTransactions.filter(t => {
           try {
             const year = getYearFromDate(t.date)
             const month = getMonthFromDate(t.date)
-            return year === selectedMonth.year && month === selectedMonth.month
+            return year === effectiveMonth.year && month === effectiveMonth.month
           } catch {
             return false
           }
@@ -192,7 +212,7 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
     }
 
     return categories
-  }, [displaySummary, treatLowValueAsOthers, lowValueThreshold, mergeSmallCategories, categoryThresholdPercent, transactions, selectionType, selectedMonth, selectedYear, categoryMetadata, othersCategoryId])
+  }, [displaySummary, treatLowValueAsOthers, lowValueThreshold, mergeSmallCategories, categoryThresholdPercent, transactions, selectionType, effectiveMonth, selectedYear, categoryMetadata, othersCategoryId])
 
   // Get top 10 expenses for the selected period
   const topExpenses = useMemo(() => {
@@ -204,7 +224,7 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
         try {
           const year = getYearFromDate(t.date)
           const month = getMonthFromDate(t.date)
-          return year === selectedMonth.year && month === selectedMonth.month
+          return effectiveMonth !== null && year === effectiveMonth.year && month === effectiveMonth.month
         } catch {
           return false
         }
@@ -236,7 +256,7 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
       .slice(0, 10)
 
     return expenses
-  }, [transactions, selectionType, selectedMonth, selectedYear])
+  }, [transactions, selectionType, effectiveMonth, selectedYear])
 
   return (
     <>
@@ -247,10 +267,23 @@ const DataByPeriod = ({ summaries, selectedMonth, transactions, onSelectionChang
         <PeriodSelection
           availableYears={availableYears}
           monthOptions={monthOptions}
-          selectedMonth={selectedMonth}
-          onSelectionChange={onSelectionChange}
+          selectedMonth={effectiveMonth ?? { year: new Date().getFullYear(), month: 1 }}
+          selectionType={selectionType}
+          selectedYear={selectedYear}
+          onSelectionTypeChange={setSelectionType}
+          onSelectedYearChange={setSelectedYear}
+          onSelectionChange={handleSelectionChange}
         />
-        <CategoryProcessingControls />
+        <CategoryProcessingControls
+          treatLowValueAsOthers={treatLowValueAsOthers}
+          lowValueThreshold={lowValueThreshold}
+          mergeSmallCategories={mergeSmallCategories}
+          categoryThresholdPercent={categoryThresholdPercent}
+          onTreatLowValueAsOthersChange={setTreatLowValueAsOthers}
+          onLowValueThresholdChange={setLowValueThreshold}
+          onMergeSmallCategoriesChange={setMergeSmallCategories}
+          onCategoryThresholdPercentChange={setCategoryThresholdPercent}
+        />
         </FormGroup>
       </Panel>
 

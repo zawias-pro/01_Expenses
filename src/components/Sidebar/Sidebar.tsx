@@ -1,10 +1,15 @@
+import type { View } from "../../store/useStore.ts"
 import styles from "./Sidebar.module.css"
 import { exportState, importState, useStore } from "../../store/useStore.ts"
 
-const Sidebar = () => {
-  const setView = useStore((state) => state.setView)
+const Sidebar = ({
+  view,
+  onViewChange
+}: {
+  view: View;
+  onViewChange: (view: View) => void
+}) => {
   const clearAll = useStore((state) => state.clearAll)
-  const view = useStore((state) => state.view)
 
   const handleExport = () => {
     const jsonString = exportState()
@@ -70,37 +75,37 @@ const Sidebar = () => {
       <nav style={{display:'flex', flexDirection:'column'}}>
         <button
           className={view==='csv' ? styles['active'] : undefined}
-          onClick={() => { setView('csv') }}
+          onClick={() => { onViewChange('csv') }}
         >
           📄 CSV Input
         </button>
         <button
           className={view==='categories' ? styles['active'] : undefined}
-          onClick={() => { setView('categories') }}
+          onClick={() => { onViewChange('categories') }}
         >
           🏷️ Categories
         </button>
         <button
           className={view==='transactions' ? styles['active'] : undefined}
-          onClick={() => { setView('transactions') }}
+          onClick={() => { onViewChange('transactions') }}
         >
           📋 Transactions Table
         </button>
         <button
           className={view==='summary' ? styles['active'] : undefined}
-          onClick={() => { setView('summary') }}
+          onClick={() => { onViewChange('summary') }}
         >
           📅 Data by Period
         </button>
         <button
           className={view==='chart' ? styles['active'] : undefined}
-          onClick={() => { setView('chart') }}
+          onClick={() => { onViewChange('chart') }}
         >
           📊 Cumulative Bar Chart
         </button>
         <button
           className={view==='budget' ? styles['active'] : undefined}
-          onClick={() => { setView('budget') }}
+          onClick={() => { onViewChange('budget') }}
         >
           💰 Budget
         </button>

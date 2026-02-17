@@ -24,19 +24,17 @@ const Categories = ({
   onRenameCategory: (oldName: string, newName: string) => void
   onReplaceCategories: (categories: Record<string, string[]>) => void
 }) => {
-  // Store state
   const categoryMetadata = useCategoryMetadata()
   const transactions = useStore((state) => state.transactions)
-  const showExportModal = useStore((state) => state.showExportModal)
-  const showImportModal = useStore((state) => state.showImportModal)
 
-  // Sorting state
+  const [showExportModal, setShowExportModal] = useState(false)
+  const [showImportModal, setShowImportModal] = useState(false)
+  const [editingCategory, setEditingCategory] = useState<string | null>(null)
+  const [editingKeywords, setEditingKeywords] = useState('')
+  const [newCategory, setNewCategory] = useState('')
+  const [newKeywords, setNewKeywords] = useState('')
   const [sortColumn, setSortColumn] = useState<'name' | 'count'>('name')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
-
-  // Store actions
-  const setShowExportModal = useStore((state) => state.setShowExportModal)
-  const setShowImportModal = useStore((state) => state.setShowImportModal)
 
   const handleImport = (categories: Record<string, string[]>) => {
     onReplaceCategories(categories)
@@ -90,7 +88,13 @@ const Categories = ({
       </Panel>
 
       <Panel title={'Add new category'}>
-        <AddCategoryForm onUpdateCategory={onUpdateCategory}/>
+        <AddCategoryForm
+          newCategory={newCategory}
+          newKeywords={newKeywords}
+          onNewCategoryChange={setNewCategory}
+          onNewKeywordsChange={setNewKeywords}
+          onUpdateCategory={onUpdateCategory}
+        />
       </Panel>
 
       <Panel title={'Expense categories'}>
@@ -121,6 +125,10 @@ const Categories = ({
               keywords={keywords}
               count={count}
               isCustom={id in customRules}
+              editingCategory={editingCategory}
+              editingKeywords={editingKeywords}
+              onEditingCategoryChange={setEditingCategory}
+              onEditingKeywordsChange={setEditingKeywords}
               onUpdateCategory={onUpdateCategory}
               onRemoveCategory={onRemoveCategory}
               onRenameCategory={onRenameCategory}
@@ -129,8 +137,8 @@ const Categories = ({
           </tbody>
         </table>
       </Panel>
-      {showExportModal && <ExportCategoriesModal rules={rules}/>}
-      {showImportModal && <ImportCategoriesModal onImport={handleImport}/>}
+      {showExportModal && <ExportCategoriesModal rules={rules} onClose={() => setShowExportModal(false)} />}
+      {showImportModal && <ImportCategoriesModal onImport={handleImport} onClose={() => setShowImportModal(false)} />}
     </>
   )
 }

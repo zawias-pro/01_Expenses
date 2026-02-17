@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
-import { useStore, useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName, getOrCreateCategoryId } from '../../store/useStore.ts'
+import {
+  useStore, useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName, getOrCreateCategoryId
+} from '../../store/useStore.ts'
 import type { Transaction } from '../../parsing/types.ts'
 import { getYearFromDate } from '../../parsing/getYearFromDate/getYearFromDate.ts'
 import { getMonthFromDate } from '../../parsing/getMonthFromDate/getMonthFromDate.ts'
@@ -33,19 +35,18 @@ const TransactionsTable = ({
   const [quickAddSelectedCategory, setQuickAddSelectedCategory] = useState<string>('new')
   const [quickAddCustomCategory, setQuickAddCustomCategory] = useState<string>('')
   const [quickAddKeyword, setQuickAddKeyword] = useState<string>('')
-  
-  // Store state
-  const searchQuery = useStore((state) => state.searchQuery)
-  const selectedCategory = useStore((state) => state.selectedCategory)
-  const selectedMonthFilter = useStore((state) => state.selectedMonthFilter)
-  const amountFilterType = useStore((state) => state.amountFilterType)
-  const amountFilterValue = useStore((state) => state.amountFilterValue)
-  const sortColumn = useStore((state) => state.sortColumn)
-  const sortDirection = useStore((state) => state.sortDirection)
+
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [selectedMonthFilter, setSelectedMonthFilter] = useState<string | null>(null)
+  const [amountFilterType, setAmountFilterType] = useState<'none' | 'less' | 'greater' | null>(null)
+  const [amountFilterValue, setAmountFilterValue] = useState<number | null>(null)
+  const [sortColumn, setSortColumn] = useState<'date' | 'description' | 'category' | 'amount' | 'addedAt' | null>(null)
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(null)
+
   const categoryMetadata = useCategoryMetadata()
   const othersCategoryId = getCategoryIdFromName('others', categoryMetadata) || ''
 
-  // Store actions
   const updateTransactionExcluded = useStore((state) => state.updateTransactionExcluded)
   const updateTransactionCategory = useStore((state) => state.updateTransactionCategory)
   const updateTransactionDate = useStore((state) => state.updateTransactionDate)
@@ -180,7 +181,7 @@ const TransactionsTable = ({
   }
 
   // Check if all visible are selected
-  const allSelected = filteredAndSortedTransactions.length > 0 && 
+  const allSelected = filteredAndSortedTransactions.length > 0 &&
     filteredAndSortedTransactions.every(t => selectedIds.has(t.id))
   const someSelected = filteredAndSortedTransactions.some(t => selectedIds.has(t.id))
 
@@ -191,23 +192,31 @@ const TransactionsTable = ({
     if (bulkAction === 'delete') {
       const count = selectedIds.size
       if (window.confirm(`Are you sure you want to remove ${String(count)} transaction(s)?`)) {
-        selectedIds.forEach(id => { removeTransaction(id) })
+        selectedIds.forEach(id => {
+          removeTransaction(id)
+        })
         setSelectedIds(new Set())
         setBulkAction(null)
       }
     } else if (bulkAction === 'exclude') {
-      selectedIds.forEach(id => { updateTransactionExcluded(id, true) })
+      selectedIds.forEach(id => {
+        updateTransactionExcluded(id, true)
+      })
       setSelectedIds(new Set())
       setBulkAction(null)
     } else if (bulkAction === 'unexclude') {
-      selectedIds.forEach(id => { updateTransactionExcluded(id, false) })
+      selectedIds.forEach(id => {
+        updateTransactionExcluded(id, false)
+      })
       setSelectedIds(new Set())
       setBulkAction(null)
     } else if (bulkAction === 'setCategory' && bulkCategory) {
       // bulkCategory is a category name, convert to ID
       const categoryId = getCategoryIdFromName(bulkCategory, categoryMetadata)
       if (categoryId) {
-        selectedIds.forEach(id => { updateTransactionCategory(id, categoryId) })
+        selectedIds.forEach(id => {
+          updateTransactionCategory(id, categoryId)
+        })
         setSelectedIds(new Set())
         setBulkAction(null)
         setBulkCategory('')
@@ -231,7 +240,7 @@ const TransactionsTable = ({
 
   const handleSaveQuickAdd = () => {
     if (!quickAddTransactionId) return
-    
+
     const transaction = transactions.find(t => t.id === quickAddTransactionId)
     if (!transaction) return
 
@@ -253,12 +262,12 @@ const TransactionsTable = ({
 
     const keywords = quickAddKeyword.split(',').map(k => k.trim()).filter(k => k)
     updateCategory(categoryName, keywords)
-    
+
     // Update the transaction's category (convert name to ID)
     // Use getOrCreateCategoryId since we just created the category
     const categoryId = getOrCreateCategoryId(categoryName, categoryMetadata)
     updateTransactionCategory(quickAddTransactionId, categoryId)
-    
+
     // Close the modal
     setQuickAddTransactionId(null)
     setQuickAddSelectedCategory('new')
@@ -307,43 +316,68 @@ const TransactionsTable = ({
     <>
       <SectionHeader>Transactions Table</SectionHeader>
 
-      <TransactionsFilters availableMonths={availableMonths} />
-
-    <Panel>
-      <TransactionsBulkActions
-        selectedCount={selectedIds.size}
-        totalCount={transactions.length}
-        filteredCount={filteredAndSortedTransactions.length}
-        bulkAction={bulkAction}
-        onBulkActionChange={setBulkAction}
-        bulkCategory={bulkCategory}
-        onBulkCategoryChange={setBulkCategory}
-        onApplyBulkAction={handleApplyBulkAction}
-        onClearSelection={handleClearSelection}
+      <TransactionsFilters
+        availableMonths={availableMonths}
+        searchQuery={searchQuery}
+        selectedCategory={selectedCategory}
+        selectedMonthFilter={selectedMonthFilter}
+        amountFilterType={amountFilterType}
+        amountFilterValue={amountFilterValue}
+        onSearchQueryChange={setSearchQuery}
+        onSelectedCategoryChange={setSelectedCategory}
+        onSelectedMonthFilterChange={setSelectedMonthFilter}
+        onAmountFilterChange={(type, value) => {
+          setAmountFilterType(type)
+          setAmountFilterValue(value)
+        }}
       />
-    </Panel>
 
       <Panel>
-        <table className={styles.table}>
-          <TransactionsTableHeader
-            allSelected={allSelected}
-            someSelected={someSelected}
-            onSelectAll={handleSelectAll}
-          />
-          <tbody>
-            {filteredAndSortedTransactions.map(t => (
-              <TransactionRow
-                key={t.id}
-                transaction={t}
-                isSelected={selectedIds.has(t.id)}
-                onToggleSelect={() => { handleToggleSelect(t.id) }}
-                onQuickAddCategory={handleQuickAddCategory}
-                onEdit={handleEdit}
-              />
-            ))}
-          </tbody>
-        </table>
+        <TransactionsBulkActions
+          selectedCount={selectedIds.size}
+          totalCount={transactions.length}
+          filteredCount={filteredAndSortedTransactions.length}
+          bulkAction={bulkAction}
+          onBulkActionChange={setBulkAction}
+          bulkCategory={bulkCategory}
+          onBulkCategoryChange={setBulkCategory}
+          onApplyBulkAction={handleApplyBulkAction}
+          onClearSelection={handleClearSelection}
+        />
       </Panel>
+
+      {filteredAndSortedTransactions.length > 0
+        ? (
+          <Panel>
+            <table className={styles.table}>
+              <TransactionsTableHeader
+                allSelected={allSelected}
+                someSelected={someSelected}
+                onSelectAll={handleSelectAll}
+                sortColumn={sortColumn}
+                sortDirection={sortDirection}
+                onSortColumnChange={setSortColumn}
+                onSortDirectionChange={setSortDirection}
+              />
+              <tbody>
+              {filteredAndSortedTransactions.map(t => (
+                <TransactionRow
+                  key={t.id}
+                  transaction={t}
+                  isSelected={selectedIds.has(t.id)}
+                  onToggleSelect={() => {
+                    handleToggleSelect(t.id)
+                  }}
+                  onQuickAddCategory={handleQuickAddCategory}
+                  onEdit={handleEdit}
+                />
+              ))}
+              </tbody>
+            </table>
+          </Panel>
+        ) : (
+          <Panel>No data</Panel>
+        )}
 
       <EditTransactionModal
         transactionId={editTransactionId}

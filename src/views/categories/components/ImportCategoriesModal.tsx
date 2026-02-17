@@ -1,20 +1,19 @@
 import { useState } from 'react'
-import { useStore } from '../../../store/useStore.ts'
 import { Modal } from '../../../components/Modal/Modal.tsx'
 import { Button } from '../../../components/Button/Button.tsx'
 import { Textarea } from "../../../components/Textarea/Textarea.tsx"
 
 interface ImportCategoriesModalProps {
   onImport: (categories: Record<string, string[]>) => void
+  onClose: () => void
 }
 
-const ImportCategoriesModal = ({ onImport }: ImportCategoriesModalProps) => {
+const ImportCategoriesModal = ({ onImport, onClose }: ImportCategoriesModalProps) => {
   const [csvContent, setCsvContent] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const setShowImportModal = useStore((state) => state.setShowImportModal)
 
   const handleClose = () => {
-    setShowImportModal(false)
+    onClose()
     setCsvContent('')
     setError(null)
   }

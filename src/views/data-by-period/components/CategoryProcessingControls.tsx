@@ -1,27 +1,32 @@
-import { useStore } from '../../../store/useStore.ts'
 import { Checkbox } from '../../../components/Checkbox/Checkbox.tsx'
 import { Input } from '../../../components/Input/Input.tsx'
-import styles from './CategoryProcessingControls.module.css'
-import { FormGroup } from "../../../components/FormGroup/FormGroup.tsx"
 
-const CategoryProcessingControls = () => {
-  const treatLowValueAsOthers = useStore((state) => state.treatLowValueAsOthers)
-  const lowValueThreshold = useStore((state) => state.lowValueThreshold)
-  const mergeSmallCategories = useStore((state) => state.mergeSmallCategories)
-  const categoryThresholdPercent = useStore((state) => state.categoryThresholdPercent)
-
-  const setTreatLowValueAsOthers = useStore((state) => state.setTreatLowValueAsOthers)
-  const setLowValueThreshold = useStore((state) => state.setLowValueThreshold)
-  const setMergeSmallCategories = useStore((state) => state.setMergeSmallCategories)
-  const setCategoryThresholdPercent = useStore((state) => state.setCategoryThresholdPercent)
-
+const CategoryProcessingControls = ({
+  treatLowValueAsOthers,
+  lowValueThreshold,
+  mergeSmallCategories,
+  categoryThresholdPercent,
+  onTreatLowValueAsOthersChange,
+  onLowValueThresholdChange,
+  onMergeSmallCategoriesChange,
+  onCategoryThresholdPercentChange,
+}: {
+  treatLowValueAsOthers: boolean
+  lowValueThreshold: number
+  mergeSmallCategories: boolean
+  categoryThresholdPercent: number
+  onTreatLowValueAsOthersChange: (value: boolean) => void
+  onLowValueThresholdChange: (value: number) => void
+  onMergeSmallCategoriesChange: (value: boolean) => void
+  onCategoryThresholdPercentChange: (value: number) => void
+}) => {
   return (
     <>
-        <div>
+      <div>
         <Checkbox
           label='Treat low-value expenses as "others"'
           checked={treatLowValueAsOthers}
-          onChange={e => { setTreatLowValueAsOthers(e.target.checked) }}
+          onChange={e => { onTreatLowValueAsOthersChange(e.target.checked) }}
         />
         {treatLowValueAsOthers && (
           <Input
@@ -32,16 +37,16 @@ const CategoryProcessingControls = () => {
             min="0"
             step="0.01"
             value={lowValueThreshold}
-            onChange={e => { setLowValueThreshold(parseFloat(e.target.value) || 0) }}
+            onChange={e => { onLowValueThresholdChange(parseFloat(e.target.value) || 0) }}
           />
         )}
-        </div>
+      </div>
 
       <div>
         <Checkbox
           label='Merge small categories into "others"'
           checked={mergeSmallCategories}
-          onChange={e => { setMergeSmallCategories(e.target.checked) }}
+          onChange={e => { onMergeSmallCategoriesChange(e.target.checked) }}
         />
         {mergeSmallCategories && (
           <Input
@@ -53,7 +58,7 @@ const CategoryProcessingControls = () => {
             max="100"
             step="0.1"
             value={categoryThresholdPercent}
-            onChange={e => { setCategoryThresholdPercent(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0))) }}
+            onChange={e => { onCategoryThresholdPercentChange(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0))) }}
           />
         )}
       </div>

@@ -1,41 +1,45 @@
-import { useStore } from '../../../store/useStore.ts'
 import styles from './TransactionsTableHeader.module.css'
+
+type SortColumn = 'date' | 'description' | 'category' | 'amount' | 'addedAt'
 
 interface TransactionsTableHeaderProps {
   allSelected: boolean
   someSelected: boolean
   onSelectAll: (checked: boolean) => void
+  sortColumn: SortColumn | null
+  sortDirection: 'asc' | 'desc' | null
+  onSortColumnChange: (column: SortColumn | null) => void
+  onSortDirectionChange: (direction: 'asc' | 'desc' | null) => void
 }
 
 export const TransactionsTableHeader = ({
   allSelected,
   someSelected,
   onSelectAll,
+  sortColumn,
+  sortDirection,
+  onSortColumnChange,
+  onSortDirectionChange,
 }: TransactionsTableHeaderProps) => {
-  const sortColumn = useStore((state) => state.sortColumn)
-  const sortDirection = useStore((state) => state.sortDirection)
-  const setSortColumn = useStore((state) => state.setSortColumn)
-  const setSortDirection = useStore((state) => state.setSortDirection)
-
-  const handleSort = (column: 'date' | 'description' | 'category' | 'amount' | 'addedAt') => {
+  const handleSort = (column: SortColumn) => {
     if (sortColumn === column) {
       if (sortDirection === 'asc') {
-        setSortColumn(column)
-        setSortDirection('desc')
+        onSortColumnChange(column)
+        onSortDirectionChange('desc')
       } else if (sortDirection === 'desc') {
-        setSortColumn(null)
-        setSortDirection(null)
+        onSortColumnChange(null)
+        onSortDirectionChange(null)
       } else {
-        setSortColumn(column)
-        setSortDirection('asc')
+        onSortColumnChange(column)
+        onSortDirectionChange('asc')
       }
     } else {
-      setSortColumn(column)
-      setSortDirection('asc')
+      onSortColumnChange(column)
+      onSortDirectionChange('asc')
     }
   }
 
-  const getSortIndicator = (column: 'date' | 'description' | 'category' | 'amount' | 'addedAt') => {
+  const getSortIndicator = (column: SortColumn) => {
     if (sortColumn === column) {
       return sortDirection === 'asc' ? ' ↑' : ' ↓'
     }
