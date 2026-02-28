@@ -17,7 +17,7 @@ import { getCategoryIdFromName, getCategoryNameFromId, getOrCreateCategoryId } f
 
 const INITIAL_CATEGORY_METADATA = INITIAL_METADATA
 
-export type View = 'csv' | 'categories' | 'transactions' | 'summary' | 'chart' | 'budget'
+type View = 'csv' | 'categories' | 'transactions' | 'summary' | 'chart' | 'budget'
 
 /** Persistent state only: transactions, categories (metadata + rules), and bonds (budgets). */
 interface AppState {
@@ -374,3 +374,4 @@ export {
   getOrCreateCategoryId,
 }
 export { generateCategoryId } from '../parsing/categoryUtils.ts'
+export type { View }
