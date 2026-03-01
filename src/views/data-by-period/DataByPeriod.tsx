@@ -300,20 +300,28 @@ const DataByPeriod = ({ summaries, transactions }: {
           </div>
 
             {activeTab === 'expenses'&&(
-          <div className={`${styles.tabContent} ${activeTab === 'expenses' ? styles.active : ''}`}>
+          <div>
             {topExpenses.length > 0 ? (
-              <ul className={styles.categoryList}>
+              <table>
+                <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th>Amount</th>
+                </tr>
+                </thead>
+                <tbody>
                 {topExpenses.map((expense, index) => (
-                  <li key={expense.id}>
-                    <span>
-                      {index + 1}. {expense.description} ({expense.category})
-                    </span>
-                    <strong style={{ color: 'var(--danger-color)' }}>
-                      {expense.amount}
-                    </strong>
-                  </li>
+                  <tr key={expense.id}>
+                    <td>{index + 1}</td>
+                    <td>{expense.description}</td>
+                    <td>{expense.category}</td>
+                    <td style={{ color: 'var(--danger-color)' }}>{expense.amount}</td>
+                  </tr>
                 ))}
-              </ul>
+                </tbody>
+              </table>
             ) : (
               <p>No expenses found for this period.</p>
             )}
@@ -323,16 +331,16 @@ const DataByPeriod = ({ summaries, transactions }: {
               <CategoryBarChart categories={processedCategories} />
             )}
             {activeTab === 'categories'&&(
-            <ul className={styles.categoryList}>
+            <table>
               {Object.entries(processedCategories)
                 .sort(([, a], [, b]) => b - a)
                 .map(([cat, amount]) => (
-                <li key={cat}>
-                  <span>{cat}</span>
-                  <strong>{formatPolishNumber(amount)}</strong>
-                </li>
+                <tr key={cat}>
+                  <td>{cat}</td>
+                  <td>{formatPolishNumber(amount)}</td>
+                </tr>
               ))}
-            </ul>
+            </table>
             )}
             {activeTab === 'budget'&&(
               <BudgetComparison processedCategories={processedCategories} summaries={summaries} />
