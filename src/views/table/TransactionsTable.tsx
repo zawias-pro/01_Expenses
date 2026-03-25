@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import {
-  useStore, useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName, getOrCreateCategoryId, useCategories
+  useStore, useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName
 } from '../../store/useStore.ts'
 import type { Transaction } from '../../parsing/types.ts'
 import { NO_CATEGORY_FILTER_VALUE } from '../../parsing/types.ts'
@@ -33,9 +33,6 @@ const TransactionsTable = ({
   const [editCategory, setEditCategory] = useState<string>('')
   const [editComment, setEditComment] = useState<string>('')
   const [editExcluded, setEditExcluded] = useState<boolean>(false)
-  const [quickAddSelectedCategory, setQuickAddSelectedCategory] = useState<string>('new')
-  const [quickAddCustomCategory, setQuickAddCustomCategory] = useState<string>('')
-  const [quickAddKeyword, setQuickAddKeyword] = useState<string>('')
 
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
@@ -46,14 +43,12 @@ const TransactionsTable = ({
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(null)
 
   const categoryMetadata = useCategoryMetadata()
-  const categories = useCategories()
 
   const updateTransactionExcluded = useStore((state) => state.updateTransactionExcluded)
   const updateTransactionCategory = useStore((state) => state.updateTransactionCategory)
   const updateTransactionDate = useStore((state) => state.updateTransactionDate)
   const updateTransactionComment = useStore((state) => state.updateTransactionComment)
   const removeTransaction = useStore((state) => state.removeTransaction)
-  const updateCategory = useStore((state) => state.updateCategory)
 
   // Parse amount string to number
   const parseAmount = (amountStr: string): number => {
@@ -235,61 +230,12 @@ const TransactionsTable = ({
     setBulkCategory('')
   }
 
-  const handleQuickAddCategory = (transactionId: string, description: string) => {
+  const handleQuickAddCategory = (transactionId: string) => {
     setQuickAddTransactionId(transactionId)
-    setQuickAddSelectedCategory('new')
-    setQuickAddCustomCategory('')
-    setQuickAddKeyword(description)
-  }
-
-  const handleSaveQuickAdd = () => {
-    if (!quickAddTransactionId) return
-
-    const transaction = transactions.find(t => t.id === quickAddTransactionId)
-    if (!transaction) return
-
-    let categoryName = ''
-    if (quickAddSelectedCategory === 'new') {
-      if (!quickAddCustomCategory.trim()) {
-        alert('Please enter a category name')
-        return
-      }
-      categoryName = quickAddCustomCategory.trim()
-    } else {
-      categoryName = quickAddSelectedCategory
-    }
-
-    if(quickAddSelectedCategory === 'new' && categories.includes(categoryName)) {
-      alert('Category with this name already exists. Please choose a different name.')
-      return
-    }
-
-    if (!quickAddKeyword.trim()) {
-      alert('Please enter at least one keyword')
-      return
-    }
-
-    const keywords = quickAddKeyword.split(',').map(k => k.trim()).filter(k => k)
-    updateCategory(categoryName, keywords, true)
-
-    // Update the transaction's category (convert name to ID)
-    // Use getOrCreateCategoryId since we just created the category
-    const categoryId = getOrCreateCategoryId(categoryName, categoryMetadata)
-    console.log(`created cat ${categoryId}`)
-    // updateTransactionCategory(quickAddTransactionId, categoryId)
-
-    // Close the modal
-    setQuickAddTransactionId(null)
-    setQuickAddSelectedCategory('new')
-    setQuickAddCustomCategory('')
-    setQuickAddKeyword('')
   }
 
   const handleCancelQuickAdd = () => {
     setQuickAddTransactionId(null)
-    setQuickAddSelectedCategory('new')
-    setQuickAddCustomCategory('')
-    setQuickAddKeyword('')
   }
 
   const handleEdit = (transaction: Transaction) => {
@@ -405,13 +351,6 @@ const TransactionsTable = ({
 
       <QuickAddCategoryModal
         transactionId={quickAddTransactionId}
-        selectedCategory={quickAddSelectedCategory}
-        customCategory={quickAddCustomCategory}
-        keyword={quickAddKeyword}
-        onSelectedCategoryChange={setQuickAddSelectedCategory}
-        onCustomCategoryChange={setQuickAddCustomCategory}
-        onKeywordChange={setQuickAddKeyword}
-        onSave={handleSaveQuickAdd}
         onCancel={handleCancelQuickAdd}
       />
     </>
