@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import {
   useStore, useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName
 } from '../../store/useStore.ts'
+import { useTransactionFilters } from '../../store/useTransactionFilters.ts'
 import type { Transaction } from '../../parsing/types.ts'
 import { NO_CATEGORY_FILTER_VALUE } from '../../parsing/types.ts'
 import { getYearFromDate } from '../../parsing/getYearFromDate/getYearFromDate.ts'
@@ -34,11 +35,13 @@ const TransactionsTable = ({
   const [editComment, setEditComment] = useState<string>('')
   const [editExcluded, setEditExcluded] = useState<boolean>(false)
 
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
-  const [selectedMonthFilter, setSelectedMonthFilter] = useState<string | null>(null)
-  const [amountFilterType, setAmountFilterType] = useState<'none' | 'less' | 'greater' | null>(null)
-  const [amountFilterValue, setAmountFilterValue] = useState<number | null>(null)
+  const {
+    searchQuery,
+    selectedCategory,
+    selectedMonthFilter,
+    amountFilterType,
+    amountFilterValue,
+  } = useTransactionFilters()
   const [sortColumn, setSortColumn] = useState<'date' | 'description' | 'category' | 'amount' | 'addedAt' | null>(null)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(null)
 
@@ -60,24 +63,7 @@ const TransactionsTable = ({
     }
   }
 
-  // Get unique months from transactions
-  const availableMonths = useMemo(() => {
-    const monthMap = new Map<string, string>()
-    transactions.forEach(t => {
-      try {
-        const year = getYearFromDate(t.date)
-        const month = getMonthFromDate(t.date)
-        const key = `${String(year)}-${String(month).padStart(2, '0')}`
-        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-        if (!monthMap.has(key)) {
-          monthMap.set(key, `${monthNames[month - 1] ?? ''} ${String(year)}`)
-        }
-      } catch {
-        // Skip invalid dates
-      }
-    })
-    return Array.from(monthMap.entries()).sort((a, b) => b[0].localeCompare(a[0]))
-  }, [transactions])
+  // availableMonths moved into TransactionsFilters (UI store keeps filter selection)
 
   // Filter and sort transactions
   const filteredAndSortedTransactions = useMemo(() => {
@@ -272,21 +258,7 @@ const TransactionsTable = ({
     <>
       <SectionHeader>Transactions Table</SectionHeader>
 
-      <TransactionsFilters
-        availableMonths={availableMonths}
-        searchQuery={searchQuery}
-        selectedCategory={selectedCategory}
-        selectedMonthFilter={selectedMonthFilter}
-        amountFilterType={amountFilterType}
-        amountFilterValue={amountFilterValue}
-        onSearchQueryChange={setSearchQuery}
-        onSelectedCategoryChange={setSelectedCategory}
-        onSelectedMonthFilterChange={setSelectedMonthFilter}
-        onAmountFilterChange={(type, value) => {
-          setAmountFilterType(type)
-          setAmountFilterValue(value)
-        }}
-      />
+      <TransactionsFilters />
 
       <Panel>
         <TransactionsBulkActions

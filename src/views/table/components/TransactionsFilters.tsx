@@ -1,45 +1,56 @@
 import { useState } from 'react'
 import { NO_CATEGORY_KEY, NO_CATEGORY_FILTER_VALUE } from '../../../parsing/types.ts'
-import { useCategories, useCategoryMetadata, getCategoryIdFromName, getCategoryNameFromId } from '../../../store/useStore.ts'
+import { useCategories, useCategoryMetadata, getCategoryIdFromName, getCategoryNameFromId, useStore } from '../../../store/useStore.ts'
+import { getYearFromDate } from '../../../parsing/getYearFromDate/getYearFromDate.ts'
+import { getMonthFromDate } from '../../../parsing/getMonthFromDate/getMonthFromDate.ts'
 import { Input } from '../../../components/Input/Input.tsx'
 import { Select } from '../../../components/Select/Select.tsx'
 import { Button } from '../../../components/Button/Button.tsx'
 import { FormGroup } from "../../../components/FormGroup/FormGroup.tsx"
 import { Panel } from "../../../components/Panel/Panel.tsx"
+import { useTransactionFilters } from '../../../store/useTransactionFilters.ts'
 
-interface TransactionsFiltersProps {
-  availableMonths: Array<[string, string]>
-  searchQuery: string
-  selectedCategory: string | null
-  selectedMonthFilter: string | null
-  amountFilterType: 'none' | 'less' | 'greater' | null
-  amountFilterValue: number | null
-  onSearchQueryChange: (value: string) => void
-  onSelectedCategoryChange: (categoryId: string | null) => void
-  onSelectedMonthFilterChange: (value: string | null) => void
-  onAmountFilterChange: (type: 'none' | 'less' | 'greater' | null, value: number | null) => void
-}
-
-const TransactionsFilters = ({
-  availableMonths,
-  searchQuery,
-  selectedCategory,
-  selectedMonthFilter,
-  amountFilterType,
-  amountFilterValue,
-  onSearchQueryChange,
-  onSelectedCategoryChange,
-  onSelectedMonthFilterChange,
-  onAmountFilterChange,
-}: TransactionsFiltersProps) => {
+const TransactionsFilters = () => {
   const [amountFilterInput, setAmountFilterInput] = useState<string>('')
   const categoryMetadata = useCategoryMetadata()
   const categories = useCategories()
+  const transactions = useStore((s) => s.transactions)
+  const {
+    searchQuery,
+    selectedCategory,
+    selectedMonthFilter,
+    amountFilterType,
+    setSearchQuery,
+    setSelectedCategory,
+    setSelectedMonthFilter,
+    setAmountFilterType,
+    setAmountFilterValue,
+  } = useTransactionFilters()
+
+  // Compute available months from transactions (same logic as TransactionsTable)
+  const availableMonths: Array<[string, string]> = (() => {
+    const monthMap = new Map<string, string>()
+    transactions.forEach(t => {
+      try {
+        const year = getYearFromDate(t.date)
+        const month = getMonthFromDate(t.date)
+        const key = `${String(year)}-${String(month).padStart(2, '0')}`
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+        if (!monthMap.has(key)) {
+          monthMap.set(key, `${monthNames[month - 1] ?? ''} ${String(year)}`)
+        }
+      } catch {
+        // Skip invalid dates
+      }
+    })
+    return Array.from(monthMap.entries()).sort((a, b) => b[0].localeCompare(a[0]))
+  })()
 
   const handleAmountFilterApply = () => {
     const value = parseFloat(amountFilterInput)
     if (!isNaN(value)) {
-      onAmountFilterChange(amountFilterType || 'less', value)
+      setAmountFilterType(amountFilterType || 'less')
+      setAmountFilterValue(value)
     }
   }
 
@@ -51,21 +62,27 @@ const TransactionsFilters = ({
           label="Search"
           type="text"
           value={searchQuery}
-          onChange={e => { onSearchQueryChange(e.target.value) }}
+          onChange={e => { setSearchQuery(e.target.value) }}
         />
 
         <Select
           id={'category'}
           label="Category"
-          value={selectedCategory === NO_CATEGORY_FILTER_VALUE ? NO_CATEGORY_KEY : (selectedCategory ? getCategoryNameFromId(selectedCategory, categoryMetadata) ?? '' : '')}
+          value={
+            selectedCategory === NO_CATEGORY_FILTER_VALUE
+              ? NO_CATEGORY_KEY
+              : selectedCategory
+              ? getCategoryNameFromId(selectedCategory, categoryMetadata) || ''
+              : ''
+          }
           onChange={e => {
             const value = e.target.value
             if (value === '') {
-              onSelectedCategoryChange(null)
+              setSelectedCategory(null)
             } else if (value === NO_CATEGORY_FILTER_VALUE) {
-              onSelectedCategoryChange(NO_CATEGORY_FILTER_VALUE)
+              setSelectedCategory(NO_CATEGORY_FILTER_VALUE)
             } else {
-              onSelectedCategoryChange(getCategoryIdFromName(value, categoryMetadata))
+              setSelectedCategory(getCategoryIdFromName(value, categoryMetadata))
             }
           }}
         >
@@ -80,7 +97,7 @@ const TransactionsFilters = ({
           label="Month"
           id="month-filter"
           value={selectedMonthFilter || ''}
-          onChange={e => { onSelectedMonthFilterChange(e.target.value || null) }}
+          onChange={e => { setSelectedMonthFilter(e.target.value || null) }}
         >
           <option value="">All months</option>
           {availableMonths.map(([key, label]) => (
@@ -92,16 +109,17 @@ const TransactionsFilters = ({
           <Select
             label={'Amount'}
             id="amount-filter-type"
-            value={amountFilterType || 'none'}
-            onChange={e => {
-              const type = e.target.value as 'none' | 'less' | 'greater'
-              if (type === 'none') {
-                onAmountFilterChange(null, null)
-                setAmountFilterInput('')
-              } else {
-                onAmountFilterChange(type, amountFilterValue)
-              }
-            }}
+              value={amountFilterType || 'none'}
+                onChange={e => {
+                  const type = e.target.value as 'none' | 'less' | 'greater'
+                  if (type === 'none') {
+                    setAmountFilterType(null)
+                    setAmountFilterValue(null)
+                    setAmountFilterInput('')
+                  } else {
+                    setAmountFilterType(type)
+                  }
+                }}
           >
             <option value="none">None</option>
             <option value="less">&lt; Less than</option>
