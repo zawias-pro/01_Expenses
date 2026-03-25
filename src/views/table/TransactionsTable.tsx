@@ -309,15 +309,6 @@ const TransactionsTable = ({
 
       <EditTransactionModal
         transactionId={editTransactionId}
-        date={editDate}
-        category={editCategory === '' ? null : editCategory}
-        comment={editComment}
-        excluded={editExcluded}
-        onDateChange={setEditDate}
-        onCategoryChange={(id) => {setEditCategory(id ?? '')}}
-        onCommentChange={setEditComment}
-        onExcludedChange={setEditExcluded}
-        onSave={handleSaveEdit}
         onCancel={handleCancelEdit}
       />
 
