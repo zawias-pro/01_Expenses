@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import {
-  useStore, useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName, getOrCreateCategoryId
+  useStore, useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName, getOrCreateCategoryId, useCategories
 } from '../../store/useStore.ts'
 import type { Transaction } from '../../parsing/types.ts'
 import { NO_CATEGORY_FILTER_VALUE } from '../../parsing/types.ts'
@@ -46,6 +46,7 @@ const TransactionsTable = ({
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(null)
 
   const categoryMetadata = useCategoryMetadata()
+  const categories = useCategories()
 
   const updateTransactionExcluded = useStore((state) => state.updateTransactionExcluded)
   const updateTransactionCategory = useStore((state) => state.updateTransactionCategory)
@@ -238,7 +239,6 @@ const TransactionsTable = ({
     setQuickAddTransactionId(transactionId)
     setQuickAddSelectedCategory('new')
     setQuickAddCustomCategory('')
-    // Pre-fill keyword with the full transaction description
     setQuickAddKeyword(description)
   }
 
@@ -259,18 +259,24 @@ const TransactionsTable = ({
       categoryName = quickAddSelectedCategory
     }
 
+    if(quickAddSelectedCategory === 'new' && categories.includes(categoryName)) {
+      alert('Category with this name already exists. Please choose a different name.')
+      return
+    }
+
     if (!quickAddKeyword.trim()) {
       alert('Please enter at least one keyword')
       return
     }
 
     const keywords = quickAddKeyword.split(',').map(k => k.trim()).filter(k => k)
-    updateCategory(categoryName, keywords)
+    updateCategory(categoryName, keywords, true)
 
     // Update the transaction's category (convert name to ID)
     // Use getOrCreateCategoryId since we just created the category
     const categoryId = getOrCreateCategoryId(categoryName, categoryMetadata)
-    updateTransactionCategory(quickAddTransactionId, categoryId)
+    console.log(`created cat ${categoryId}`)
+    // updateTransactionCategory(quickAddTransactionId, categoryId)
 
     // Close the modal
     setQuickAddTransactionId(null)

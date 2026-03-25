@@ -63,7 +63,7 @@ export const TransactionRow = ({
       </td>
       <td className={`${styles.cell} ${transaction.excluded ? styles.cellExcluded : styles.cellNormal}`}>
         <div className={styles.categoryCell}>
-          <span>{getCategoryNameFromId(transaction.category, categoryMetadata)}</span>
+          <span>{transaction.category} {getCategoryNameFromId(transaction.category, categoryMetadata)}</span>
           {transaction.category === null && !transaction.categoryOverridden && (
             <button
               onClick={() => { onQuickAddCategory(transaction.id, transaction.description) }}

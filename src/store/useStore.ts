@@ -38,7 +38,7 @@ interface AppState {
 
   setCustomRules: (rules: Record<string, string[]>) => void
   setCategoryMetadata: (metadata: CategoryMetadata) => void
-  updateCategory: (categoryName: string, keywords: string[]) => void
+  updateCategory: (categoryName: string, keywords: string[], preservePreviousKeywords?: boolean) => void
   removeCategory: (categoryName: string) => void
   renameCategory: (oldName: string, newName: string) => void
   replaceCategories: (categories: Record<string, string[]>) => void
@@ -180,10 +180,16 @@ const useStore = create<AppState>()(
 
       setCategoryMetadata: (metadata) => set({ categoryMetadata: metadata }),
 
-      updateCategory: (categoryName, keywords) => {
+      updateCategory: (categoryName, keywords, preservePreviousKeywords) => {
         set((state) => {
-          const filtered = keywords.filter((k) => k.trim()).map((k) => k.trim())
           const categoryId = getOrCreateCategoryId(categoryName, state.categoryMetadata)
+
+          const previousKeywords = preservePreviousKeywords
+            ?(state.customRules[categoryId] || [])
+            :[]
+
+          const filtered = [...previousKeywords, ...keywords].filter((k) => k.trim()).map((k) => k.trim())
+
           const newMetadata = { ...state.categoryMetadata }
           if (!newMetadata[categoryId]) {
             newMetadata[categoryId] = categoryName
