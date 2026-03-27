@@ -1,13 +1,13 @@
-import { NO_CATEGORY_KEY } from '../../../parsing/types.ts'
-import { useCategories, useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName, useStore } from '../../../store/useStore.ts'
+import { NO_CATEGORY_KEY } from '../../../../parsing/types.ts'
+import { useCategories, useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName, useStore } from '../../../../store/useStore.ts'
 import { useEffect, useState } from 'react'
-import { Modal } from '../../../components/Modal/Modal.tsx'
-import { Button } from '../../../components/Button/Button.tsx'
-import { Input } from '../../../components/Input/Input.tsx'
-import { Select } from '../../../components/Select/Select.tsx'
-import { Checkbox } from '../../../components/Checkbox/Checkbox.tsx'
+import { Modal } from '../../../../components/Modal/Modal.tsx'
+import { Button } from '../../../../components/Button/Button.tsx'
+import { Input } from '../../../../components/Input/Input.tsx'
+import { Select } from '../../../../components/Select/Select.tsx'
+import { Checkbox } from '../../../../components/Checkbox/Checkbox.tsx'
 import styles from './EditTransactionModal.module.css'
-import { Textarea } from "../../../components/Textarea/Textarea.tsx"
+import { Textarea } from '../../../../components/Textarea/Textarea.tsx'
 
 const EditTransactionModal = ({
   transactionId,
@@ -66,14 +66,14 @@ const EditTransactionModal = ({
         </>
       }
     >
-      <div className={styles.form}>
+      <div className={styles['form']}>
         <Input
           label="Date:"
           type="text"
           value={date}
           onChange={e => { setDate(e.target.value) }}
           placeholder="YYYY-MM-DD"
-          className={styles.input}
+          className={styles['input']}
         />
 
         <Select
@@ -87,7 +87,7 @@ const EditTransactionModal = ({
               setSelectedCategoryId(getCategoryIdFromName(categoryName, categoryMetadata) ?? null)
             }
           }}
-          className={styles.input}
+          className={styles['input']}
         >
           <option value={NO_CATEGORY_KEY}>{NO_CATEGORY_KEY}</option>
           {categories.map(cat => (
@@ -101,14 +101,14 @@ const EditTransactionModal = ({
           onChange={e => { setComment(e.target.value) }}
           placeholder="Enter a comment for this transaction..."
           rows={4}
-          className={styles.textarea}
+          className={styles['textarea']}
         />
 
         <Checkbox
           label="Exclude from calculations"
           checked={excluded}
           onChange={e => { setExcluded(e.target.checked) }}
-          className={styles.checkbox}
+          className={styles['checkbox']}
         />
       </div>
     </Modal>

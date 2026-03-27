@@ -1,5 +1,5 @@
-import type { Transaction } from '../../../parsing/types.ts'
-import { useStore, useCategoryMetadata, getCategoryNameFromId } from '../../../store/useStore.ts'
+import type { Transaction } from '../../../../parsing/types.ts'
+import { useStore, useCategoryMetadata, getCategoryNameFromId } from '../../../../store/useStore.ts'
 import styles from './TransactionRow.module.css'
 
 interface TransactionRowProps {
@@ -36,21 +36,21 @@ export const TransactionRow = ({
 
   return (
     <tr>
-      <td className={styles.cell}>
+      <td className={styles['cell']}>
         <input
           type="checkbox"
-          className={styles.formCheckbox}
+          className={styles['formCheckbox']}
           checked={isSelected}
           onChange={onToggleSelect}
         />
       </td>
-      <td className={`${styles.cell} ${transaction.excluded ? styles.cellExcluded : styles.cellNormal}`}>
-        <div className={styles.dateCell}>
+      <td className={`${styles['cell']} ${transaction.excluded ? styles['cellExcluded'] : styles['cellNormal']}`}>
+        <div className={styles['dateCell']}>
           <span>{transaction.date}</span>
           {transaction.dateOverridden && (
             <button
               onClick={() => { resetTransactionDate(transaction.id) }}
-              className={styles.resetButton}
+              className={styles['resetButton']}
               title="Reset date to original"
             >
               🔄
@@ -58,16 +58,16 @@ export const TransactionRow = ({
           )}
         </div>
       </td>
-      <td className={`${styles.cell} ${styles.descriptionCell}`}>
+      <td className={`${styles['cell']} ${styles['descriptionCell']}`}>
         {transaction.description}
       </td>
-      <td className={`${styles.cell} ${transaction.excluded ? styles.cellExcluded : styles.cellNormal}`}>
-        <div className={styles.categoryCell}>
+      <td className={`${styles['cell']} ${transaction.excluded ? styles['cellExcluded'] : styles['cellNormal']}`}>
+        <div className={styles['categoryCell']}>
           <span>{transaction.category} {getCategoryNameFromId(transaction.category, categoryMetadata)}</span>
           {transaction.category === null && !transaction.categoryOverridden && (
             <button
               onClick={() => { onQuickAddCategory(transaction.id, transaction.description) }}
-              className={styles.addButton}
+              className={styles['addButton']}
               title="Quick add category"
             >
               + Add
@@ -76,7 +76,7 @@ export const TransactionRow = ({
           {transaction.categoryOverridden && (
             <button
               onClick={() => { resetTransactionCategory(transaction.id) }}
-              className={styles.resetButton}
+              className={styles['resetButton']}
               title="Reset category to auto-classified"
             >
               🔄
@@ -84,18 +84,18 @@ export const TransactionRow = ({
           )}
         </div>
       </td>
-      <td className={`${styles.cell} ${styles.amountCell}`}>
+      <td className={`${styles['cell']} ${styles['amountCell']}`}>
         {transaction.amount}
       </td>
-      <td className={`${styles.cell} ${styles.addedAtCell}`}>
+      <td className={`${styles['cell']} ${styles['addedAtCell']}`}>
         {transaction.addedAt !== undefined ? new Date(transaction.addedAt).toLocaleString() : 'N/A'}
       </td>
-      <td className={`${styles.cell} ${transaction.excluded ? styles.cellExcluded : styles.cellNormal}`}>
-        <code className={styles.hashCode}>
+      <td className={`${styles['cell']} ${transaction.excluded ? styles['cellExcluded'] : styles['cellNormal']}`}>
+        <code className={styles['hashCode']}>
           {transaction.hash || 'N/A'}
         </code>
       </td>
-      <td className={styles.commentCell}>
+      <td className={styles['commentCell']}>
         {transaction.comment && (
           <span
             style={{
@@ -108,18 +108,18 @@ export const TransactionRow = ({
           </span>
         )}
       </td>
-      <td className={styles.actionsCell}>
-        <div className={styles.actions}>
+      <td className={styles['actionsCell']}>
+        <div className={styles['actions']}>
           <button
             onClick={() => { onEdit(transaction) }}
-            className={`${styles.actionButton} ${styles.editButton}`}
+            className={`${styles['actionButton']} ${styles['editButton']}`}
             title="Edit transaction"
           >
             ✏️
           </button>
           <button
             onClick={handleRemove}
-            className={`${styles.actionButton} ${styles.deleteButton}`}
+            className={`${styles['actionButton']} ${styles['deleteButton']}`}
             title="Remove transaction"
           >
             🗑️

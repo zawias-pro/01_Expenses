@@ -60,11 +60,11 @@ const CumulativeBarChart = ({ summaries, onBack }: {
 
   if (chartData.length === 0) {
     return (
-      <div className={styles.section}>
+      <div className={styles['section']}>
         <SectionHeader>Cumulative Bar Chart</SectionHeader>
         <p>No data available</p>
         {onBack && (
-          <div className={styles.actionButtons}>
+          <div className={styles['actionButtons']}>
             <Button variant="outline" onClick={onBack}>Back</Button>
           </div>
         )}

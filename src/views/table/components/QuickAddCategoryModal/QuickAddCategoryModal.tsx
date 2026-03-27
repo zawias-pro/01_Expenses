@@ -1,8 +1,8 @@
-import { useCategories, useCategoryMetadata, useStore, getOrCreateCategoryId } from '../../../store/useStore.ts'
-import { Modal } from '../../../components/Modal/Modal.tsx'
-import { Button } from '../../../components/Button/Button.tsx'
-import { Input } from '../../../components/Input/Input.tsx'
-import { Select } from '../../../components/Select/Select.tsx'
+import { useCategories, useCategoryMetadata, useStore, getOrCreateCategoryId } from '../../../../store/useStore.ts'
+import { Modal } from '../../../../components/Modal/Modal.tsx'
+import { Button } from '../../../../components/Button/Button.tsx'
+import { Input } from '../../../../components/Input/Input.tsx'
+import { Select } from '../../../../components/Select/Select.tsx'
 import styles from './QuickAddCategoryModal.module.css'
 
 import { useEffect, useState } from 'react'
@@ -96,14 +96,14 @@ const QuickAddCategoryModal = ({ transactionId, onCancel }: QuickAddCategoryModa
         </>
       }
     >
-      <div className={styles.form}>
+      <div className={styles['form']}>
         <Select
           label="Category:"
           value={selectedCategory}
           onChange={(e) => {
             setSelectedCategory(e.target.value)
           }}
-          className={styles.select}
+          className={styles['select']}
         >
           <option value="new">New category</option>
           {categories.map((cat) => (
@@ -122,7 +122,7 @@ const QuickAddCategoryModal = ({ transactionId, onCancel }: QuickAddCategoryModa
               setCustomCategory(e.target.value)
             }}
             placeholder="Enter category name"
-            className={styles.input}
+            className={styles['input']}
           />
         )}
 
@@ -134,7 +134,7 @@ const QuickAddCategoryModal = ({ transactionId, onCancel }: QuickAddCategoryModa
             setKeyword(e.target.value)
           }}
           placeholder="Enter keywords"
-          className={styles.input}
+          className={styles['input']}
         />
       </div>
     </Modal>

@@ -8,12 +8,12 @@ import { NO_CATEGORY_FILTER_VALUE } from '../../parsing/types.ts'
 import { getYearFromDate } from '../../parsing/getYearFromDate/getYearFromDate.ts'
 import { getMonthFromDate } from '../../parsing/getMonthFromDate/getMonthFromDate.ts'
 import { parsePolishAmount } from '../../parsing/parsePolishAmount/parsePolishAmount.ts'
-import { TransactionsFilters } from './components/TransactionsFilters.tsx'
-import { TransactionsBulkActions } from './components/TransactionsBulkActions.tsx'
-import { TransactionsTableHeader } from './components/TransactionsTableHeader.tsx'
-import { TransactionRow } from './components/TransactionRow.tsx'
-import { EditTransactionModal } from './components/EditTransactionModal.tsx'
-import { QuickAddCategoryModal } from './components/QuickAddCategoryModal.tsx'
+import { TransactionsFilters } from './components/TransactionsFilters/TransactionsFilters.tsx'
+import { TransactionsBulkActions } from './components/TransactionsBulkActions/TransactionsBulkActions.tsx'
+import { TransactionsTableHeader } from './components/TransactionsTableHeader/TransactionsTableHeader.tsx'
+import { TransactionRow } from './components/TransactionRow/TransactionRow.tsx'
+import { EditTransactionModal } from './components/EditTransactionModal/EditTransactionModal.tsx'
+import { QuickAddCategoryModal } from './components/QuickAddCategoryModal/QuickAddCategoryModal.tsx'
 import styles from './components/TransactionsTable.module.css'
 import { SectionHeader } from "../../components/SectionHeader/SectionHeader.tsx"
 import { Panel } from "../../components/Panel/Panel.tsx"
@@ -232,20 +232,6 @@ const TransactionsTable = ({
     setEditExcluded(transaction.excluded)
   }
 
-  const handleSaveEdit = () => {
-    if (editTransactionId) {
-      updateTransactionDate(editTransactionId, editDate)
-      updateTransactionCategory(editTransactionId, editCategory === '' ? null : editCategory)
-      updateTransactionComment(editTransactionId, editComment)
-      updateTransactionExcluded(editTransactionId, editExcluded)
-    }
-    setEditTransactionId(null)
-    setEditDate('')
-    setEditCategory('')
-    setEditComment('')
-    setEditExcluded(false)
-  }
-
   const handleCancelEdit = () => {
     setEditTransactionId(null)
     setEditDate('')
@@ -277,7 +263,7 @@ const TransactionsTable = ({
       {filteredAndSortedTransactions.length > 0
         ? (
           <Panel>
-            <table className={styles['table']}>
+            <table>
               <TransactionsTableHeader
                 allSelected={allSelected}
                 someSelected={someSelected}

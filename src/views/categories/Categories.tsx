@@ -98,7 +98,7 @@ const Categories = ({
       </Panel>
 
       <Panel title={'Expense categories'}>
-        <table className={styles.table}>
+        <table className={styles['table']}>
           <thead>
           <tr>
             <th

@@ -1,8 +1,8 @@
-import { useCategories } from '../../../store/useStore.ts'
+import { useCategories } from '../../../../store/useStore.ts'
 import styles from './TransactionsBulkActions.module.css'
-import { Button } from "../../../components/Button/Button.tsx"
-import { Select } from "../../../components/Select/Select.tsx"
-import { FormGroup } from "../../../components/FormGroup/FormGroup.tsx"
+import { Button } from '../../../../components/Button/Button.tsx'
+import { Select } from '../../../../components/Select/Select.tsx'
+import { FormGroup } from '../../../../components/FormGroup/FormGroup.tsx'
 
 type BulkAction = 'delete' | 'exclude' | 'unexclude' | 'setCategory' | null
 
@@ -34,7 +34,7 @@ const TransactionsBulkActions = ({
     <div>
       <span>Showing {String(filteredCount)} of {String(totalCount)} transactions</span>
       <div>
-        <span className={styles.selectedText}>{selectedCount} selected</span>
+        <span className={styles['selectedText']}>{selectedCount} selected</span>
       </div>
     </div>
     <div>

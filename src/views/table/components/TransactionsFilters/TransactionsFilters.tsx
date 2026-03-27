@@ -1,14 +1,14 @@
 import { useState } from 'react'
-import { NO_CATEGORY_KEY, NO_CATEGORY_FILTER_VALUE } from '../../../parsing/types.ts'
-import { useCategories, useCategoryMetadata, getCategoryIdFromName, getCategoryNameFromId, useStore } from '../../../store/useStore.ts'
-import { getYearFromDate } from '../../../parsing/getYearFromDate/getYearFromDate.ts'
-import { getMonthFromDate } from '../../../parsing/getMonthFromDate/getMonthFromDate.ts'
-import { Input } from '../../../components/Input/Input.tsx'
-import { Select } from '../../../components/Select/Select.tsx'
-import { Button } from '../../../components/Button/Button.tsx'
-import { FormGroup } from "../../../components/FormGroup/FormGroup.tsx"
-import { Panel } from "../../../components/Panel/Panel.tsx"
-import { useTransactionFilters } from '../../../store/useTransactionFilters.ts'
+import { NO_CATEGORY_KEY, NO_CATEGORY_FILTER_VALUE } from '../../../../parsing/types.ts'
+import { useCategories, useCategoryMetadata, getCategoryIdFromName, getCategoryNameFromId, useStore } from '../../../../store/useStore.ts'
+import { getYearFromDate } from '../../../../parsing/getYearFromDate/getYearFromDate.ts'
+import { getMonthFromDate } from '../../../../parsing/getMonthFromDate/getMonthFromDate.ts'
+import { Input } from '../../../../components/Input/Input.tsx'
+import { Select } from '../../../../components/Select/Select.tsx'
+import { Button } from '../../../../components/Button/Button.tsx'
+import { FormGroup } from '../../../../components/FormGroup/FormGroup.tsx'
+import { Panel } from '../../../../components/Panel/Panel.tsx'
+import { useTransactionFilters } from '../../../../store/useTransactionFilters.ts'
 
 const TransactionsFilters = () => {
   const [amountFilterInput, setAmountFilterInput] = useState<string>('')
