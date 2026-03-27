@@ -94,6 +94,7 @@ const ImportCategoriesModal = ({ onImport, onClose }: ImportCategoriesModalProps
         Note: This will replace all categories. Transactions will be automatically reclassified.
       </p>
       <Textarea
+        id="import-categories"
         label={'Categories'}
         value={csvContent}
         onChange={e => {

@@ -35,6 +35,7 @@ const ExportCategoriesModal = ({ rules, onClose }: ExportCategoriesModalProps) =
         All categories in CSV format (categoryname;keyword1,keyword2,keyword3):
       </p>
       <Textarea
+        id="export-categories"
         label={'Categories'}
         value={exportRules()}
         readOnly

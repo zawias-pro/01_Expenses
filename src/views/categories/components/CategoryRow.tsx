@@ -86,9 +86,11 @@ const CategoryRow = ({
 
   return (
     <tr>
-      <td style={{ padding: '0.5rem 1rem' }}>
+      <td>
         {isRenaming ? (
           <Input
+            id={`category-row-rename-${id}`}
+            label={'Name'}
             type="text"
             value={renamingCategoryName}
             onChange={e => { setRenamingCategoryName(e.target.value) }}
@@ -99,14 +101,13 @@ const CategoryRow = ({
                 handleCancelRename()
               }
             }}
-            style={{ width: '100%', fontWeight: 'bold', padding: '0.25rem 0.5rem' }}
             autoFocus
           />
         ) : (
           <strong>{name}</strong>
         )}
       </td>
-      <td style={{ padding: '0.5rem 1rem' }}>
+      <td>
         <code style={{ 
           fontSize: '0.75rem', 
           fontFamily: 'monospace',
@@ -118,14 +119,16 @@ const CategoryRow = ({
           {id}
         </code>
       </td>
-      <td style={{ padding: '0.5rem 1rem' }}>
-        <span style={{ color: '#666', fontSize: '0.875rem' }}>
+      <td>
+        <span style={{ color: '#666' }}>
           {count}
         </span>
       </td>
-      <td style={{ padding: '0.5rem 1rem' }}>
+      <td>
         {isEditing ? (
           <Input
+            id={`category-row-keywords-${id}`}
+            label={'Keywords'}
             type="text"
             value={editingKeywords}
             onChange={e => { onEditingKeywordsChange(e.target.value) }}
@@ -136,59 +139,48 @@ const CategoryRow = ({
                 handleCancelEdit()
               }
             }}
-            style={{ width: '100%', padding: '0.25rem 0.5rem' }}
             autoFocus
           />
         ) : (
           <span>{keywords.join(', ')}</span>
         )}
       </td>
-      <td style={{ padding: '0.5rem 1rem' }}>
+      <td>
         {isEditing ? (
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div>
             <Button
-              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
               onClick={handleSaveEdit}
             >
               Save
             </Button>
             <Button
-              variant="outline"
-              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
               onClick={handleCancelEdit}
             >
               Cancel
             </Button>
           </div>
         ) : isRenaming ? (
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div>
             <Button
-              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
               onClick={handleSaveRename}
               disabled={!renamingCategoryName.trim()}
             >
               Save
             </Button>
             <Button
-              variant="outline"
-              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
               onClick={handleCancelRename}
             >
               Cancel
             </Button>
           </div>
         ) : (
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div>
             <Button
-              variant="outline"
-              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
               onClick={handleStartEdit}
             >
               Edit
             </Button>
             <Button
-              variant="outline"
-              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
               onClick={handleStartRename}
             >
               Rename

@@ -48,7 +48,7 @@ const EditTransactionModal = ({
       onClose={onCancel}
       footer={
         <>
-          <Button variant="outline" onClick={onCancel}>
+          <Button onClick={onCancel}>
             Cancel
           </Button>
           <Button onClick={handleSave}>
@@ -59,6 +59,7 @@ const EditTransactionModal = ({
     >
       <div className={styles['form']}>
         <Input
+          id="edit-transaction-date"
           label="Date:"
           type="text"
           value={date}
@@ -68,6 +69,7 @@ const EditTransactionModal = ({
         />
 
         <Select
+          id="edit-transaction-category"
           label="Category:"
           value={getCategoryNameFromId(selectedCategoryId, categoryMetadata)}
           onChange={e => {
@@ -87,6 +89,7 @@ const EditTransactionModal = ({
         </Select>
 
         <Textarea
+          id="edit-transaction-comment"
           label="Comment:"
           value={comment}
           onChange={e => { setComment(e.target.value) }}

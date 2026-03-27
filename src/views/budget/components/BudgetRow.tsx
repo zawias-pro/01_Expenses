@@ -56,6 +56,7 @@ const BudgetRow = ({ name, amount }: BudgetRowProps) => {
         <>
           <span style={{ minWidth: '200px', fontWeight: '500' }}>{name}</span>
           <Input
+            id={`budget-row-amount-${name}`}
             type="text"
             value={editingAmount}
             onChange={e => { setEditingAmount(e.target.value) }}
@@ -68,7 +69,6 @@ const BudgetRow = ({ name, amount }: BudgetRowProps) => {
             Save
           </Button>
           <Button
-            variant="outline"
             onClick={() => { setIsEditing(false) }}
             style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
           >
@@ -80,14 +80,12 @@ const BudgetRow = ({ name, amount }: BudgetRowProps) => {
           <span style={{ minWidth: '200px', fontWeight: '500' }}>{name}</span>
           <span style={{ minWidth: '150px' }}>{formatPolishNumber(amount)} PLN</span>
           <Button
-            variant="outline"
             onClick={handleStartEdit}
             style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
           >
             Edit
           </Button>
           <Button
-            variant="outline"
             onClick={handleRemove}
             style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem', color: '#dc3545' }}
           >

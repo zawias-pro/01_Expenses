@@ -65,7 +65,7 @@ const CumulativeBarChart = ({ summaries, onBack }: {
         <p>No data available</p>
         {onBack && (
           <div className={styles['actionButtons']}>
-            <Button variant="outline" onClick={onBack}>Back</Button>
+            <Button onClick={onBack}>Back</Button>
           </div>
         )}
       </div>

@@ -10,6 +10,7 @@ const CategoryFilter = ({ categories, selectedCategory, onCategoryChange }: Cate
   return (
     <div style={{ marginBottom: '1.5rem' }}>
       <Select
+        id="category-filter"
         label="Category"
         value={selectedCategory || ''}
         onChange={e => { onCategoryChange(e.target.value || null) }}

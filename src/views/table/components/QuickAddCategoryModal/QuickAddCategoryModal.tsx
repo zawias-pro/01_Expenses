@@ -83,6 +83,7 @@ const QuickAddCategoryModal = ({ transactionId, onCancel }: QuickAddCategoryModa
     >
       <div className={styles['form']}>
         <Select
+          id="quick-add-category-select"
           label="Category:"
           value={selectedCategory}
           onChange={(e) => {
@@ -100,6 +101,7 @@ const QuickAddCategoryModal = ({ transactionId, onCancel }: QuickAddCategoryModa
 
         {selectedCategory === 'new' && (
           <Input
+            id="quick-add-custom-category"
             label="Custom Category Name:"
             type="text"
             value={customCategory}
@@ -112,6 +114,7 @@ const QuickAddCategoryModal = ({ transactionId, onCancel }: QuickAddCategoryModa
         )}
 
         <Input
+          id="quick-add-keyword"
           label="Keyword (comma-separated):"
           type="text"
           value={keyword}
