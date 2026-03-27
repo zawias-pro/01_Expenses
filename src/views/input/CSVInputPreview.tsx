@@ -197,7 +197,7 @@ const CSVInputPreview = () => {
         />
       </Panel>
       <Panel title={'Preview'}>
-        <CSVPreviewTable transactions={getPreviewTransactions()}/>
+        <CSVPreviewTable />
       </Panel>
       <div className="action-buttons">
         <Button onClick={handleFillExample}>

@@ -1,11 +1,10 @@
 import type { Transaction } from '../../../parsing/types.ts'
 import styles from './CSVPreviewTable.module.css'
+import { useStore } from '../../../store/useStore.ts'
 
-const CSVPreviewTable = ({
-  transactions
-}: {
-  transactions: Transaction[]
-}) => {
+const CSVPreviewTable = () => {
+  const transactions = useStore((state) => state.transactions)
+
   if (transactions.length === 0) {
     return 'No data'
   }
@@ -21,7 +20,7 @@ const CSVPreviewTable = ({
       </tr>
       </thead>
       <tbody>
-      {transactions.map(t => (
+      {transactions.map((t: Transaction) => (
         <tr key={t.id}>
           <td>{t.date}</td>
           <td>{t.description}</td>
