@@ -6,11 +6,13 @@ interface TransactionRowProps {
   transaction: Transaction
   isSelected: boolean
   onToggleSelect: () => void
-  onQuickAddCategory: (transactionId: string, description: string) => void
+  onQuickAddCategory: (transactionId: string) => void
   onEdit: (transaction: Transaction) => void
 }
 
-export const TransactionRow = ({
+const cx = (...parts: Array<string | undefined>): string => parts.filter((part): part is string => part !== undefined && part !== '').join(' ')
+
+const TransactionRow = ({
   transaction,
   isSelected,
   onToggleSelect,
@@ -22,35 +24,48 @@ export const TransactionRow = ({
   const resetTransactionCategory = useStore((state) => state.resetTransactionCategory)
   const removeTransaction = useStore((state) => state.removeTransaction)
 
-  const excludedStyle = {
-    textDecoration: transaction.excluded ? 'line-through' as const : 'none' as const,
-    color: transaction.excluded ? '#999' : 'inherit',
-    opacity: transaction.excluded ? 0.6 : 1
-  }
-
   const handleRemove = () => {
     if (window.confirm(`Are you sure you want to remove this transaction?\n\n${transaction.description}`)) {
       removeTransaction(transaction.id)
     }
   }
 
+  const cellClass = styles['cell'] ?? ''
+  const cellExcludedClass = styles['cellExcluded'] ?? ''
+  const cellNormalClass = styles['cellNormal'] ?? ''
+  const descriptionCellClass = styles['descriptionCell'] ?? ''
+  const amountCellClass = styles['amountCell'] ?? ''
+  const addedAtCellClass = styles['addedAtCell'] ?? ''
+  const commentCellClass = styles['commentCell'] ?? ''
+  const actionsCellClass = styles['actionsCell'] ?? ''
+  const actionsClass = styles['actions'] ?? ''
+  const actionButtonClass = styles['actionButton'] ?? ''
+  const editButtonClass = styles['editButton'] ?? ''
+  const deleteButtonClass = styles['deleteButton'] ?? ''
+  const formCheckboxClass = styles['formCheckbox'] ?? ''
+  const dateCellClass = styles['dateCell'] ?? ''
+  const resetButtonClass = styles['resetButton'] ?? ''
+  const categoryCellClass = styles['categoryCell'] ?? ''
+  const addButtonClass = styles['addButton'] ?? ''
+  const hashCodeClass = styles['hashCode'] ?? ''
+
   return (
     <tr>
-      <td className={styles['cell']}>
+      <td className={cellClass}>
         <input
           type="checkbox"
-          className={styles['formCheckbox']}
+          className={formCheckboxClass}
           checked={isSelected}
           onChange={onToggleSelect}
         />
       </td>
-      <td className={`${styles['cell']} ${transaction.excluded ? styles['cellExcluded'] : styles['cellNormal']}`}>
-        <div className={styles['dateCell']}>
+      <td className={cx(cellClass, transaction.excluded ? cellExcludedClass : cellNormalClass)}>
+        <div className={dateCellClass}>
           <span>{transaction.date}</span>
           {transaction.dateOverridden && (
             <button
               onClick={() => { resetTransactionDate(transaction.id) }}
-              className={styles['resetButton']}
+              className={resetButtonClass}
               title="Reset date to original"
             >
               🔄
@@ -58,16 +73,16 @@ export const TransactionRow = ({
           )}
         </div>
       </td>
-      <td className={`${styles['cell']} ${styles['descriptionCell']}`}>
+      <td className={cx(cellClass, descriptionCellClass)}>
         {transaction.description}
       </td>
-      <td className={`${styles['cell']} ${transaction.excluded ? styles['cellExcluded'] : styles['cellNormal']}`}>
-        <div className={styles['categoryCell']}>
+      <td className={cx(cellClass, transaction.excluded ? cellExcludedClass : cellNormalClass)}>
+        <div className={categoryCellClass}>
           <span>{transaction.category} {getCategoryNameFromId(transaction.category, categoryMetadata)}</span>
           {transaction.category === null && !transaction.categoryOverridden && (
             <button
-              onClick={() => { onQuickAddCategory(transaction.id, transaction.description) }}
-              className={styles['addButton']}
+              onClick={() => { onQuickAddCategory(transaction.id) }}
+              className={addButtonClass}
               title="Quick add category"
             >
               + Add
@@ -76,7 +91,7 @@ export const TransactionRow = ({
           {transaction.categoryOverridden && (
             <button
               onClick={() => { resetTransactionCategory(transaction.id) }}
-              className={styles['resetButton']}
+              className={resetButtonClass}
               title="Reset category to auto-classified"
             >
               🔄
@@ -84,18 +99,18 @@ export const TransactionRow = ({
           )}
         </div>
       </td>
-      <td className={`${styles['cell']} ${styles['amountCell']}`}>
+      <td className={cx(cellClass, amountCellClass)}>
         {transaction.amount}
       </td>
-      <td className={`${styles['cell']} ${styles['addedAtCell']}`}>
+      <td className={cx(cellClass, addedAtCellClass)}>
         {transaction.addedAt !== undefined ? new Date(transaction.addedAt).toLocaleString() : 'N/A'}
       </td>
-      <td className={`${styles['cell']} ${transaction.excluded ? styles['cellExcluded'] : styles['cellNormal']}`}>
-        <code className={styles['hashCode']}>
+      <td className={cx(cellClass, transaction.excluded ? cellExcludedClass : cellNormalClass)}>
+        <code className={hashCodeClass}>
           {transaction.hash || 'N/A'}
         </code>
       </td>
-      <td className={styles['commentCell']}>
+      <td className={commentCellClass}>
         {transaction.comment && (
           <span
             style={{
@@ -108,18 +123,18 @@ export const TransactionRow = ({
           </span>
         )}
       </td>
-      <td className={styles['actionsCell']}>
-        <div className={styles['actions']}>
+      <td className={actionsCellClass}>
+        <div className={actionsClass}>
           <button
             onClick={() => { onEdit(transaction) }}
-            className={`${styles['actionButton']} ${styles['editButton']}`}
+            className={cx(actionButtonClass, editButtonClass)}
             title="Edit transaction"
           >
             ✏️
           </button>
           <button
             onClick={handleRemove}
-            className={`${styles['actionButton']} ${styles['deleteButton']}`}
+            className={cx(actionButtonClass, deleteButtonClass)}
             title="Remove transaction"
           >
             🗑️
@@ -129,3 +144,5 @@ export const TransactionRow = ({
     </tr>
   )
 }
+
+export { TransactionRow }

@@ -4,7 +4,6 @@ import { parsePolishAmount } from '../../../parsing/parsePolishAmount/parsePolis
 import { Button } from '../../../components/Button/Button.tsx'
 import { Input } from '../../../components/Input/Input.tsx'
 import { Select } from '../../../components/Select/Select.tsx'
-import { SectionHeader } from "../../../components/SectionHeader/SectionHeader.tsx"
 import { FormGroup } from "../../../components/FormGroup/FormGroup.tsx"
 
 const AddBudgetForm = () => {

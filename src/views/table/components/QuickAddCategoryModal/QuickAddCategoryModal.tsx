@@ -4,8 +4,7 @@ import { Button } from '../../../../components/Button/Button.tsx'
 import { Input } from '../../../../components/Input/Input.tsx'
 import { Select } from '../../../../components/Select/Select.tsx'
 import styles from './QuickAddCategoryModal.module.css'
-
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 interface QuickAddCategoryModalProps {
   transactionId: string | null
@@ -20,29 +19,15 @@ const QuickAddCategoryModal = ({ transactionId, onCancel }: QuickAddCategoryModa
   const updateTransactionCategory = useStore((s) => s.updateTransactionCategory)
   const transactions = useStore((s) => s.transactions)
 
+  const transaction = transactionId ? transactions.find((t) => t.id === transactionId) ?? null : null
+
   const [selectedCategory, setSelectedCategory] = useState<string>('new')
   const [customCategory, setCustomCategory] = useState<string>('')
-  const [keyword, setKeyword] = useState<string>('')
+  const [keyword, setKeyword] = useState<string>(transaction?.description ?? '')
 
-  // Initialize keyword from transaction description when opening
-  useEffect(() => {
-    if (!transactionId) {
-      setSelectedCategory('new')
-      setCustomCategory('')
-      setKeyword('')
-      return
-    }
-    const tx = transactions.find((t) => t.id === transactionId)
-    setKeyword(tx?.description ?? '')
-    setSelectedCategory('new')
-    setCustomCategory('')
-  }, [transactionId, transactions])
-
-  if (!transactionId) return null
+  if (!transaction) return null
 
   const handleSave = () => {
-    if (!transactionId) return
-
     let categoryName = ''
     if (selectedCategory === 'new') {
       if (!customCategory.trim()) {
@@ -69,7 +54,7 @@ const QuickAddCategoryModal = ({ transactionId, onCancel }: QuickAddCategoryModa
 
     // Convert newly created or existing category name to ID and update transaction
     const categoryId = getOrCreateCategoryId(categoryName, categoryMetadata)
-    updateTransactionCategory(transactionId, categoryId)
+    updateTransactionCategory(transaction.id, categoryId)
 
     // Reset internal state and close modal
     setSelectedCategory('new')

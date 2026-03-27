@@ -1,7 +1,7 @@
 /** Display label and summary key for transactions with no category */
-export const NO_CATEGORY_KEY = '(no category)'
+const NO_CATEGORY_KEY = '(no category)'
 /** Sentinel value for "filter by no category" in UI (not a real category ID) */
-export const NO_CATEGORY_FILTER_VALUE = '__no_category__'
+const NO_CATEGORY_FILTER_VALUE = '__no_category__'
 
 interface Transaction {
   id: string
@@ -48,4 +48,11 @@ interface AllDataSummary {
   categories: Record<string, number>
 }
 
-export type { Transaction, MonthlySummary, YearlySummary, AllDataSummary }
+export {
+  NO_CATEGORY_KEY,
+  NO_CATEGORY_FILTER_VALUE,
+  type Transaction,
+  type MonthlySummary,
+  type YearlySummary,
+  type AllDataSummary,
+}

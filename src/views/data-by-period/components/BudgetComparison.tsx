@@ -1,10 +1,10 @@
 import { formatPolishNumber } from '../../../parsing/formatPolishNumber/formatPolishNumber.ts'
-import { useStore } from '../../../store/useStore.ts'
 import type { MonthlySummary } from '../../../parsing/types.ts'
+import { useStore } from '../../../store/useStore.ts'
 
 const BudgetComparison = ({
   processedCategories,
-  summaries
+  summaries,
 }: {
   processedCategories: Record<string, number>,
   summaries: MonthlySummary[]

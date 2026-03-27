@@ -28,13 +28,13 @@ const ImportCategoriesModal = ({ onImport, onClose }: ImportCategoriesModalProps
       
       const parts = line.split(';')
       if (parts.length !== 2) {
-        setError(`Line ${i + 1}: Invalid format. Expected "categoryname;keyword1,keyword2,..."`)
+        setError(`Line ${String(i + 1)}: Invalid format. Expected "categoryname;keyword1,keyword2,..."`)
         return null
       }
       
       const categoryName = parts[0]?.trim()
       if (!categoryName) {
-        setError(`Line ${i + 1}: Category name is empty`)
+        setError(`Line ${String(i + 1)}: Category name is empty`)
         return null
       }
       

@@ -1,54 +1,53 @@
 import { Select } from '../../../components/Select/Select.tsx'
+import { useStore } from '../../../store/useStore.ts'
 
 const PeriodSelection = ({
   availableYears,
   monthOptions,
   selectedMonth,
-  selectionType,
-  selectedYear,
-  onSelectionTypeChange,
-  onSelectedYearChange,
-  onSelectionChange,
 }: {
   availableYears: number[]
   monthOptions: { value: string; label: string }[]
   selectedMonth: { year: number; month: number }
-  selectionType: 'month' | 'year' | 'all'
-  selectedYear: number | null
-  onSelectionTypeChange: (type: 'month' | 'year' | 'all') => void
-  onSelectedYearChange: (year: number) => void
-  onSelectionChange: (type: 'month' | 'year' | 'all', year?: number, month?: number) => void
 }) => {
+  const selectionType = useStore((state) => state.selectionType)
+  const selectedYear = useStore((state) => state.selectedYear)
+  const setSelectionType = useStore((state) => state.setSelectionType)
+  const setSelectedYear = useStore((state) => state.setSelectedYear)
+  const setSelectedMonth = useStore((state) => state.setSelectedMonth)
+
   const handleSelectionTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newType = event.target.value as 'month' | 'year' | 'all'
-    onSelectionTypeChange(newType)
+    setSelectionType(newType)
 
     if (newType === 'all') {
-      onSelectionChange('all')
+      setSelectedYear(null)
+      setSelectedMonth(null)
     } else if (newType === 'year' && availableYears.length > 0) {
       const year = selectedYear ?? availableYears[0]
       if (year !== undefined) {
-        onSelectedYearChange(year)
-        onSelectionChange('year', year)
+        setSelectedYear(year)
+        setSelectedMonth(null)
       }
     } else if (newType === 'month') {
-      onSelectionChange('month', selectedMonth.year, selectedMonth.month)
+      setSelectedYear(selectedMonth.year)
+      setSelectedMonth(selectedMonth)
     }
   }
 
   const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const year = parseInt(event.target.value)
     if (!isNaN(year)) {
-      onSelectedYearChange(year)
-      onSelectionChange('year', year)
+      setSelectedYear(year)
+      setSelectedMonth(null)
     }
   }
 
   const handleMonthChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const [year, month] = event.target.value.split('-').map(Number)
     if (year !== undefined && month !== undefined && !isNaN(year) && !isNaN(month)) {
-      onSelectedYearChange(year)
-      onSelectionChange('month', year, month)
+      setSelectedYear(year)
+      setSelectedMonth({ year, month })
     }
   }
 

@@ -14,7 +14,6 @@ import { TransactionsTableHeader } from './components/TransactionsTableHeader/Tr
 import { TransactionRow } from './components/TransactionRow/TransactionRow.tsx'
 import { EditTransactionModal } from './components/EditTransactionModal/EditTransactionModal.tsx'
 import { QuickAddCategoryModal } from './components/QuickAddCategoryModal/QuickAddCategoryModal.tsx'
-import styles from './components/TransactionsTable.module.css'
 import { SectionHeader } from "../../components/SectionHeader/SectionHeader.tsx"
 import { Panel } from "../../components/Panel/Panel.tsx"
 
@@ -30,10 +29,6 @@ const TransactionsTable = ({
   const [bulkCategory, setBulkCategory] = useState<string>('')
   const [quickAddTransactionId, setQuickAddTransactionId] = useState<string | null>(null)
   const [editTransactionId, setEditTransactionId] = useState<string | null>(null)
-  const [editDate, setEditDate] = useState<string>('')
-  const [editCategory, setEditCategory] = useState<string>('')
-  const [editComment, setEditComment] = useState<string>('')
-  const [editExcluded, setEditExcluded] = useState<boolean>(false)
 
   const {
     searchQuery,
@@ -49,8 +44,6 @@ const TransactionsTable = ({
 
   const updateTransactionExcluded = useStore((state) => state.updateTransactionExcluded)
   const updateTransactionCategory = useStore((state) => state.updateTransactionCategory)
-  const updateTransactionDate = useStore((state) => state.updateTransactionDate)
-  const updateTransactionComment = useStore((state) => state.updateTransactionComment)
   const removeTransaction = useStore((state) => state.removeTransaction)
 
   // Parse amount string to number
@@ -226,18 +219,10 @@ const TransactionsTable = ({
 
   const handleEdit = (transaction: Transaction) => {
     setEditTransactionId(transaction.id)
-    setEditDate(transaction.date)
-    setEditCategory(transaction.category ?? '')
-    setEditComment(transaction.comment || '')
-    setEditExcluded(transaction.excluded)
   }
 
   const handleCancelEdit = () => {
     setEditTransactionId(null)
-    setEditDate('')
-    setEditCategory('')
-    setEditComment('')
-    setEditExcluded(false)
   }
 
   return (
@@ -294,11 +279,13 @@ const TransactionsTable = ({
         )}
 
       <EditTransactionModal
+        key={editTransactionId ?? 'edit-transaction-none'}
         transactionId={editTransactionId}
         onCancel={handleCancelEdit}
       />
 
       <QuickAddCategoryModal
+        key={quickAddTransactionId ?? 'quick-add-none'}
         transactionId={quickAddTransactionId}
         onCancel={handleCancelQuickAdd}
       />

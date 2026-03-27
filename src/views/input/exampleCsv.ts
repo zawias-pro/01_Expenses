@@ -1,4 +1,4 @@
-export const EXAMPLE_CSV = `
+const EXAMPLE_CSV = `
 2025-12-12;"JAN ADAM KOWALSKI, CZYNSZ NAJMU                                                                         PRZELEW ZEWNĘTRZNY WYCHODZĄCY                                                     74899274659992743764666621  ";"MojBank 1234 ... 5678";"Czynsz i wynajem";-5 000,00 PLN;;
 2025-12-01;"BIEDRONKA SPÓŁKA Z O.O.                                                                                  ZAKUP PRZY UŻYCIU KARTY                                                             12345678901234567890123456  ";"MojBank 1234 ... 5678";"Żywność i napoje";-89,50 PLN;;
 2025-12-02;"ORLEN PALIWA SP. Z O.O.                                                                                ZAKUP PRZY UŻYCIU KARTY                                                             23456789012345678901234567  ";"MojBank 1234 ... 5678";"Transport";-120,00 PLN;;
@@ -127,3 +127,5 @@ export const EXAMPLE_CSV = `
 2024-10-27;"PRZELEW NA PREZENTY                                                                              PRZELEW ZEWNĘTRZNY WYCHODZĄCY                                                     89012345678901234567890123  ";"MojBank 1234 ... 5678";"Przelew własny";-160,00 PLN;;
 invalid-date;"INVALID DATE TRANSACTION";"MojBank 1234 ... 5678";"Bez kategorii";-100,00 PLN;;
 `
+
+export { EXAMPLE_CSV }

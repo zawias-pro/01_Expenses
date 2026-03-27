@@ -1,6 +1,6 @@
 import { NO_CATEGORY_KEY } from '../../../../parsing/types.ts'
 import { useCategories, useCategoryMetadata, getCategoryNameFromId, getCategoryIdFromName, useStore } from '../../../../store/useStore.ts'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Modal } from '../../../../components/Modal/Modal.tsx'
 import { Button } from '../../../../components/Button/Button.tsx'
 import { Input } from '../../../../components/Input/Input.tsx'
@@ -25,29 +25,20 @@ const EditTransactionModal = ({
   const updateTransactionComment = useStore((s) => s.updateTransactionComment)
   const updateTransactionExcluded = useStore((s) => s.updateTransactionExcluded)
 
-  const [date, setDate] = useState<string>('')
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
-  const [comment, setComment] = useState<string>('')
-  const [excluded, setExcluded] = useState<boolean>(false)
+  const transaction = transactionId ? transactions.find((t) => t.id === transactionId) ?? null : null
 
-  useEffect(() => {
-    if (!transactionId) return
-    const tx = transactions.find((t) => t.id === transactionId)
-    if (!tx) return
-    setDate(tx.date)
-    setSelectedCategoryId(tx.category ?? null)
-    setComment(tx.comment ?? '')
-    setExcluded(tx.excluded)
-  }, [transactionId, transactions])
+  const [date, setDate] = useState<string>(transaction?.date ?? '')
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(transaction?.category ?? null)
+  const [comment, setComment] = useState<string>(transaction?.comment ?? '')
+  const [excluded, setExcluded] = useState<boolean>(transaction?.excluded ?? false)
 
-  if (!transactionId) return null
+  if (!transaction) return null
 
   const handleSave = () => {
-    if (!transactionId) return
-    updateTransactionDate(transactionId, date)
-    updateTransactionCategory(transactionId, selectedCategoryId)
-    updateTransactionComment(transactionId, comment)
-    updateTransactionExcluded(transactionId, excluded)
+    updateTransactionDate(transaction.id, date)
+    updateTransactionCategory(transaction.id, selectedCategoryId)
+    updateTransactionComment(transaction.id, comment)
+    updateTransactionExcluded(transaction.id, excluded)
     onCancel()
   }
 

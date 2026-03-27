@@ -1,5 +1,3 @@
-import type { CategoryMetadata } from '../categoryTypes.ts'
-
 /**
  * Example:
  * Input: "BIEDRONKA purchase", { "cat_xyz": ["biedronka"], "cat_abc": ["transfer"] }, { "cat_xyz": "grocery", "cat_abc": "transfers" }
@@ -9,7 +7,6 @@ import type { CategoryMetadata } from '../categoryTypes.ts'
 const classifyDescription = (
   description: string,
   rules: Record<string, string[]>, // category ID -> keywords
-  metadata: CategoryMetadata // category ID -> category name
 ): string | null => {
   const desc = description.toLowerCase()
   for (const [categoryId, keywords] of Object.entries(rules)) {

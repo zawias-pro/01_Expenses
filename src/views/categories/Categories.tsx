@@ -137,8 +137,8 @@ const Categories = ({
           </tbody>
         </table>
       </Panel>
-      {showExportModal && <ExportCategoriesModal rules={rules} onClose={() => setShowExportModal(false)} />}
-      {showImportModal && <ImportCategoriesModal onImport={handleImport} onClose={() => setShowImportModal(false)} />}
+      {showExportModal && <ExportCategoriesModal rules={rules} onClose={() => { setShowExportModal(false) }} />}
+      {showImportModal && <ImportCategoriesModal onImport={handleImport} onClose={() => { setShowImportModal(false) }} />}
     </>
   )
 }

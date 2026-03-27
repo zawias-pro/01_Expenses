@@ -8,7 +8,7 @@ const generateCategoryId = (): string => {
   idCounter++
   const timestamp = Date.now()
   const random = Math.random().toString(36).substring(2, 9)
-  return `cat_${timestamp}_${random}_${idCounter}`
+  return `cat_${String(timestamp)}_${random}_${String(idCounter)}`
 }
 
 // Helper functions for ID/name conversion

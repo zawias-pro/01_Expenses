@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { MonthlySummary, Transaction } from '../../parsing/types.ts'
 import { aggregateByYear } from '../../parsing/aggregateByYear/aggregateByYear.ts'
 import { aggregateAllData } from '../../parsing/aggregateAllData/aggregateAllData.ts'
@@ -7,7 +7,7 @@ import { parsePolishAmount } from '../../parsing/parsePolishAmount/parsePolishAm
 import { getYearFromDate } from '../../parsing/getYearFromDate/getYearFromDate.ts'
 import { getMonthFromDate } from '../../parsing/getMonthFromDate/getMonthFromDate.ts'
 import { NO_CATEGORY_KEY } from '../../parsing/types.ts'
-import { useCategoryMetadata, getCategoryNameFromId } from '../../store/useStore.ts'
+import { useCategoryMetadata, getCategoryNameFromId, useStore } from '../../store/useStore.ts'
 import { CategoryBarChart } from './components/CategoryBarChart.tsx'
 import { PeriodSelection } from './components/PeriodSelection.tsx'
 import { CategoryProcessingControls } from './components/CategoryProcessingControls.tsx'
@@ -17,7 +17,6 @@ import styles from './DataByPeriod.module.css'
 import { Panel } from "../../components/Panel/Panel.tsx"
 import { FormGroup } from "../../components/FormGroup/FormGroup.tsx"
 
-type SelectionType = 'month' | 'year' | 'all'
 type TabType = 'expenses' | 'chart' | 'categories' | 'budget'
 
 const monthNames = [
@@ -29,9 +28,9 @@ const DataByPeriod = ({ summaries, transactions }: {
   summaries: MonthlySummary[]
   transactions: Transaction[]
 }) => {
-  const [selectionType, setSelectionType] = useState<SelectionType>('month')
-  const [selectedYear, setSelectedYear] = useState<number | null>(null)
-  const [selectedMonth, setSelectedMonth] = useState<{ year: number; month: number } | null>(null)
+  const selectionType = useStore((state) => state.selectionType)
+  const selectedYear = useStore((state) => state.selectedYear)
+  const selectedMonth = useStore((state) => state.selectedMonth)
   const [activeTab, setActiveTab] = useState<TabType>('expenses')
   const [treatLowValueAsOthers, setTreatLowValueAsOthers] = useState(true)
   const [lowValueThreshold, setLowValueThreshold] = useState(100)
@@ -40,36 +39,16 @@ const DataByPeriod = ({ summaries, transactions }: {
 
   const categoryMetadata = useCategoryMetadata()
 
-  // Keep selectedMonth in sync with available summaries (local state, no hoisting)
-  useEffect(() => {
-    if (summaries.length === 0) {
-      setSelectedMonth(null)
-      return
-    }
-    const first = summaries[0]
-    if (!first) return
-    if (selectedMonth === null) {
-      setSelectedMonth({ year: first.year, month: first.month })
-      setSelectedYear(first.year)
-    } else {
-      const exists = summaries.some(s => s.year === selectedMonth.year && s.month === selectedMonth.month)
-      if (!exists) {
-        setSelectedMonth({ year: first.year, month: first.month })
-        setSelectedYear(first.year)
+  const effectiveMonth = useMemo(() => {
+    if (selectedMonth !== null) {
+      const exists = summaries.some((s) => s.year === selectedMonth.year && s.month === selectedMonth.month)
+      if (exists) {
+        return selectedMonth
       }
     }
-  }, [summaries, selectedMonth])
-
-  const handleSelectionChange = (type: 'month' | 'year' | 'all', year?: number, month?: number) => {
-    if (type === 'month' && year !== undefined && month !== undefined) {
-      setSelectedMonth({ year, month })
-      setSelectedYear(year)
-    } else if (type === 'year' && year !== undefined) {
-      setSelectedYear(year)
-    }
-  }
-
-  const effectiveMonth = selectedMonth ?? (summaries[0] ? { year: summaries[0].year, month: summaries[0].month } : null)
+    const first = summaries[0]
+    return first ? { year: first.year, month: first.month } : null
+  }, [selectedMonth, summaries])
 
   const yearlySummaries = aggregateByYear(summaries)
   const allDataSummary = aggregateAllData(summaries)
@@ -251,11 +230,6 @@ const DataByPeriod = ({ summaries, transactions }: {
           availableYears={availableYears}
           monthOptions={monthOptions}
           selectedMonth={effectiveMonth ?? { year: new Date().getFullYear(), month: 1 }}
-          selectionType={selectionType}
-          selectedYear={selectedYear}
-          onSelectionTypeChange={setSelectionType}
-          onSelectedYearChange={setSelectedYear}
-          onSelectionChange={handleSelectionChange}
         />
         <CategoryProcessingControls
           treatLowValueAsOthers={treatLowValueAsOthers}
@@ -342,9 +316,12 @@ const DataByPeriod = ({ summaries, transactions }: {
               ))}
             </table>
             )}
-            {activeTab === 'budget'&&(
-              <BudgetComparison processedCategories={processedCategories} summaries={summaries} />
-            )}
+              {activeTab === 'budget'&&(
+                <BudgetComparison
+                  processedCategories={processedCategories}
+                  summaries={summaries}
+                />
+               )}
           </Panel>
       )}
 

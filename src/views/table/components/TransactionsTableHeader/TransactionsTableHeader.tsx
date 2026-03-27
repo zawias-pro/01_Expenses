@@ -12,7 +12,9 @@ interface TransactionsTableHeaderProps {
   onSortDirectionChange: (direction: 'asc' | 'desc' | null) => void
 }
 
-export const TransactionsTableHeader = ({
+const cx = (...parts: Array<string | undefined>): string => parts.filter((part): part is string => part !== undefined && part !== '').join(' ')
+
+const TransactionsTableHeader = ({
   allSelected,
   someSelected,
   onSelectAll,
@@ -49,10 +51,10 @@ export const TransactionsTableHeader = ({
   return (
     <thead>
       <tr>
-        <th className={styles['tableHeader']}>
+        <th className={styles['tableHeader'] ?? ''}>
           <input
             type="checkbox"
-            className={styles['formCheckbox']}
+            className={styles['formCheckbox'] ?? ''}
             checked={allSelected}
             ref={(input) => {
               if (input) input.indeterminate = someSelected && !allSelected
@@ -62,39 +64,41 @@ export const TransactionsTableHeader = ({
           />
         </th>
         <th
-          className={`${styles['tableHeader']} ${styles['sortable']}`}
+          className={cx(styles['tableHeader'], styles['sortable'])}
           onClick={() => { handleSort('date') }}
         >
           Date{getSortIndicator('date')}
         </th>
         <th
-          className={`${styles['tableHeader']} ${styles['sortable']}`}
+          className={cx(styles['tableHeader'], styles['sortable'])}
           onClick={() => { handleSort('description') }}
         >
           Description{getSortIndicator('description')}
         </th>
         <th
-          className={`${styles['tableHeader']} ${styles['sortable']}`}
+          className={cx(styles['tableHeader'], styles['sortable'])}
           onClick={() => { handleSort('category') }}
         >
           Category{getSortIndicator('category')}
         </th>
         <th
-          className={`${styles['tableHeader']} ${styles['sortable']}`}
+          className={cx(styles['tableHeader'], styles['sortable'])}
           onClick={() => { handleSort('amount') }}
         >
           Amount{getSortIndicator('amount')}
         </th>
         <th
-          className={`${styles['tableHeader']} ${styles['sortable']}`}
+          className={cx(styles['tableHeader'], styles['sortable'])}
           onClick={() => { handleSort('addedAt') }}
         >
           Added At{getSortIndicator('addedAt')}
         </th>
-        <th className={styles['tableHeader']}>Hash</th>
-        <th className={styles['tableHeader']} style={{ width: '40px' }}>Comment</th>
-        <th className={styles['tableHeader']} style={{ width: '80px' }}>Actions</th>
+        <th className={styles['tableHeader'] ?? ''}>Hash</th>
+        <th className={styles['tableHeader'] ?? ''} style={{ width: '40px' }}>Comment</th>
+        <th className={styles['tableHeader'] ?? ''} style={{ width: '80px' }}>Actions</th>
       </tr>
     </thead>
   )
 }
+
+export { TransactionsTableHeader }
