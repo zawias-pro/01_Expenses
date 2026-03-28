@@ -3,15 +3,15 @@ import { Modal } from '../../../../components/Modal/Modal.tsx'
 import { Button } from '../../../../components/Button/Button.tsx'
 import { Input } from '../../../../components/Input/Input.tsx'
 import { Select } from '../../../../components/Select/Select.tsx'
-import styles from './QuickAddCategoryModal.module.css'
 import { useState } from 'react'
 
-interface QuickAddCategoryModalProps {
+const QuickAddCategoryModal = ({
+  transactionId,
+  onCancel
+}: {
   transactionId: string | null
   onCancel: () => void
-}
-
-const QuickAddCategoryModal = ({ transactionId, onCancel }: QuickAddCategoryModalProps) => {
+}) => {
   const categories = useCategories()
   const categoryMetadata = useCategoryMetadata()
 
@@ -25,7 +25,9 @@ const QuickAddCategoryModal = ({ transactionId, onCancel }: QuickAddCategoryModa
   const [customCategory, setCustomCategory] = useState<string>('')
   const [keyword, setKeyword] = useState<string>(transaction?.description ?? '')
 
-  if (!transaction) return null
+  if (transaction === null) {
+    return null
+  }
 
   const handleSave = () => {
     let categoryName = ''
@@ -81,15 +83,14 @@ const QuickAddCategoryModal = ({ transactionId, onCancel }: QuickAddCategoryModa
         </>
       }
     >
-      <div className={styles['form']}>
+      <>
         <Select
           id="quick-add-category-select"
-          label="Category:"
+          label="Category"
           value={selectedCategory}
           onChange={(e) => {
             setSelectedCategory(e.target.value)
           }}
-          className={styles['select']}
         >
           <option value="new">New category</option>
           {categories.map((cat) => (
@@ -102,29 +103,25 @@ const QuickAddCategoryModal = ({ transactionId, onCancel }: QuickAddCategoryModa
         {selectedCategory === 'new' && (
           <Input
             id="quick-add-custom-category"
-            label="Custom Category Name:"
+            label="Custom Category Name"
             type="text"
             value={customCategory}
             onChange={(e) => {
               setCustomCategory(e.target.value)
             }}
-            placeholder="Enter category name"
-            className={styles['input']}
           />
         )}
 
         <Input
           id="quick-add-keyword"
-          label="Keyword (comma-separated):"
+          label="Keywords (comma-separated)"
           type="text"
           value={keyword}
           onChange={(e) => {
             setKeyword(e.target.value)
           }}
-          placeholder="Enter keywords"
-          className={styles['input']}
         />
-      </div>
+      </>
     </Modal>
   )
 }
