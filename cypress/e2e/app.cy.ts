@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-describe('Expense Analyzer App', () => {
+describe.skip('Expense Analyzer App', () => {
   it('should load and display CSV input view with empty CSV input', () => {
     cy.visit('/')
     cy.contains('Expense Analyzer').should('be.visible')

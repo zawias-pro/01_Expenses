@@ -2,7 +2,6 @@ import { useState } from 'react'
 
 import type { View } from '../store/useStore.ts'
 import styles from './App.module.css'
-import { CSVInputPreview } from '../views/input/CSVInputPreview.tsx'
 import { TransactionsTable } from '../views/table/TransactionsTable.tsx'
 import { DataByPeriod } from '../views/data-by-period/DataByPeriod.tsx'
 import { CumulativeBarChart } from '../views/data-cumulative/CumulativeBarChart.tsx'
@@ -11,6 +10,7 @@ import { Budget } from '../views/budget/Budget.tsx'
 import { useStore, useAllRules, useSummaries } from '../store/useStore.ts'
 import { ErrorBoundary } from "../components/ErrorBoundary/ErrorBoundary.tsx"
 import { Sidebar } from "../components/Sidebar/Sidebar.tsx"
+import { CSVInput } from "../views/input/CSVInput.tsx"
 
 const App = () => {
   const [view, setView] = useState<View>('csv')
@@ -32,7 +32,7 @@ const App = () => {
         />
         <div className={styles['main']}>
           {view === 'csv' && (
-            <CSVInputPreview />
+            <CSVInput />
           )}
           {view === 'categories' && (
             <Categories

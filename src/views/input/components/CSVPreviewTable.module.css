@@ -1,9 +1,4 @@
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: var(--surface);
-
-  th, td {
-    border: 1px solid black;
-  }
+.wrapper {
+  max-height: 500px;
+  overflow-y: auto;
 }

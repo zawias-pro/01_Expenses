@@ -1,16 +1,18 @@
 import type { Transaction } from '../../../parsing/types.ts'
 import styles from './CSVPreviewTable.module.css'
-import { useStore } from '../../../store/useStore.ts'
 
-const CSVPreviewTable = () => {
-  const transactions = useStore((state) => state.transactions)
-
+const CSVPreviewTable = ({
+  transactions,
+}: {
+  transactions: Transaction[]
+}) => {
   if (transactions.length === 0) {
     return 'No data'
   }
 
   return (
-    <table className={styles['table']}>
+    <div className={styles["wrapper"]}>
+    <table>
       <thead>
       <tr>
         <th>Date</th>
@@ -30,6 +32,7 @@ const CSVPreviewTable = () => {
       ))}
       </tbody>
     </table>
+    </div>
   )
 }
 
