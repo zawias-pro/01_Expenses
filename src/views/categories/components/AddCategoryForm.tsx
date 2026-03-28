@@ -27,7 +27,7 @@ const AddCategoryForm = ({
   }
 
   return (
-    <div style={{display: 'flex', flexDirection: 'column', gap: '.5rem', alignItems: 'flex-start'}}>
+    <div>
       <FormGroup>
         <Input
           id={'category'}

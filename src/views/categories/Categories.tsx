@@ -77,14 +77,12 @@ const Categories = ({
       <SectionHeader>Categories</SectionHeader>
 
       <Panel title={'Import/Export'}>
-        <div style={{ display: 'flex', gap: '.5rem' }}>
-          <Button onClick={() => {setShowImportModal(true)}}>
-            Import
-          </Button>
-          <Button onClick={() => {setShowExportModal(true)}}>
-            Export
-          </Button>
-        </div>
+        <Button onClick={() => {setShowImportModal(true)}}>
+          Import
+        </Button>
+        <Button onClick={() => {setShowExportModal(true)}}>
+          Export
+        </Button>
       </Panel>
 
       <Panel title={'Add new category'}>

@@ -87,10 +87,10 @@ const ImportCategoriesModal = ({ onImport, onClose }: ImportCategoriesModalProps
         </>
       }
     >
-      <p style={{ marginTop: 0, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
+      <p>
         Paste CSV content in the format: <code>categoryname;keyword1,keyword2,keyword3</code>
       </p>
-      <p style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+      <p>
         Note: This will replace all categories. Transactions will be automatically reclassified.
       </p>
       <Textarea
@@ -102,12 +102,9 @@ const ImportCategoriesModal = ({ onImport, onClose }: ImportCategoriesModalProps
           setError(null)
         }}
         placeholder="zakupy;biedronka,lidl,tesco&#10;transport;uber,bolt&#10;rozrywka;netflix,spotify"
-        style={{ minHeight: '300px', fontFamily: 'Courier New, monospace' }}
       />
       {error && (
-        <p style={{ marginTop: '0.5rem', marginBottom: 0, color: 'var(--danger)', fontSize: '0.875rem' }}>
-          {error}
-        </p>
+        <p>{error}</p>
       )}
     </Modal>
   )

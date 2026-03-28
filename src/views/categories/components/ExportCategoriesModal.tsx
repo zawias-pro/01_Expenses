@@ -40,7 +40,6 @@ const ExportCategoriesModal = ({ rules, onClose }: ExportCategoriesModalProps) =
         value={exportRules()}
         readOnly
         onClick={e => { (e.target as HTMLTextAreaElement).select() }}
-        style={{ minHeight: '300px', fontFamily: 'Courier New, monospace' }}
       />
     </Modal>
   )

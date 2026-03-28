@@ -108,21 +108,10 @@ const CategoryRow = ({
         )}
       </td>
       <td>
-        <code style={{ 
-          fontSize: '0.75rem', 
-          fontFamily: 'monospace',
-          color: '#666',
-          backgroundColor: '#f5f5f5',
-          padding: '2px 6px',
-          borderRadius: '3px'
-        }}>
-          {id}
-        </code>
+        <code>{id}</code>
       </td>
       <td>
-        <span style={{ color: '#666' }}>
-          {count}
-        </span>
+        {count}
       </td>
       <td>
         {isEditing ? (
@@ -188,7 +177,6 @@ const CategoryRow = ({
             {isCustom && (
               <Button
                 variant="danger"
-                style={{ padding: '0.25rem 0.5rem', fontSize: '0.8125rem' }}
                 onClick={() => { onRemoveCategory(name) }}
               >
                 Remove
