@@ -19,11 +19,8 @@ import { Panel } from "../../components/Panel/Panel.tsx"
 
 type BulkAction = 'delete' | 'exclude' | 'unexclude' | 'setCategory' | null
 
-const TransactionsTable = ({
-  transactions,
-}: {
-  transactions: Transaction[]
-}) => {
+const TransactionsTable = () => {
+  const transactions = useStore((state) => state.transactions)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [bulkAction, setBulkAction] = useState<BulkAction>(null)
   const [bulkCategory, setBulkCategory] = useState<string>('')

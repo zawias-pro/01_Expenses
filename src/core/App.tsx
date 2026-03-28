@@ -32,7 +32,7 @@ const App = () => {
             <Categories />
           )}
           {view === 'transactions' && (
-            <TransactionsTable transactions={transactions}/>
+            <TransactionsTable />
           )}
           {view === 'summary' && summaries && (
             <DataByPeriod
