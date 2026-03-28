@@ -1,15 +1,6 @@
 .checkbox {
-  width: 1.125rem;
-  height: 1.125rem;
-  cursor: pointer;
-  accent-color: var(--primary-color);
-}
-
-.label {
+  font-size: 0.75rem;
+  font-weight: bold;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  color: var(--text-primary);
-  cursor: pointer;
 }

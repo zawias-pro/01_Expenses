@@ -218,10 +218,6 @@ const TransactionsTable = () => {
     setEditTransactionId(transaction.id)
   }
 
-  const handleCancelEdit = () => {
-    setEditTransactionId(null)
-  }
-
   return (
     <>
       <SectionHeader>Transactions Table</SectionHeader>
@@ -276,9 +272,8 @@ const TransactionsTable = () => {
         )}
 
       <EditTransactionModal
-        key={editTransactionId ?? 'edit-transaction-none'}
         transactionId={editTransactionId}
-        onCancel={handleCancelEdit}
+        onClose={() => {setEditTransactionId(null)}}
       />
 
       <QuickAddCategoryModal

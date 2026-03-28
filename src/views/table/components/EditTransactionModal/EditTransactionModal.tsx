@@ -6,15 +6,14 @@ import { Button } from '../../../../components/Button/Button.tsx'
 import { Input } from '../../../../components/Input/Input.tsx'
 import { Select } from '../../../../components/Select/Select.tsx'
 import { Checkbox } from '../../../../components/Checkbox/Checkbox.tsx'
-import styles from './EditTransactionModal.module.css'
 import { Textarea } from '../../../../components/Textarea/Textarea.tsx'
 
 const EditTransactionModal = ({
   transactionId,
-  onCancel
+  onClose
 }: {
   transactionId: string | null
-  onCancel: () => void
+  onClose: () => void
 }) => {
   const categories = useCategories()
   const categoryMetadata = useCategoryMetadata()
@@ -25,30 +24,34 @@ const EditTransactionModal = ({
   const updateTransactionComment = useStore((s) => s.updateTransactionComment)
   const updateTransactionExcluded = useStore((s) => s.updateTransactionExcluded)
 
-  const transaction = transactionId ? transactions.find((t) => t.id === transactionId) ?? null : null
+  const transaction = transactionId
+    ? (transactions.find((t) => t.id === transactionId) ?? null)
+    : null
 
   const [date, setDate] = useState<string>(transaction?.date ?? '')
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(transaction?.category ?? null)
   const [comment, setComment] = useState<string>(transaction?.comment ?? '')
   const [excluded, setExcluded] = useState<boolean>(transaction?.excluded ?? false)
 
-  if (!transaction) return null
+  if(transaction===null){
+    return null
+  }
 
   const handleSave = () => {
     updateTransactionDate(transaction.id, date)
     updateTransactionCategory(transaction.id, selectedCategoryId)
     updateTransactionComment(transaction.id, comment)
     updateTransactionExcluded(transaction.id, excluded)
-    onCancel()
+    onClose()
   }
 
   return (
     <Modal
-      title="Edit Transaction"
-      onClose={onCancel}
+      title={"Edit Transaction"}
+      onClose={onClose}
       footer={
         <>
-          <Button onClick={onCancel}>
+          <Button onClick={onClose}>
             Cancel
           </Button>
           <Button onClick={handleSave}>
@@ -57,20 +60,19 @@ const EditTransactionModal = ({
         </>
       }
     >
-      <div className={styles['form']}>
+      <>
         <Input
           id="edit-transaction-date"
-          label="Date:"
+          label="Date"
           type="text"
           value={date}
           onChange={e => { setDate(e.target.value) }}
           placeholder="YYYY-MM-DD"
-          className={styles['input']}
         />
 
         <Select
           id="edit-transaction-category"
-          label="Category:"
+          label="Category"
           value={getCategoryNameFromId(selectedCategoryId, categoryMetadata)}
           onChange={e => {
             const categoryName = e.target.value
@@ -80,7 +82,6 @@ const EditTransactionModal = ({
               setSelectedCategoryId(getCategoryIdFromName(categoryName, categoryMetadata) ?? null)
             }
           }}
-          className={styles['input']}
         >
           <option value={NO_CATEGORY_KEY}>{NO_CATEGORY_KEY}</option>
           {categories.map(cat => (
@@ -90,21 +91,18 @@ const EditTransactionModal = ({
 
         <Textarea
           id="edit-transaction-comment"
-          label="Comment:"
+          label="Comment"
           value={comment}
           onChange={e => { setComment(e.target.value) }}
-          placeholder="Enter a comment for this transaction..."
           rows={4}
-          className={styles['textarea']}
         />
 
         <Checkbox
           label="Exclude from calculations"
           checked={excluded}
           onChange={e => { setExcluded(e.target.checked) }}
-          className={styles['checkbox']}
         />
-      </div>
+      </>
     </Modal>
   )
 }

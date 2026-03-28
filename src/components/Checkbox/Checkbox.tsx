@@ -5,25 +5,16 @@ interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string
 }
 
-const Checkbox = ({ label, className = '', ...props }: CheckboxProps) => {
-  const checkboxElement = (
-    <input
-      type="checkbox"
-      className={[styles['checkbox'], className].filter(Boolean).join(' ')}
-      {...props}
-    />
+const Checkbox = ({
+  label,
+  ...props
+}: CheckboxProps) => {
+  return (
+    <label className={styles['checkbox']}>
+      <input type="checkbox"{...props} />
+      {label}
+    </label>
   )
-
-  if (label) {
-    return (
-      <label className={styles['label']}>
-        {checkboxElement}
-        {label}
-      </label>
-    )
-  }
-
-  return checkboxElement
 }
 
 export { Checkbox }
