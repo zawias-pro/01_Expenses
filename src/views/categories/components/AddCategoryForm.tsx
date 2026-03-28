@@ -1,41 +1,39 @@
 import { Button } from '../../../components/Button/Button.tsx'
 import { Input } from '../../../components/Input/Input.tsx'
 import { FormGroup } from "../../../components/FormGroup/FormGroup.tsx"
+import { useState } from "react"
+import { useStore } from "../../../store/useStore.ts"
 
-interface AddCategoryFormProps {
-  newCategory: string
-  newKeywords: string
-  onNewCategoryChange: (value: string) => void
-  onNewKeywordsChange: (value: string) => void
-  onUpdateCategory: (categoryName: string, keywords: string[]) => void
-}
+const AddCategoryForm = () => {
+  const [newCategory, setNewCategory] = useState('')
+  const [newKeywords, setNewKeywords] = useState('')
+  const categories = useStore((state) => state.categoryMetadata)
+  const onUpdateCategory = useStore((state) => state.updateCategory)
 
-const AddCategoryForm = ({
-  newCategory,
-  newKeywords,
-  onNewCategoryChange,
-  onNewKeywordsChange,
-  onUpdateCategory,
-}: AddCategoryFormProps) => {
   const handleAddCategory = () => {
-    if (newCategory.trim() && newKeywords.trim()) {
-      const keywordsArray = newKeywords.split(',').map(k => k.trim()).filter(k => k)
-      onUpdateCategory(newCategory.trim(), keywordsArray)
-      onNewCategoryChange('')
-      onNewKeywordsChange('')
+    if (!newKeywords.trim() || !newCategory.trim()) {
+      return
     }
+    if(Object.values(categories).includes(newCategory.toLowerCase())) {
+      alert("Category already exists")
+      return
+    }
+    const keywordsArray = newKeywords.split(',').map(k => k.trim()).filter(k => k)
+    onUpdateCategory(newCategory.trim(), keywordsArray)
+    setNewCategory('')
+    setNewKeywords('')
   }
 
   return (
-    <div>
+    <>
       <FormGroup>
         <Input
           id={'category'}
           label="Category"
           type="text"
-          placeholder="entertainment"
+          placeholder="category"
           value={newCategory}
-          onChange={e => { onNewCategoryChange(e.target.value) }}
+          onChange={e => { setNewCategory(e.target.value) }}
           onKeyDown={e => {
             if (e.key === 'Enter') {
               handleAddCategory()
@@ -46,9 +44,9 @@ const AddCategoryForm = ({
           id={'keywords'}
           label="Keywords"
           type="text"
-          placeholder="netflix,spotify,hbo"
+          placeholder="keyword1, keyword2, keyword3"
           value={newKeywords}
-          onChange={e => { onNewKeywordsChange(e.target.value) }}
+          onChange={e => { setNewKeywords(e.target.value) }}
           onKeyDown={e => {
             if (e.key === 'Enter') {
               handleAddCategory()
@@ -63,7 +61,7 @@ const AddCategoryForm = ({
       >
         Add
       </Button>
-    </div>
+    </>
   )
 }
 

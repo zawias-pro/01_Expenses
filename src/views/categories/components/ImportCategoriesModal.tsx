@@ -1,21 +1,29 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Modal } from '../../../components/Modal/Modal.tsx'
 import { Button } from '../../../components/Button/Button.tsx'
 import { Textarea } from "../../../components/Textarea/Textarea.tsx"
+import { useStore } from "../../../store/useStore.ts"
 
-interface ImportCategoriesModalProps {
-  onImport: (categories: Record<string, string[]>) => void
+const ImportCategoriesModal = ({
+  onClose
+}: {
   onClose: () => void
-}
-
-const ImportCategoriesModal = ({ onImport, onClose }: ImportCategoriesModalProps) => {
+}) => {
+  const onImport = useStore((state) => state.replaceCategories)
   const [csvContent, setCsvContent] = useState('')
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (error) {
+      alert(error)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setError(null)
+    }
+  }, [error])
 
   const handleClose = () => {
     onClose()
     setCsvContent('')
-    setError(null)
   }
 
   const parseCategoriesCSV = (csv: string): Record<string, string[]> | null => {
@@ -101,11 +109,8 @@ const ImportCategoriesModal = ({ onImport, onClose }: ImportCategoriesModalProps
           setCsvContent(e.target.value)
           setError(null)
         }}
-        placeholder="zakupy;biedronka,lidl,tesco&#10;transport;uber,bolt&#10;rozrywka;netflix,spotify"
+        rows={5}
       />
-      {error && (
-        <p>{error}</p>
-      )}
     </Modal>
   )
 }

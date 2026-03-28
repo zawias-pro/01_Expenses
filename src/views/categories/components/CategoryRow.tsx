@@ -1,40 +1,27 @@
 import { useState } from 'react'
-import { getCategoryNameFromId, useCategoryMetadata } from '../../../store/useStore.ts'
+import { getCategoryNameFromId, useCategoryMetadata, useStore } from '../../../store/useStore.ts'
 import { Button } from '../../../components/Button/Button.tsx'
 import { Input } from '../../../components/Input/Input.tsx'
-
-interface CategoryRowProps {
-  id: string
-  name: string
-  keywords: string[]
-  count: number
-  isCustom: boolean
-  editingCategory: string | null
-  editingKeywords: string
-  onEditingCategoryChange: (id: string | null) => void
-  onEditingKeywordsChange: (value: string) => void
-  onUpdateCategory: (categoryName: string, keywords: string[]) => void
-  onRemoveCategory: (categoryName: string) => void
-  onRenameCategory: (oldName: string, newName: string) => void
-}
 
 const CategoryRow = ({
   id,
   name,
   keywords,
   count,
-  isCustom,
-  editingCategory,
-  editingKeywords,
-  onEditingCategoryChange,
-  onEditingKeywordsChange,
-  onUpdateCategory,
-  onRemoveCategory,
-  onRenameCategory,
-}: CategoryRowProps) => {
+}: {
+  id: string
+  name: string
+  keywords: string[]
+  count: number
+}) => {
+  const onUpdateCategory = useStore((state) => state.updateCategory)
+  const onRemoveCategory = useStore((state) => state.removeCategory)
+  const onRenameCategory = useStore((state) => state.renameCategory)
   const categoryMetadata = useCategoryMetadata()
   const [isRenaming, setIsRenaming] = useState(false)
   const [renamingCategoryName, setRenamingCategoryName] = useState('')
+  const [editingCategory, onEditingCategoryChange] = useState<string | null>(null)
+  const [editingKeywords, onEditingKeywordsChange] = useState('')
 
   const isEditing = editingCategory === id
 
@@ -62,21 +49,15 @@ const CategoryRow = ({
   }
 
   const handleSaveRename = () => {
-    if (renamingCategoryName.trim()) {
-      const oldName = name
-      const newName = renamingCategoryName.trim()
-      
-      const existingNames = Object.values(categoryMetadata)
-      if (existingNames.includes(newName) && oldName !== newName) {
-        alert(`Category "${newName}" already exists. Please choose a different name.`)
-        return
-      }
-      
-      if (oldName !== newName) {
-        onRenameCategory(oldName, newName)
-      }
-      setIsRenaming(false)
+    const oldName = name
+    const newName = renamingCategoryName.trim()
+    const existingNames = Object.values(categoryMetadata)
+    if (existingNames.includes(newName) && oldName !== newName) {
+      alert(`Category "${newName}" already exists. Please choose a different name.`)
+      return
     }
+    onRenameCategory(oldName, newName)
+    setIsRenaming(false)
   }
 
   const handleCancelRename = () => {
@@ -131,59 +112,26 @@ const CategoryRow = ({
             autoFocus
           />
         ) : (
-          <span>{keywords.join(', ')}</span>
+          keywords.map(k => (
+            <div key={k} style={{
+              border: '1px solid black',
+              display: 'inline-block',
+              padding: 2,
+              margin: 2
+            }}>
+              {k}
+            </div>
+          ))
         )}
       </td>
       <td>
-        {isEditing ? (
-          <div>
-            <Button
-              onClick={handleSaveEdit}
-            >
-              Save
-            </Button>
-            <Button
-              onClick={handleCancelEdit}
-            >
-              Cancel
-            </Button>
-          </div>
-        ) : isRenaming ? (
-          <div>
-            <Button
-              onClick={handleSaveRename}
-              disabled={!renamingCategoryName.trim()}
-            >
-              Save
-            </Button>
-            <Button
-              onClick={handleCancelRename}
-            >
-              Cancel
-            </Button>
-          </div>
-        ) : (
-          <div>
-            <Button
-              onClick={handleStartEdit}
-            >
-              Edit
-            </Button>
-            <Button
-              onClick={handleStartRename}
-            >
-              Rename
-            </Button>
-            {isCustom && (
-              <Button
-                variant="danger"
-                onClick={() => { onRemoveCategory(name) }}
-              >
-                Remove
-              </Button>
-            )}
-          </div>
-        )}
+        {isEditing&&<Button onClick={handleSaveEdit}>Save</Button>}
+        {isEditing&&<Button onClick={handleCancelEdit}>Cancel</Button>}
+        {isRenaming&&<Button onClick={handleSaveRename} disabled={!renamingCategoryName.trim()}>Save</Button>}
+        {isRenaming&&<Button onClick={handleCancelRename}>Cancel</Button>}
+        {!isEditing&&!isRenaming&&<Button onClick={handleStartEdit}>Edit</Button>}
+        {!isEditing&&!isRenaming&&<Button onClick={handleStartRename}>Rename</Button>}
+        {!isEditing&&!isRenaming&&<Button variant="danger" onClick={() => { onRemoveCategory(name) }}>Remove</Button>}
       </td>
     </tr>
   )

@@ -1,15 +1,15 @@
-import { getCategoryNameFromId, useCategoryMetadata } from '../../../store/useStore.ts'
+import { getCategoryNameFromId, useAllRules, useCategoryMetadata } from '../../../store/useStore.ts'
 import { Modal } from '../../../components/Modal/Modal.tsx'
 import { Button } from '../../../components/Button/Button.tsx'
 import { Textarea } from "../../../components/Textarea/Textarea.tsx"
 
-interface ExportCategoriesModalProps {
-  rules: Record<string, string[]>
+const ExportCategoriesModal = ({
+  onClose
+}: {
   onClose: () => void
-}
-
-const ExportCategoriesModal = ({ rules, onClose }: ExportCategoriesModalProps) => {
+}) => {
   const categoryMetadata = useCategoryMetadata()
+  const rules = useAllRules()
 
   const exportRules = (): string => {
     const lines: string[] = []
@@ -31,9 +31,6 @@ const ExportCategoriesModal = ({ rules, onClose }: ExportCategoriesModalProps) =
         </Button>
       }
     >
-      <p>
-        All categories in CSV format (categoryname;keyword1,keyword2,keyword3):
-      </p>
       <Textarea
         id="export-categories"
         label={'Categories'}

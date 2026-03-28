@@ -1,44 +1,27 @@
 import { useState } from 'react'
-import { useStore, useCategoryMetadata, getCategoryNameFromId } from '../../store/useStore.ts'
+import {
+  useStore,
+  useAllRules,
+  useCategoryMetadata,
+  getCategoryNameFromId,
+} from '../../store/useStore.ts'
 import { ExportCategoriesModal } from './components/ExportCategoriesModal.tsx'
 import { ImportCategoriesModal } from './components/ImportCategoriesModal.tsx'
 import { AddCategoryForm } from './components/AddCategoryForm.tsx'
 import { CategoryRow } from './components/CategoryRow.tsx'
 import { Button } from '../../components/Button/Button.tsx'
 import { SectionHeader } from '../../components/SectionHeader/SectionHeader.tsx'
-import styles from './Categories.module.css'
 import { Panel } from "../../components/Panel/Panel.tsx"
 
-const Categories = ({
-  rules,
-  customRules,
-  onUpdateCategory,
-  onRemoveCategory,
-  onRenameCategory,
-  onReplaceCategories
-}: {
-  rules: Record<string, string[]> // category ID -> keywords
-  customRules: Record<string, string[]> // category ID -> keywords
-  onUpdateCategory: (categoryName: string, keywords: string[]) => void
-  onRemoveCategory: (categoryName: string) => void
-  onRenameCategory: (oldName: string, newName: string) => void
-  onReplaceCategories: (categories: Record<string, string[]>) => void
-}) => {
+const Categories = () => {
   const categoryMetadata = useCategoryMetadata()
   const transactions = useStore((state) => state.transactions)
+  const rules = useAllRules()
 
   const [showExportModal, setShowExportModal] = useState(false)
   const [showImportModal, setShowImportModal] = useState(false)
-  const [editingCategory, setEditingCategory] = useState<string | null>(null)
-  const [editingKeywords, setEditingKeywords] = useState('')
-  const [newCategory, setNewCategory] = useState('')
-  const [newKeywords, setNewKeywords] = useState('')
   const [sortColumn, setSortColumn] = useState<'name' | 'count'>('name')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
-
-  const handleImport = (categories: Record<string, string[]>) => {
-    onReplaceCategories(categories)
-  }
 
   const handleSort = (column: 'name' | 'count') => {
     if (sortColumn === column) {
@@ -86,17 +69,11 @@ const Categories = ({
       </Panel>
 
       <Panel title={'Add new category'}>
-        <AddCategoryForm
-          newCategory={newCategory}
-          newKeywords={newKeywords}
-          onNewCategoryChange={setNewCategory}
-          onNewKeywordsChange={setNewKeywords}
-          onUpdateCategory={onUpdateCategory}
-        />
+        <AddCategoryForm />
       </Panel>
 
       <Panel title={'Expense categories'}>
-        <table className={styles['table']}>
+        <table>
           <thead>
           <tr>
             <th
@@ -122,21 +99,13 @@ const Categories = ({
               name={name}
               keywords={keywords}
               count={count}
-              isCustom={id in customRules}
-              editingCategory={editingCategory}
-              editingKeywords={editingKeywords}
-              onEditingCategoryChange={setEditingCategory}
-              onEditingKeywordsChange={setEditingKeywords}
-              onUpdateCategory={onUpdateCategory}
-              onRemoveCategory={onRemoveCategory}
-              onRenameCategory={onRenameCategory}
             />
           ))}
           </tbody>
         </table>
       </Panel>
-      {showExportModal && <ExportCategoriesModal rules={rules} onClose={() => { setShowExportModal(false) }} />}
-      {showImportModal && <ImportCategoriesModal onImport={handleImport} onClose={() => { setShowImportModal(false) }} />}
+      {showExportModal && <ExportCategoriesModal onClose={() => { setShowExportModal(false) }} />}
+      {showImportModal && <ImportCategoriesModal onClose={() => { setShowImportModal(false) }} />}
     </>
   )
 }

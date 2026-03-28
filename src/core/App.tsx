@@ -7,7 +7,7 @@ import { DataByPeriod } from '../views/data-by-period/DataByPeriod.tsx'
 import { CumulativeBarChart } from '../views/data-cumulative/CumulativeBarChart.tsx'
 import { Categories } from '../views/categories/Categories.tsx'
 import { Budget } from '../views/budget/Budget.tsx'
-import { useStore, useAllRules, useSummaries } from '../store/useStore.ts'
+import { useStore, useSummaries } from '../store/useStore.ts'
 import { ErrorBoundary } from "../components/ErrorBoundary/ErrorBoundary.tsx"
 import { Sidebar } from "../components/Sidebar/Sidebar.tsx"
 import { CSVInput } from "../views/input/CSVInput.tsx"
@@ -15,12 +15,6 @@ import { CSVInput } from "../views/input/CSVInput.tsx"
 const App = () => {
   const [view, setView] = useState<View>('csv')
   const transactions = useStore((state) => state.transactions)
-  const customRules = useStore((state) => state.customRules)
-  const updateCategory = useStore((state) => state.updateCategory)
-  const removeCategory = useStore((state) => state.removeCategory)
-  const renameCategory = useStore((state) => state.renameCategory)
-  const replaceCategories = useStore((state) => state.replaceCategories)
-  const allRules = useAllRules()
   const summaries = useSummaries()
 
   return (
@@ -35,14 +29,7 @@ const App = () => {
             <CSVInput />
           )}
           {view === 'categories' && (
-            <Categories
-              rules={allRules}
-              customRules={customRules}
-              onUpdateCategory={updateCategory}
-              onRemoveCategory={removeCategory}
-              onRenameCategory={renameCategory}
-              onReplaceCategories={replaceCategories}
-            />
+            <Categories />
           )}
           {view === 'transactions' && (
             <TransactionsTable transactions={transactions}/>
