@@ -15,13 +15,7 @@ const addTransactions = (
   amountIndex: number,
   allRules: Record<string, string[]>,
 ) => {
-  if (!csvContent.trim()) {
-    alert('Please paste CSV data before adding transactions.')
-    return
-  }
-
-  const lines = csvContent.split('\n').filter((l) => l.trim())
-  if (lines.length === 0) return
+  const lines = csvContent.split('\n')
 
   const parsedWithIndex = lines.map((line, index) => ({
     transaction: parseCSVLine(line, delimiter, dateIndex, descriptionIndex, amountIndex),
@@ -57,8 +51,6 @@ const addTransactions = (
     }
   })
 
-  if (classified.length === 0) return
-
   const existingHashes = new Set(transactions.map(t => {
     if (!t.hash) return hashTransaction(t.date, t.description, t.amount)
     return t.hash
@@ -93,7 +85,10 @@ const addTransactions = (
   }
 
   if (unique.length > 0) {
-    setTransactions([...transactions, ...unique.map(item => item.transaction)])
+    setTransactions([
+      ...transactions,
+      ...unique.map(item => item.transaction)
+    ])
   }
 
   const linesToRemove = new Set(unique.map(item => item.lineIndex))

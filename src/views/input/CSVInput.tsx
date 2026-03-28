@@ -116,6 +116,7 @@ const CSVInput = () => {
               allRules
             )
           }}
+          disabled={csvContent.trim()===''}
         >
           Add transactions
         </Button>
