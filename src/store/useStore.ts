@@ -95,6 +95,9 @@ const useStore = create<AppState>()(
           transactions: state.transactions.map((t) => {
             if (t.id === id) {
               const originalCategory = t.originalCategory ?? (!t.categoryOverridden ? t.category : undefined)
+              if(originalCategory===null) {
+                throw new Error(`Unexpected null originalCategory for transaction ${id}`)
+              }
               return {
                 ...t,
                 category: categoryId,
@@ -169,7 +172,7 @@ const useStore = create<AppState>()(
         set({
           transactions: state.transactions.map((t) => {
             if (t.id === id) {
-              const newCategoryId = classifyDescription(t.description, allRules, state.categoryMetadata)
+              const newCategoryId = classifyDescription(t.description, allRules)
               const categoryOverridden = false
               const overridden = t.dateOverridden || false
               return {
@@ -294,7 +297,7 @@ const useStore = create<AppState>()(
         set({
           transactions: state.transactions.map((t) => {
             if (t.categoryOverridden) return { ...t }
-            const newCategoryId = classifyDescription(t.description, allRules, state.categoryMetadata)
+            const newCategoryId = classifyDescription(t.description, allRules)
             return { ...t, category: newCategoryId }
           }),
         })

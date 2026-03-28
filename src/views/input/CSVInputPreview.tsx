@@ -4,7 +4,7 @@ import { classifyDescription } from '../../parsing/classifyDescription/classifyD
 import { parsePolishAmount } from '../../parsing/parsePolishAmount/parsePolishAmount.ts'
 import { hashTransaction } from '../../parsing/hashTransaction/hashTransaction.ts'
 import type { Transaction } from '../../parsing/types.ts'
-import { useStore, useAllRules, useCategoryMetadata } from '../../store/useStore.ts'
+import { useStore, useAllRules } from '../../store/useStore.ts'
 import { CSVPreviewTable } from './components/CSVPreviewTable.tsx'
 import { SectionHeader } from '../../components/SectionHeader/SectionHeader.tsx'
 import { Button } from '../../components/Button/Button.tsx'
@@ -24,7 +24,6 @@ const CSVInputPreview = () => {
   const transactions = useStore((state) => state.transactions)
   const setTransactions = useStore((state) => state.setTransactions)
   const allRules = useAllRules()
-  const categoryMetadata = useCategoryMetadata()
 
   const getPreviewTransactions = (): Transaction[] => {
     if (!csvContent.trim()) return []
@@ -34,7 +33,7 @@ const CSVInputPreview = () => {
       const parsed = parseCSVLine(line, delimiter, dateIndex, descriptionIndex, amountIndex)
       return {
         ...parsed,
-        category: classifyDescription(parsed.description, allRules, categoryMetadata)
+        category: classifyDescription(parsed.description, allRules)
       }
     })
   }
@@ -69,7 +68,7 @@ const CSVInputPreview = () => {
 
     const classified = validWithIndex.map((item) => {
       const t = item.transaction
-      const category = classifyDescription(t.description, allRules, categoryMetadata)
+      const category = classifyDescription(t.description, allRules)
       let excluded = false
       try {
         const amount = parsePolishAmount(t.amount)

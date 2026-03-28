@@ -23,7 +23,7 @@ const ImportCategoriesModal = ({ onImport, onClose }: ImportCategoriesModalProps
     const categories: Record<string, string[]> = {}
     
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim()
+      const line = lines[i]?.trim()
       if (!line) continue
       
       const parts = line.split(';')

@@ -30,8 +30,10 @@ const parseCSVLine = (
   const clean = (s: string) => s.replace(/^"|"$/g, '').trim()
 
   // Handle cases where we don't have enough parts
-  const date = parts.length > dateIndex ? clean(parts[dateIndex]) : ''
-  let description = parts.length > descriptionIndex ? clean(parts[descriptionIndex]) : ''
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const date = parts.length > dateIndex ? clean(parts[dateIndex]!) : ''
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  let description = parts.length > descriptionIndex ? clean(parts[descriptionIndex]!) : ''
   // Remove multiple whitespaces (spaces, tabs, newlines) and replace with single space
   // This must be done BEFORE calculating the hash to ensure consistent hashing
   description = description.replace(/\s+/g, ' ').trim()
@@ -39,13 +41,14 @@ const parseCSVLine = (
   const account = ''
   // Category from CSV is ignored; set on classification (can be null = no category)
   const category: string | null = null
-  const amount = parts.length > amountIndex ? clean(parts[amountIndex]) : ''
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const amount = parts.length > amountIndex ? clean(parts[amountIndex]!) : ''
 
   // Calculate hash using normalized description (before validation)
   const hash = hashTransaction(date, description, amount)
 
   // Check for insufficient parts
-  let validation = validateTransaction(date, description, category, amount, line)
+  let validation = validateTransaction(date, description, amount, line)
 
   // Additional validation for insufficient CSV parts
   const maxIndex = Math.max(dateIndex, descriptionIndex, amountIndex)

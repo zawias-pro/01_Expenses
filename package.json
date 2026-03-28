@@ -7,7 +7,7 @@
     "start": "vite",
     "lint": "eslint .",
     "test": "node --test src/**/*.test.ts",
-    "check-types": "tsc --build --noEmit",
+    "tsc": "tsc --build --noEmit",
     "cypress": "cypress"
   },
   "dependencies": {

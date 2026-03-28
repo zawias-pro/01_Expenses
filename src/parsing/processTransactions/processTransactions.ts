@@ -30,7 +30,7 @@ const processTransactions = (
       const amount = parsePolishAmount(t.amount)
       // Use the transaction's category ID if it was manually overridden
       // Otherwise, classify based on description (defaults to "others" ID if no match)
-      const categoryId = t.overridden ? t.category : classifyDescription(t.description, rules, metadata)
+      const categoryId = t.overridden ? t.category : classifyDescription(t.description, rules)
       // Convert ID to name for display in summary
       const categoryName = getCategoryNameFromId(categoryId, metadata)
 
@@ -51,6 +51,8 @@ const processTransactions = (
   return Object.entries(monthlyData)
     .map(([key, data]) => {
       const [year, month] = key.split('-').map(Number)
+      if(typeof year !== 'number') {throw new Error(`Invalid value: ${key}`)}
+      if(typeof month !== 'number') {throw new Error(`Invalid value: ${key}`)}
       return {
         year,
         month,
@@ -61,7 +63,13 @@ const processTransactions = (
       }
     })
     .sort((a, b) => {
-      if (a.year !== b.year) return a.year - b.year
+      if(typeof a.year !=='number'){return 0}
+      if(typeof b.year !=='number'){return 0}
+      if(typeof a.month !=='number'){return 0}
+      if(typeof b.month !=='number'){return 0}
+      if (a.year !== b.year) {
+        return a.year - b.year
+      }
       return a.month - b.month
     })
 }

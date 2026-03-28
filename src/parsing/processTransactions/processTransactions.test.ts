@@ -19,6 +19,7 @@ test('processTransactions - processes transactions correctly', () => {
       isValid: true,
       overridden: false,
       overrideMode: false,
+      hash: '111',
     },
     {
       id: '2',
@@ -31,6 +32,7 @@ test('processTransactions - processes transactions correctly', () => {
       isValid: true,
       overridden: false,
       overrideMode: false,
+      hash: '222',
     },
     {
       id: '3',
@@ -43,6 +45,7 @@ test('processTransactions - processes transactions correctly', () => {
       isValid: true,
       overridden: false,
       overrideMode: false,
+      hash: '333',
     },
   ]
   const othersId = generateCategoryId()
@@ -82,6 +85,7 @@ test('processTransactions - processes all transactions passed to it', () => {
       isValid: true,
       overridden: false,
       overrideMode: false,
+      hash: '111',
     },
     {
       id: '2',
@@ -94,6 +98,7 @@ test('processTransactions - processes all transactions passed to it', () => {
       isValid: true,
       overridden: false,
       overrideMode: false,
+      hash: '222',
     },
   ]
   const othersId = generateCategoryId()
@@ -107,7 +112,8 @@ test('processTransactions - processes all transactions passed to it', () => {
   const result = processTransactions(transactions, rules, metadata)
 
   assert(result.length === 1)
-  const dec = result[0]
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const dec = result[0]!
   // Both transactions are processed regardless of excluded flag
   assert.strictEqual(dec.totalExpenses, 5000)
   assert.strictEqual(dec.totalIncome, 2000)
@@ -129,6 +135,7 @@ test('processTransactions - classifies categories from description and respects 
       isValid: true,
       overridden: false,
       overrideMode: false,
+      hash: '111',
     },
     {
       id: '2',
@@ -141,6 +148,7 @@ test('processTransactions - classifies categories from description and respects 
       isValid: true,
       overridden: false,
       overrideMode: false,
+      hash: '222',
     },
     {
       id: '3',
@@ -153,6 +161,7 @@ test('processTransactions - classifies categories from description and respects 
       isValid: true,
       overridden: true, // Manually overridden
       overrideMode: false,
+      hash: '333',
     },
   ]
   const rules = { [groceryId]: ['biedronka'], [othersId]: [] }
@@ -164,7 +173,8 @@ test('processTransactions - classifies categories from description and respects 
   const result = processTransactions(transactions, rules, metadata)
 
   assert(result.length === 1)
-  const dec = result[0]
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const dec = result[0]!
   // BIEDRONKA should be classified as "grocery"
   assert.strictEqual(dec.categories['grocery'], 100)
   // Random transaction has no keyword match → (no category)

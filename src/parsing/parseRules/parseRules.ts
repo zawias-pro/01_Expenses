@@ -13,8 +13,10 @@ const parseRules = (content: string): { rules: Record<string, string[]>, metadat
   for (const line of lines) {
     const parts = line.split(';')
     if (parts.length >= 2) {
-      const keyword = parts[0].trim()
-      const categoryName = parts[1].trim()
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const keyword = parts[0]!.trim()
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const categoryName = parts[1]!.trim()
       if (keyword && categoryName) {
         // Use getOrCreateCategoryId to ensure same name gets same ID within this parse
         const categoryId = getOrCreateCategoryId(categoryName, metadata)
@@ -22,7 +24,7 @@ const parseRules = (content: string): { rules: Record<string, string[]>, metadat
           rules[categoryId] = []
           metadata[categoryId] = categoryName
         }
-        rules[categoryId].push(keyword)
+        rules[categoryId]?.push(keyword)
       }
     }
   }

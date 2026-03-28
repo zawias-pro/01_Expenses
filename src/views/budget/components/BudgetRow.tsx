@@ -58,6 +58,7 @@ const BudgetRow = ({ name, amount }: BudgetRowProps) => {
           <Input
             id={`budget-row-amount-${name}`}
             type="text"
+            label={'Amount'}
             value={editingAmount}
             onChange={e => { setEditingAmount(e.target.value) }}
             style={{ minWidth: '150px', fontSize: '0.875rem', padding: '0.375rem' }}
