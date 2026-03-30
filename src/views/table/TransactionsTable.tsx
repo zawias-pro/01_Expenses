@@ -21,9 +21,9 @@ type BulkAction = 'delete' | 'exclude' | 'unexclude' | 'setCategory' | null
 
 const TransactionsTable = () => {
   const transactions = useStore((state) => state.transactions)
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [selectedIds, setSelectedIds] = useState(new Set<string>())
   const [bulkAction, setBulkAction] = useState<BulkAction>(null)
-  const [bulkCategory, setBulkCategory] = useState<string>('')
+  const [bulkCategory, setBulkCategory] = useState('')
   const [quickAddTransactionId, setQuickAddTransactionId] = useState<string | null>(null)
   const [editTransactionId, setEditTransactionId] = useState<string | null>(null)
 
@@ -112,23 +112,26 @@ const TransactionsTable = () => {
     // Sort
     if (sortColumn && sortDirection) {
       filtered = [...filtered].sort((a, b) => {
-        let comparison = 0
-        if (sortColumn === 'date') {
-          comparison = a.date.localeCompare(b.date)
-        } else if (sortColumn === 'description') {
-          comparison = a.description.localeCompare(b.description)
-        } else if (sortColumn === 'category') {
-          const aName = getCategoryNameFromId(a.category, categoryMetadata)
-          const bName = getCategoryNameFromId(b.category, categoryMetadata)
-          comparison = aName.localeCompare(bName)
-        } else if (sortColumn === 'amount') {
-          comparison = parseAmount(a.amount) - parseAmount(b.amount)
-        } else {
-          // sortColumn === 'addedAt'
+        const comparison = (() => {
+          if (sortColumn === 'date') {
+            return a.date.localeCompare(b.date)
+          }
+          if (sortColumn === 'description') {
+            return a.description.localeCompare(b.description)
+          }
+          if (sortColumn === 'category') {
+            const aName = getCategoryNameFromId(a.category, categoryMetadata)
+            const bName = getCategoryNameFromId(b.category, categoryMetadata)
+            return aName.localeCompare(bName)
+          }
+          if (sortColumn === 'amount') {
+            return parseAmount(a.amount) - parseAmount(b.amount)
+          }
+
           const aTime = a.addedAt ?? ''
           const bTime = b.addedAt ?? ''
-          comparison = aTime.localeCompare(bTime)
-        }
+          return aTime.localeCompare(bTime)
+        })()
         return sortDirection === 'asc' ? comparison : -comparison
       })
     }

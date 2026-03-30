@@ -11,7 +11,7 @@ import { Panel } from '../../../../components/Panel/Panel.tsx'
 import { useTransactionFilters } from '../../../../store/useTransactionFilters.ts'
 
 const TransactionsFilters = () => {
-  const [amountFilterInput, setAmountFilterInput] = useState<string>('')
+  const [amountFilterInput, setAmountFilterInput] = useState('')
   const categoryMetadata = useCategoryMetadata()
   const categories = useCategories()
   const transactions = useStore((s) => s.transactions)

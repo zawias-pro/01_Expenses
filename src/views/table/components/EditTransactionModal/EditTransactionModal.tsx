@@ -28,10 +28,10 @@ const EditTransactionModal = ({
     ? (transactions.find((t) => t.id === transactionId) ?? null)
     : null
 
-  const [date, setDate] = useState<string>(transaction?.date ?? '')
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(transaction?.category ?? null)
-  const [comment, setComment] = useState<string>(transaction?.comment ?? '')
-  const [excluded, setExcluded] = useState<boolean>(transaction?.excluded ?? false)
+  const [date, setDate] = useState(transaction?.date ?? '')
+  const [selectedCategoryId, setSelectedCategoryId] = useState(transaction?.category ?? null)
+  const [comment, setComment] = useState(transaction?.comment ?? '')
+  const [excluded, setExcluded] = useState(transaction?.excluded ?? false)
 
   if(transaction===null){
     return null

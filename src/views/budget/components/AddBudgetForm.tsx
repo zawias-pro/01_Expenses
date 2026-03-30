@@ -12,8 +12,8 @@ const AddBudgetForm = () => {
   const budgets = useStore((state) => state.budgets)
   const setBudget = useStore((state) => state.setBudget)
 
-  const [newCategory, setNewCategory] = useState<string>('')
-  const [newAmount, setNewAmount] = useState<string>('')
+  const [newCategory, setNewCategory] = useState('')
+  const [newAmount, setNewAmount] = useState('')
 
   const handleAddBudget = () => {
     if (newCategory.trim() && newAmount.trim()) {

@@ -21,24 +21,22 @@ const QuickAddCategoryModal = ({
 
   const transaction = transactionId ? transactions.find((t) => t.id === transactionId) ?? null : null
 
-  const [selectedCategory, setSelectedCategory] = useState<string>('new')
-  const [customCategory, setCustomCategory] = useState<string>('')
-  const [keyword, setKeyword] = useState<string>(transaction?.description ?? '')
+  const [selectedCategory, setSelectedCategory] = useState('new')
+  const [customCategory, setCustomCategory] = useState('')
+  const [keyword, setKeyword] = useState(transaction?.description ?? '')
 
   if (transaction === null) {
     return null
   }
 
   const handleSave = () => {
-    let categoryName = ''
-    if (selectedCategory === 'new') {
-      if (!customCategory.trim()) {
-        alert('Please enter a category name')
-        return
-      }
-      categoryName = customCategory.trim()
-    } else {
-      categoryName = selectedCategory
+    const categoryName = selectedCategory === 'new'
+      ? customCategory.trim()
+      : selectedCategory
+
+    if (selectedCategory === 'new' && !categoryName) {
+      alert('Please enter a category name')
+      return
     }
 
     if (selectedCategory === 'new' && categories.includes(categoryName)) {
