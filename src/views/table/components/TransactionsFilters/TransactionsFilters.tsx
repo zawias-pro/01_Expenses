@@ -9,6 +9,7 @@ import { Button } from '../../../../components/Button/Button.tsx'
 import { FormGroup } from '../../../../components/FormGroup/FormGroup.tsx'
 import { Panel } from '../../../../components/Panel/Panel.tsx'
 import { useTransactionFilters } from '../../../../store/useTransactionFilters.ts'
+import { Checkbox } from "../../../../components/Checkbox/Checkbox.tsx"
 
 const TransactionsFilters = () => {
   const [amountFilterInput, setAmountFilterInput] = useState('')
@@ -20,11 +21,13 @@ const TransactionsFilters = () => {
     selectedCategory,
     selectedMonthFilter,
     amountFilterType,
+    hasDuplicates,
     setSearchQuery,
     setSelectedCategory,
     setSelectedMonthFilter,
     setAmountFilterType,
     setAmountFilterValue,
+    setHasDuplicates,
   } = useTransactionFilters()
 
   // Compute available months from transactions (same logic as TransactionsTable)
@@ -141,6 +144,13 @@ const TransactionsFilters = () => {
               </Button>
             </div>
           )}
+        </div>
+        <div>
+          <Checkbox
+            label={'Has duplicates'}
+            onChange={e => { setHasDuplicates(e.target.checked) }}
+            checked={hasDuplicates}
+          />
         </div>
       </FormGroup>
     </Panel>

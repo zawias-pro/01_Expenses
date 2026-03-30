@@ -10,7 +10,9 @@ import { getMonthFromDate } from '../../parsing/getMonthFromDate/getMonthFromDat
 import { parsePolishAmount } from '../../parsing/parsePolishAmount/parsePolishAmount.ts'
 import { TransactionsFilters } from './components/TransactionsFilters/TransactionsFilters.tsx'
 import { TransactionsBulkActions } from './components/TransactionsBulkActions/TransactionsBulkActions.tsx'
-import { TransactionsTableHeader } from './components/TransactionsTableHeader/TransactionsTableHeader.tsx'
+import {
+  type SortColumn, TransactionsTableHeader
+} from './components/TransactionsTableHeader/TransactionsTableHeader.tsx'
 import { TransactionRow } from './components/TransactionRow/TransactionRow.tsx'
 import { EditTransactionModal } from './components/EditTransactionModal/EditTransactionModal.tsx'
 import { QuickAddCategoryModal } from './components/QuickAddCategoryModal/QuickAddCategoryModal.tsx'
@@ -33,8 +35,9 @@ const TransactionsTable = () => {
     selectedMonthFilter,
     amountFilterType,
     amountFilterValue,
+    hasDuplicates
   } = useTransactionFilters()
-  const [sortColumn, setSortColumn] = useState<'date' | 'description' | 'category' | 'amount' | 'addedAt' | 'hash' | null>(null)
+  const [sortColumn, setSortColumn] = useState<SortColumn | null>(null)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(null)
 
   const categoryMetadata = useCategoryMetadata()
@@ -109,6 +112,11 @@ const TransactionsTable = () => {
       })
     }
 
+    if(hasDuplicates) {
+      const hasDuplicate = (x:Transaction)=>transactions.filter(t=>t.hash===x.hash).length>1
+      filtered=filtered.filter(hasDuplicate)
+    }
+
     // Sort
     if (sortColumn && sortDirection) {
       filtered = [...filtered].sort((a, b) => {
@@ -127,6 +135,9 @@ const TransactionsTable = () => {
           if (sortColumn === 'amount') {
             return parseAmount(a.amount) - parseAmount(b.amount)
           }
+          if(sortColumn==='hash') {
+            return a.hash.localeCompare(b.hash)
+          }
 
           const aTime = a.addedAt ?? ''
           const bTime = b.addedAt ?? ''
@@ -137,7 +148,7 @@ const TransactionsTable = () => {
     }
 
     return filtered
-  }, [transactions, searchQuery, selectedCategory, selectedMonthFilter, amountFilterType, amountFilterValue, sortColumn, sortDirection, categoryMetadata])
+  }, [transactions, searchQuery, selectedCategory, selectedMonthFilter, amountFilterType, amountFilterValue, hasDuplicates, sortColumn, sortDirection, categoryMetadata])
 
   // Select all visible transactions
   const handleSelectAll = (checked: boolean) => {

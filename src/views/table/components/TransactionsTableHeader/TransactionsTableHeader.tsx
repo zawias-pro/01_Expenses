@@ -1,4 +1,4 @@
-type SortColumn = 'date' | 'description' | 'category' | 'amount' | 'addedAt' | 'hash'
+type SortColumn = 'date' | 'description' | 'category' | 'amount' | 'addedAt' | 'hash' | 'hasDuplicate'
 
 const TransactionsTableHeader = ({
   allSelected,
@@ -82,3 +82,4 @@ const TransactionsTableHeader = ({
 }
 
 export { TransactionsTableHeader }
+export {type SortColumn}
