@@ -1,4 +1,4 @@
-type SortColumn = 'date' | 'description' | 'category' | 'amount' | 'addedAt'
+type SortColumn = 'date' | 'description' | 'category' | 'amount' | 'addedAt' | 'hash'
 
 const TransactionsTableHeader = ({
   allSelected,
@@ -56,32 +56,24 @@ const TransactionsTableHeader = ({
             title="Select all"
           />
         </th>
-        <th
-          onClick={() => { handleSort('date') }}
-        >
+        <th onClick={() => { handleSort('date') }}>
           Date{getSortIndicator('date')}
         </th>
-        <th
-          onClick={() => { handleSort('description') }}
-        >
+        <th onClick={() => { handleSort('description') }}>
           Description{getSortIndicator('description')}
         </th>
-        <th
-          onClick={() => { handleSort('category') }}
-        >
+        <th onClick={() => { handleSort('category') }}>
           Category{getSortIndicator('category')}
         </th>
-        <th
-          onClick={() => { handleSort('amount') }}
-        >
+        <th onClick={() => { handleSort('amount') }}>
           Amount{getSortIndicator('amount')}
         </th>
-        <th
-          onClick={() => { handleSort('addedAt') }}
-        >
+        <th onClick={() => { handleSort('addedAt') }}>
           Added At{getSortIndicator('addedAt')}
         </th>
-        <th>Hash</th>
+        <th onClick={() => { handleSort('hash') }}>
+          Hash
+        </th>
         <th>Comment</th>
         <th>Actions</th>
       </tr>

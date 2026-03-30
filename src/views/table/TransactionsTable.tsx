@@ -34,7 +34,7 @@ const TransactionsTable = () => {
     amountFilterType,
     amountFilterValue,
   } = useTransactionFilters()
-  const [sortColumn, setSortColumn] = useState<'date' | 'description' | 'category' | 'amount' | 'addedAt' | null>(null)
+  const [sortColumn, setSortColumn] = useState<'date' | 'description' | 'category' | 'amount' | 'addedAt' | 'hash' | null>(null)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(null)
 
   const categoryMetadata = useCategoryMetadata()

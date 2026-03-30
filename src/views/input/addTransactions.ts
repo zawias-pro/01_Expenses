@@ -14,6 +14,7 @@ const addTransactions = (
   descriptionIndex: number,
   amountIndex: number,
   allRules: Record<string, string[]>,
+  allowDuplicates: boolean,
 ) => {
   const lines = csvContent.split('\n')
 
@@ -59,7 +60,7 @@ const addTransactions = (
   const unique: typeof classified = []
 
   classified.forEach(item => {
-    if (existingHashes.has(item.transaction.hash)) {
+    if (!allowDuplicates&&existingHashes.has(item.transaction.hash)) {
       duplicates.push(item)
     } else {
       unique.push(item)

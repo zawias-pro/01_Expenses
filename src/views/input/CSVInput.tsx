@@ -13,6 +13,7 @@ import { Select } from "../../components/Select/Select.tsx"
 import { Input } from "../../components/Input/Input.tsx"
 import { FormGroup } from "../../components/FormGroup/FormGroup.tsx"
 import { addTransactions } from "./addTransactions.ts"
+import { Checkbox } from "../../components/Checkbox/Checkbox.tsx"
 
 const CSVInput = () => {
   const [csvContent, setCsvContent] = useState('')
@@ -20,6 +21,7 @@ const CSVInput = () => {
   const [dateIndex, setDateIndex] = useState(0)
   const [descriptionIndex, setDescriptionIndex] = useState(1)
   const [amountIndex, setAmountIndex] = useState(4)
+  const [allowDuplicates, setAllowDuplicates] = useState(false)
   const transactions = useStore((state) => state.transactions)
   const setTransactions = useStore((state) => state.setTransactions)
   const allRules = useAllRules()
@@ -94,6 +96,11 @@ const CSVInput = () => {
             onChange={e => {setCsvContent(e.target.value)}}
             rows={10}
           />
+        <Checkbox
+          id={'allow-duplicates'}
+          label={'Allow duplicates'}
+          onChange={e=>{ setAllowDuplicates(e.target.checked) }}
+        />
       </Panel>
       <Panel title={'Preview'}>
         <CSVPreviewTable transactions={getPreviewTransactions()} />
@@ -113,7 +120,8 @@ const CSVInput = () => {
               dateIndex,
               descriptionIndex,
               amountIndex,
-              allRules
+              allRules,
+              allowDuplicates
             )
           }}
           disabled={csvContent.trim()===''}
