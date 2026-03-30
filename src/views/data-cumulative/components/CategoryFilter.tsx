@@ -8,13 +8,12 @@ interface CategoryFilterProps {
 
 const CategoryFilter = ({ categories, selectedCategory, onCategoryChange }: CategoryFilterProps) => {
   return (
-    <div style={{ marginBottom: '1.5rem' }}>
+    <div>
       <Select
         id="category-filter"
         label="Category"
         value={selectedCategory || ''}
         onChange={e => { onCategoryChange(e.target.value || null) }}
-        style={{ fontSize: '0.875rem', padding: '0.375rem', minWidth: '200px' }}
       >
         <option value="">All categories</option>
         {categories.map(cat => (

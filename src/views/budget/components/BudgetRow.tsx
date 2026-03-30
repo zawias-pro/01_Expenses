@@ -41,54 +41,39 @@ const BudgetRow = ({ name, amount }: BudgetRowProps) => {
   }
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '1rem',
-        padding: '0.75rem',
-        backgroundColor: '#fff',
-        border: '1px solid #ddd',
-        borderRadius: '4px'
-      }}
-    >
+    <div>
       {isEditing ? (
         <>
-          <span style={{ minWidth: '200px', fontWeight: '500' }}>{name}</span>
+          <span>{name}</span>
           <Input
             id={`budget-row-amount-${name}`}
             type="text"
             label={'Amount'}
             value={editingAmount}
             onChange={e => { setEditingAmount(e.target.value) }}
-            style={{ minWidth: '150px', fontSize: '0.875rem', padding: '0.375rem' }}
           />
           <Button
             onClick={handleSaveEdit}
-            style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
           >
             Save
           </Button>
           <Button
             onClick={() => { setIsEditing(false) }}
-            style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
           >
             Cancel
           </Button>
         </>
       ) : (
         <>
-          <span style={{ minWidth: '200px', fontWeight: '500' }}>{name}</span>
-          <span style={{ minWidth: '150px' }}>{formatPolishNumber(amount)} PLN</span>
+          <span>{name}</span>
+          <span>{formatPolishNumber(amount)} PLN</span>
           <Button
             onClick={handleStartEdit}
-            style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
           >
             Edit
           </Button>
           <Button
             onClick={handleRemove}
-            style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem', color: '#dc3545' }}
           >
             Remove
           </Button>

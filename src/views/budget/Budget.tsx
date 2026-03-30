@@ -8,7 +8,6 @@ const Budget = () => {
   const categoryMetadata = useCategoryMetadata()
   const budgets = useStore((state) => state.budgets) // category ID -> amount
 
-  // Convert budget entries from IDs to names for display
   const budgetEntries = Object.entries(budgets)
     .map(([categoryId, amount]) => ({
       id: categoryId,
@@ -25,19 +24,21 @@ const Budget = () => {
       </p>
 
       <Panel title={'Add new budget'}>
-      <AddBudgetForm />
+        <AddBudgetForm/>
       </Panel>
 
       <Panel title={'Current Budgets'}>
-        {budgetEntries.length === 0 ? (
-          <p style={{ color: '#666' }}>No budgets defined yet.</p>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {budgetEntries.map(({ id, name, amount }) => (
-              <BudgetRow key={id} name={name} amount={amount} />
-            ))}
-          </div>
-        )}
+        {budgetEntries.length === 0
+          ? (
+            <p>No budgets defined yet.</p>
+          )
+          : (
+            <div>
+              {budgetEntries.map(({ id, name, amount }) => (
+                <BudgetRow key={id} name={name} amount={amount}/>
+              ))}
+            </div>
+          )}
       </Panel>
     </>
   )

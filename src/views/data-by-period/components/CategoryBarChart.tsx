@@ -24,7 +24,7 @@ const CategoryBarChart = ({ categories }: { categories: Record<string, number> }
   }
  
   return (
-    <div className="chart-wrapper" style={{ height: '300px' }}>
+    <div className="chart-wrapper">
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={categoryEntries}>
           <CartesianGrid />

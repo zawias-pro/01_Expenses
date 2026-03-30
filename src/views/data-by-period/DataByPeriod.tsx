@@ -13,7 +13,6 @@ import { PeriodSelection } from './components/PeriodSelection.tsx'
 import { CategoryProcessingControls } from './components/CategoryProcessingControls.tsx'
 import { BudgetComparison } from './components/BudgetComparison.tsx'
 import { SectionHeader } from '../../components/SectionHeader/SectionHeader.tsx'
-import styles from './DataByPeriod.module.css'
 import { Panel } from "../../components/Panel/Panel.tsx"
 import { FormGroup } from "../../components/FormGroup/FormGroup.tsx"
 
@@ -246,27 +245,23 @@ const DataByPeriod = ({ summaries, transactions }: {
 
       {displaySummary && (
           <Panel title={getDisplayTitle()}>
-          <div className={styles['tabs']}>
+          <div>
             <button
-              className={activeTab === 'expenses' ? styles['active'] : ''}
               onClick={() => { setActiveTab('expenses') }}
             >
               Top 10 Expenses
             </button>
             <button
-              className={activeTab === 'chart' ? styles['active'] : ''}
               onClick={() => { setActiveTab('chart') }}
             >
               Category Chart
             </button>
             <button
-              className={activeTab === 'categories' ? styles['active'] : ''}
               onClick={() => { setActiveTab('categories') }}
             >
               Categories
             </button>
             <button
-              className={activeTab === 'budget' ? styles['active'] : ''}
               onClick={() => { setActiveTab('budget') }}
             >
               Vs Budget
@@ -291,7 +286,7 @@ const DataByPeriod = ({ summaries, transactions }: {
                     <td>{index + 1}</td>
                     <td>{expense.description}</td>
                     <td>{expense.category}</td>
-                    <td style={{ color: 'var(--danger-color)' }}>{expense.amount}</td>
+                    <td>{expense.amount}</td>
                   </tr>
                 ))}
                 </tbody>
@@ -306,6 +301,7 @@ const DataByPeriod = ({ summaries, transactions }: {
             )}
             {activeTab === 'categories'&&(
             <table>
+              <tbody>
               {Object.entries(processedCategories)
                 .sort(([, a], [, b]) => b - a)
                 .map(([cat, amount]) => (
@@ -314,6 +310,7 @@ const DataByPeriod = ({ summaries, transactions }: {
                   <td>{formatPolishNumber(amount)}</td>
                 </tr>
               ))}
+              </tbody>
             </table>
             )}
               {activeTab === 'budget'&&(

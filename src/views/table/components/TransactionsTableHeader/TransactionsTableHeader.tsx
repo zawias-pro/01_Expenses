@@ -1,18 +1,4 @@
-import styles from './TransactionsTableHeader.module.css'
-
 type SortColumn = 'date' | 'description' | 'category' | 'amount' | 'addedAt'
-
-interface TransactionsTableHeaderProps {
-  allSelected: boolean
-  someSelected: boolean
-  onSelectAll: (checked: boolean) => void
-  sortColumn: SortColumn | null
-  sortDirection: 'asc' | 'desc' | null
-  onSortColumnChange: (column: SortColumn | null) => void
-  onSortDirectionChange: (direction: 'asc' | 'desc' | null) => void
-}
-
-const cx = (...parts: Array<string | undefined>): string => parts.filter((part): part is string => part !== undefined && part !== '').join(' ')
 
 const TransactionsTableHeader = ({
   allSelected,
@@ -22,7 +8,15 @@ const TransactionsTableHeader = ({
   sortDirection,
   onSortColumnChange,
   onSortDirectionChange,
-}: TransactionsTableHeaderProps) => {
+}: {
+  allSelected: boolean
+  someSelected: boolean
+  onSelectAll: (checked: boolean) => void
+  sortColumn: SortColumn | null
+  sortDirection: 'asc' | 'desc' | null
+  onSortColumnChange: (column: SortColumn | null) => void
+  onSortDirectionChange: (direction: 'asc' | 'desc' | null) => void
+}) => {
   const handleSort = (column: SortColumn) => {
     if (sortColumn === column) {
       if (sortDirection === 'asc') {
@@ -51,10 +45,9 @@ const TransactionsTableHeader = ({
   return (
     <thead>
       <tr>
-        <th className={styles['tableHeader'] ?? ''}>
+        <th>
           <input
             type="checkbox"
-            className={styles['formCheckbox'] ?? ''}
             checked={allSelected}
             ref={(input) => {
               if (input) input.indeterminate = someSelected && !allSelected
@@ -64,38 +57,33 @@ const TransactionsTableHeader = ({
           />
         </th>
         <th
-          className={cx(styles['tableHeader'], styles['sortable'])}
           onClick={() => { handleSort('date') }}
         >
           Date{getSortIndicator('date')}
         </th>
         <th
-          className={cx(styles['tableHeader'], styles['sortable'])}
           onClick={() => { handleSort('description') }}
         >
           Description{getSortIndicator('description')}
         </th>
         <th
-          className={cx(styles['tableHeader'], styles['sortable'])}
           onClick={() => { handleSort('category') }}
         >
           Category{getSortIndicator('category')}
         </th>
         <th
-          className={cx(styles['tableHeader'], styles['sortable'])}
           onClick={() => { handleSort('amount') }}
         >
           Amount{getSortIndicator('amount')}
         </th>
         <th
-          className={cx(styles['tableHeader'], styles['sortable'])}
           onClick={() => { handleSort('addedAt') }}
         >
           Added At{getSortIndicator('addedAt')}
         </th>
-        <th className={styles['tableHeader'] ?? ''}>Hash</th>
-        <th className={styles['tableHeader'] ?? ''} style={{ width: '40px' }}>Comment</th>
-        <th className={styles['tableHeader'] ?? ''} style={{ width: '80px' }}>Actions</th>
+        <th>Hash</th>
+        <th>Comment</th>
+        <th>Actions</th>
       </tr>
     </thead>
   )

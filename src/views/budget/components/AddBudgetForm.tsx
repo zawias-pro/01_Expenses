@@ -64,7 +64,6 @@ const AddBudgetForm = () => {
       <Button
         onClick={handleAddBudget}
         disabled={!newCategory.trim() || !newAmount.trim()}
-        style={{ fontSize: '0.875rem', padding: '0.375rem 0.75rem' }}
       >
         Add
       </Button>

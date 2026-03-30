@@ -4,7 +4,6 @@ import { CategoryFilter } from './components/CategoryFilter.tsx'
 import { CumulativeChart } from './components/CumulativeChart.tsx'
 import { SectionHeader } from '../../components/SectionHeader/SectionHeader.tsx'
 import { Button } from '../../components/Button/Button.tsx'
-import styles from './CumulativeBarChart.module.css'
 import { Panel } from "../../components/Panel/Panel.tsx"
 
 const monthNames = [
@@ -52,7 +51,6 @@ const CumulativeBarChart = ({ summaries, onBack }: {
     ? [selectedCategory].filter(cat => allCategories.has(cat))
     : Array.from(allCategories)
 
-  // Generate distinct colors for each category
   const categoryColors = filteredCategories.map((category, index) => {
     const hue = (index * 137.5) % 360
     return { category, color: `hsl(${hue.toString()}, 70%, 50%)` }
@@ -60,11 +58,11 @@ const CumulativeBarChart = ({ summaries, onBack }: {
 
   if (chartData.length === 0) {
     return (
-      <div className={styles['section']}>
+      <div>
         <SectionHeader>Cumulative Bar Chart</SectionHeader>
         <p>No data available</p>
         {onBack && (
-          <div className={styles['actionButtons']}>
+          <div>
             <Button onClick={onBack}>Back</Button>
           </div>
         )}
@@ -73,22 +71,19 @@ const CumulativeBarChart = ({ summaries, onBack }: {
   }
 
   return (
-    <div className="section">
+    <>
       <SectionHeader>Cumulative Bar Chart</SectionHeader>
-
-      {/* Category Filter */}
       <Panel>
-      <CategoryFilter
-        categories={categoriesList}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
-      />
+        <CategoryFilter
+          categories={categoriesList}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+        />
       </Panel>
-
       <Panel>
         <CumulativeChart data={chartData} categories={categoryColors} />
       </Panel>
-    </div> 
+    </>
   )
 }
 

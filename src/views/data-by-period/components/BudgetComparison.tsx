@@ -47,7 +47,7 @@ const BudgetComparison = ({
     })
 
   if (budgetComparison.length === 0) {
-    return <p style={{ color: '#666' }}>No categories found for this period.</p>
+    return <p>No categories found for this period.</p>
   }
 
   return (

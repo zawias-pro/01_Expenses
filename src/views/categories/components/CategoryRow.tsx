@@ -113,12 +113,7 @@ const CategoryRow = ({
           />
         ) : (
           keywords.map(k => (
-            <div key={k} style={{
-              border: '1px solid black',
-              display: 'inline-block',
-              padding: 2,
-              margin: 2
-            }}>
+            <div key={k}>
               {k}
             </div>
           ))
