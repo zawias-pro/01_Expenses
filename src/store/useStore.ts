@@ -39,6 +39,7 @@ interface AppState extends PeriodSelectionState {
 
   setTransactions: (transactions: Transaction[]) => void
   updateTransactionExcluded: (id: string, excluded: boolean) => void
+  toggleTransactionExcluded: (id: string) => void
   updateTransactionCategory: (id: string, categoryId: string | null) => void
   updateTransactionDate: (id: string, date: string) => void
   updateTransactionOverrideMode: (id: string, overrideMode: boolean) => void
@@ -86,6 +87,20 @@ const useStore = create<AppState>()(
         set((state) => ({
           transactions: state.transactions.map((t) =>
             t.id === id ? { ...t, excluded } : t
+          ),
+        }))
+      },
+
+      toggleTransactionExcluded: (id) => {
+
+        set((state) => ({
+          transactions: state.transactions.map((t) => {
+              if (t.id === id) {
+                return { ...t, excluded: !t.excluded }
+              }
+
+              return t
+            }
           ),
         }))
       },

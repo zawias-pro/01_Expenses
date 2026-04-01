@@ -1,4 +1,4 @@
-import { useCategories, useCategoryMetadata, useStore, getOrCreateCategoryId } from '../../../../store/useStore.ts'
+import { useCategories, useStore } from '../../../../store/useStore.ts'
 import { Modal } from '../../../../components/Modal/Modal.tsx'
 import { Button } from '../../../../components/Button/Button.tsx'
 import { Input } from '../../../../components/Input/Input.tsx'
@@ -13,10 +13,8 @@ const QuickAddCategoryModal = ({
   onCancel: () => void
 }) => {
   const categories = useCategories()
-  const categoryMetadata = useCategoryMetadata()
-
   const updateCategory = useStore((s) => s.updateCategory)
-  const updateTransactionCategory = useStore((s) => s.updateTransactionCategory)
+  const reclassifyTransactions = useStore((s) => s.reclassifyTransactions)
   const transactions = useStore((s) => s.transactions)
 
   const transaction = transactionId ? transactions.find((t) => t.id === transactionId) ?? null : null
@@ -44,19 +42,9 @@ const QuickAddCategoryModal = ({
       return
     }
 
-    if (!keyword.trim()) {
-      alert('Please enter at least one keyword')
-      return
-    }
+    updateCategory(categoryName, [keyword], true)
+    reclassifyTransactions()
 
-    const keywords = keyword.split(',').map((k) => k.trim()).filter((k) => k)
-    updateCategory(categoryName, keywords, true)
-
-    // Convert newly created or existing category name to ID and update transaction
-    const categoryId = getOrCreateCategoryId(categoryName, categoryMetadata)
-    updateTransactionCategory(transaction.id, categoryId)
-
-    // Reset internal state and close modal
     setSelectedCategory('new')
     setCustomCategory('')
     setKeyword('')
@@ -112,7 +100,7 @@ const QuickAddCategoryModal = ({
 
         <Input
           id="quick-add-keyword"
-          label="Keywords (comma-separated)"
+          label="Keyword"
           type="text"
           value={keyword}
           onChange={(e) => {

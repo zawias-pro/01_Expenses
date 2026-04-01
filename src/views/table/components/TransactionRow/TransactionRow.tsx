@@ -1,23 +1,28 @@
 import type { Transaction } from '../../../../parsing/types.ts'
 import { useStore, useCategoryMetadata, getCategoryNameFromId } from '../../../../store/useStore.ts'
+import styles from './TransactionRow.module.css'
+import { EditCommentModal } from "../EditCommentModal/EditCommentModal.tsx"
+import { useState } from "react"
+import { QuickAddCategoryModal } from "../QuickAddCategoryModal/QuickAddCategoryModal.tsx"
+import { EditDateModal } from "../EditDateModal/EditDateModal.tsx"
 
 const TransactionRow = ({
   transaction,
   isSelected,
   onToggleSelect,
-  onQuickAddCategory,
-  onEdit,
 }: {
   transaction: Transaction
   isSelected: boolean
   onToggleSelect: () => void
-  onQuickAddCategory: (transactionId: string) => void
-  onEdit: (transaction: Transaction) => void
 }) => {
   const categoryMetadata = useCategoryMetadata()
   const resetTransactionDate = useStore((state) => state.resetTransactionDate)
   const resetTransactionCategory = useStore((state) => state.resetTransactionCategory)
   const removeTransaction = useStore((state) => state.removeTransaction)
+  const toggleTransactionExcluded = useStore((state) => state.toggleTransactionExcluded)
+  const [editCommentModalOpen, setEditCommentModalOpen] = useState(false)
+  const [editDateModalOpen, setEditDateModalOpen] = useState(false)
+  const [quickCategoryOpen, setQuickCategoryOpen] = useState(false)
 
   const handleRemove = () => {
     if (window.confirm(`Are you sure you want to remove this transaction?\n\n${transaction.description}`)) {
@@ -26,7 +31,7 @@ const TransactionRow = ({
   }
 
   return (
-    <tr>
+    <tr className={transaction.excluded ? styles['excluded'] : undefined}>
       <td>
         <input
           type="checkbox"
@@ -52,15 +57,19 @@ const TransactionRow = ({
       </td>
       <td>
         <div>
-          <span>{transaction.category} {getCategoryNameFromId(transaction.category, categoryMetadata)}</span>
+          <span>{getCategoryNameFromId(transaction.category, categoryMetadata)}</span>
           {transaction.category === null && !transaction.categoryOverridden && (
             <button
-              onClick={() => { onQuickAddCategory(transaction.id) }}
+              onClick={() => { setQuickCategoryOpen(true) }}
               title="Quick add category"
             >
               + Add
             </button>
           )}
+          {quickCategoryOpen&& <QuickAddCategoryModal
+            transactionId={transaction.id}
+            onCancel={() => { setQuickCategoryOpen(false) }}
+          />}
           {transaction.categoryOverridden && (
             <button
               onClick={() => { resetTransactionCategory(transaction.id) }}
@@ -92,10 +101,39 @@ const TransactionRow = ({
       <td>
         <div>
           <button
-            onClick={() => { onEdit(transaction) }}
-            title="Edit transaction"
+            title="Edit date"
+            onClick={() => { setEditDateModalOpen(true) }}
           >
             ✏️
+          </button>
+          {editDateModalOpen && (
+            <EditDateModal
+              transaction={transaction}
+              onClose={() => {setEditDateModalOpen(false)}}
+            />
+          )}
+          <button
+            title="Edit category"
+          >
+            ✏️
+          </button>
+          <button
+            onClick={() => { setEditCommentModalOpen(true) }}
+            title="Edit comment"
+          >
+            ✏️
+          </button>
+          {editCommentModalOpen && (
+            <EditCommentModal
+              transaction={transaction}
+              onClose={() => {setEditCommentModalOpen(false)}}
+            />
+          )}
+          <button
+            onClick={() => { toggleTransactionExcluded(transaction.id) }}
+            title="Toggle exclude"
+          >
+            ❌
           </button>
           <button
             onClick={handleRemove}

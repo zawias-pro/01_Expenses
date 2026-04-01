@@ -14,8 +14,6 @@ import {
   type SortColumn, TransactionsTableHeader
 } from './components/TransactionsTableHeader/TransactionsTableHeader.tsx'
 import { TransactionRow } from './components/TransactionRow/TransactionRow.tsx'
-import { EditTransactionModal } from './components/EditTransactionModal/EditTransactionModal.tsx'
-import { QuickAddCategoryModal } from './components/QuickAddCategoryModal/QuickAddCategoryModal.tsx'
 import { SectionHeader } from "../../components/SectionHeader/SectionHeader.tsx"
 import { Panel } from "../../components/Panel/Panel.tsx"
 
@@ -26,8 +24,6 @@ const TransactionsTable = () => {
   const [selectedIds, setSelectedIds] = useState(new Set<string>())
   const [bulkAction, setBulkAction] = useState<BulkAction>(null)
   const [bulkCategory, setBulkCategory] = useState('')
-  const [quickAddTransactionId, setQuickAddTransactionId] = useState<string | null>(null)
-  const [editTransactionId, setEditTransactionId] = useState<string | null>(null)
 
   const {
     searchQuery,
@@ -220,18 +216,6 @@ const TransactionsTable = () => {
     setBulkCategory('')
   }
 
-  const handleQuickAddCategory = (transactionId: string) => {
-    setQuickAddTransactionId(transactionId)
-  }
-
-  const handleCancelQuickAdd = () => {
-    setQuickAddTransactionId(null)
-  }
-
-  const handleEdit = (transaction: Transaction) => {
-    setEditTransactionId(transaction.id)
-  }
-
   return (
     <>
       <SectionHeader>Transactions Table</SectionHeader>
@@ -274,8 +258,6 @@ const TransactionsTable = () => {
                   onToggleSelect={() => {
                     handleToggleSelect(t.id)
                   }}
-                  onQuickAddCategory={handleQuickAddCategory}
-                  onEdit={handleEdit}
                 />
               ))}
               </tbody>
@@ -284,17 +266,6 @@ const TransactionsTable = () => {
         ) : (
           <Panel>No data</Panel>
         )}
-
-      <EditTransactionModal
-        transactionId={editTransactionId}
-        onClose={() => {setEditTransactionId(null)}}
-      />
-
-      <QuickAddCategoryModal
-        key={quickAddTransactionId ?? 'quick-add-none'}
-        transactionId={quickAddTransactionId}
-        onCancel={handleCancelQuickAdd}
-      />
     </>
   )
 }

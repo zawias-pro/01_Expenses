@@ -1,0 +1,4 @@
+tr.excluded {
+  text-decoration: line-through;
+  color: gray;
+}
