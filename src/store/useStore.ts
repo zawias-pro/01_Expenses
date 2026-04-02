@@ -150,8 +150,7 @@ const useStore = create<AppState>()(
       },
 
       resetTransactionDate: (id) => {
-        const state = get()
-        set({
+        set(state => ({
           transactions: state.transactions.map((t) => {
             if (t.id === id) {
               return {
@@ -161,13 +160,11 @@ const useStore = create<AppState>()(
             }
             return t
           }),
-        })
+        }))
       },
 
       resetTransactionCategory: (id) => {
-        const state = get()
-
-        set({
+        set((state) => ({
           transactions: state.transactions.map((t) => {
             if (t.id === id) {
               return {
@@ -177,7 +174,7 @@ const useStore = create<AppState>()(
             }
             return t
           }),
-        })
+        }))
       },
 
       removeTransaction: (id) => {
@@ -283,20 +280,21 @@ const useStore = create<AppState>()(
       clearAll: () => set(initialData),
 
       reclassifyTransactions: () => {
-        const state = get()
-        if (state.transactions.length === 0) return
-        const allRules = computeAllRules(state.customRules)
-        set({
-          transactions: state.transactions.map((t) => {
-            const hasCustomCategory = t.category !== t.originalCategory
-            const newCategoryId = classifyDescription(t.description, allRules)
+        set((state) => {
+          const allRules = computeAllRules(state.customRules)
 
-            return {
-              ...t,
-              originalCategory: newCategoryId,
-              category: hasCustomCategory?t.category:newCategoryId
-            }
-          }),
+          return {
+            transactions: state.transactions.map((t) => {
+              const hasCustomCategory = t.category !== t.originalCategory
+              const newCategoryId = classifyDescription(t.description, allRules)
+
+              return {
+                ...t,
+                originalCategory: newCategoryId,
+                category: hasCustomCategory?t.category:newCategoryId
+              }
+            }),
+          }
         })
       },
     }),
