@@ -288,9 +288,14 @@ const useStore = create<AppState>()(
         const allRules = computeAllRules(state.customRules)
         set({
           transactions: state.transactions.map((t) => {
-            if (t.category!==t.originalCategory) return { ...t }
+            const hasCustomCategory = t.category !== t.originalCategory
             const newCategoryId = classifyDescription(t.description, allRules)
-            return { ...t, category: newCategoryId }
+
+            return {
+              ...t,
+              originalCategory: newCategoryId,
+              category: hasCustomCategory?t.category:newCategoryId
+            }
           }),
         })
       },
