@@ -5,6 +5,7 @@ import { EditCommentModal } from "../EditCommentModal/EditCommentModal.tsx"
 import { useState } from "react"
 import { QuickAddCategoryModal } from "../QuickAddCategoryModal/QuickAddCategoryModal.tsx"
 import { EditDateModal } from "../EditDateModal/EditDateModal.tsx"
+import { EditCategoryModal } from "../EditCategoryModal/EditCategoryModal.tsx"
 
 const TransactionRow = ({
   transaction,
@@ -23,6 +24,7 @@ const TransactionRow = ({
   const [editCommentModalOpen, setEditCommentModalOpen] = useState(false)
   const [editDateModalOpen, setEditDateModalOpen] = useState(false)
   const [quickCategoryOpen, setQuickCategoryOpen] = useState(false)
+  const [editCategoryOpen, setEditCategoryOpen] = useState(false)
 
   const handleRemove = () => {
     if (window.confirm(`Are you sure you want to remove this transaction?\n\n${transaction.description}`)) {
@@ -114,9 +116,16 @@ const TransactionRow = ({
           )}
           <button
             title="Edit category"
+            onClick={() => { setEditCategoryOpen(true) }}
           >
             ✏️
           </button>
+          {editCategoryOpen && (
+            <EditCategoryModal
+              transaction={transaction}
+              onClose={() => {setEditCategoryOpen(false)}}
+            />
+          )}
           <button
             onClick={() => { setEditCommentModalOpen(true) }}
             title="Edit comment"
