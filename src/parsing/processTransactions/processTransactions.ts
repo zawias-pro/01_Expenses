@@ -2,7 +2,6 @@ import type { Transaction, MonthlySummary } from '../types.ts'
 import type { CategoryMetadata } from '../categoryTypes.ts'
 import { getMonthFromDate } from '../getMonthFromDate/getMonthFromDate.ts'
 import { parsePolishAmount } from '../parsePolishAmount/parsePolishAmount.ts'
-import { classifyDescription } from '../classifyDescription/classifyDescription.ts'
 import { getYearFromDate } from '../getYearFromDate/getYearFromDate.ts'
 import { getCategoryNameFromId } from '../categoryUtils.ts'
 
@@ -17,9 +16,8 @@ import { getCategoryNameFromId } from '../categoryUtils.ts'
  * Note: categories in MonthlySummary use names for display, not IDs
  */
 const processTransactions = (
-  transactions: Transaction[], 
-  rules: Record<string, string[]>, // category ID -> keywords
-  metadata: CategoryMetadata // category ID -> category name
+  transactions: Transaction[],
+  metadata: CategoryMetadata
 ): MonthlySummary[] => {
   const monthlyData: Record<string, { expenses: number; income: number; categories: Record<string, number> }> = {}
 
@@ -28,10 +26,7 @@ const processTransactions = (
       const year = getYearFromDate(t.date)
       const month = getMonthFromDate(t.date)
       const amount = parsePolishAmount(t.amount)
-      // Use the transaction's category ID if it was manually overridden
-      // Otherwise, classify based on description (defaults to "others" ID if no match)
-      const categoryId = t.overridden ? t.category : classifyDescription(t.description, rules)
-      // Convert ID to name for display in summary
+      const categoryId = t.category
       const categoryName = getCategoryNameFromId(categoryId, metadata)
 
       const key = `${year.toString()}-${month.toString()}`

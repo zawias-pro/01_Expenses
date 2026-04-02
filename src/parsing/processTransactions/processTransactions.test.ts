@@ -11,50 +11,49 @@ test('processTransactions - processes transactions correctly', () => {
     {
       id: '1',
       date: '2025-12-12',
+      originalDate: '2025-12-12',
       description: 'Test expense',
       account: 'Account1',
       category: category1Id,
+      originalCategory: category1Id,
       amount: '-5 000,00 PLN',
       excluded: false,
       isValid: true,
-      overridden: false,
-      overrideMode: false,
       hash: '111',
     },
     {
       id: '2',
       date: '2025-12-12',
+      originalDate: '2025-12-12',
       description: 'Test income',
       account: 'Account1',
       category: category1Id,
+      originalCategory: category1Id,
       amount: '2 000,00 PLN',
       excluded: false,
       isValid: true,
-      overridden: false,
-      overrideMode: false,
       hash: '222',
     },
     {
       id: '3',
       date: '2025-11-11',
+      originalDate: '2025-11-11',
       description: 'Another expense',
       account: 'Account1',
       category: category1Id,
+      originalCategory: category1Id,
       amount: '-1 000,00 PLN',
       excluded: false,
       isValid: true,
-      overridden: false,
-      overrideMode: false,
       hash: '333',
     },
   ]
   const othersId = generateCategoryId()
-  const rules = { [category1Id]: ['test'], [othersId]: [] }
   const metadata: CategoryMetadata = {
     [category1Id]: 'Category1',
     [othersId]: 'others'
   }
-  const result = processTransactions(transactions, rules, metadata)
+  const result = processTransactions(transactions, metadata)
 
   assert(result.length === 2)
   const dec = result.find(s => s.year === 2025 && s.month === 12)
@@ -77,39 +76,38 @@ test('processTransactions - processes all transactions passed to it', () => {
     {
       id: '1',
       date: '2025-12-12',
+      originalDate: '2025-12-12',
       description: 'Test expense',
       account: 'Account1',
       category: category1Id,
+      originalCategory: category1Id,
       amount: '-5 000,00 PLN',
       excluded: true,
       isValid: true,
-      overridden: false,
-      overrideMode: false,
       hash: '111',
     },
     {
       id: '2',
       date: '2025-12-12',
+      originalDate: '2025-12-12',
       description: 'Test income',
       account: 'Account1',
       category: category1Id,
+      originalCategory: category1Id,
       amount: '2 000,00 PLN',
       excluded: false,
       isValid: true,
-      overridden: false,
-      overrideMode: false,
       hash: '222',
     },
   ]
   const othersId = generateCategoryId()
-  const rules = { [othersId]: [] }
   const metadata: CategoryMetadata = {
     [category1Id]: 'Category1',
     [othersId]: 'others'
   }
   // Note: processTransactions processes all transactions - filtering excluded ones
   // should happen before calling this function
-  const result = processTransactions(transactions, rules, metadata)
+  const result = processTransactions(transactions, metadata)
 
   assert(result.length === 1)
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -119,7 +117,7 @@ test('processTransactions - processes all transactions passed to it', () => {
   assert.strictEqual(dec.totalIncome, 2000)
 })
 
-test('processTransactions - classifies categories from description and respects overrides', () => {
+test('processTransactions - uses current categories and respects overrides', () => {
   const groceryId = generateCategoryId()
   const othersId = generateCategoryId()
   const customCategoryId = generateCategoryId()
@@ -127,58 +125,55 @@ test('processTransactions - classifies categories from description and respects 
     {
       id: '1',
       date: '2025-12-12',
+      originalDate: '2025-12-12',
       description: 'BIEDRONKA purchase',
       account: 'Account1',
-      category: othersId,
+      category: groceryId,
+      originalCategory: groceryId,
       amount: '-100,00 PLN',
       excluded: false,
       isValid: true,
-      overridden: false,
-      overrideMode: false,
       hash: '111',
     },
     {
       id: '2',
       date: '2025-12-12',
+      originalDate: '2025-12-12',
       description: 'Random transaction',
       account: 'Account1',
-      category: othersId,
+      category: null,
+      originalCategory: null,
       amount: '-50,00 PLN',
       excluded: false,
       isValid: true,
-      overridden: false,
-      overrideMode: false,
       hash: '222',
     },
     {
       id: '3',
       date: '2025-12-12',
+      originalDate: '2025-12-12',
       description: 'Another transaction',
       account: 'Account1',
       category: customCategoryId,
+      originalCategory: othersId,
       amount: '-25,00 PLN',
       excluded: false,
       isValid: true,
-      overridden: true, // Manually overridden
-      overrideMode: false,
       hash: '333',
     },
   ]
-  const rules = { [groceryId]: ['biedronka'], [othersId]: [] }
   const metadata: CategoryMetadata = {
     [groceryId]: 'grocery',
     [othersId]: 'others',
     [customCategoryId]: 'custom-category'
   }
-  const result = processTransactions(transactions, rules, metadata)
+  const result = processTransactions(transactions, metadata)
 
   assert(result.length === 1)
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const dec = result[0]!
-  // BIEDRONKA should be classified as "grocery"
+  // Category totals use the current category stored on each transaction.
   assert.strictEqual(dec.categories['grocery'], 100)
-  // Random transaction has no keyword match → (no category)
   assert.strictEqual(dec.categories['(no category)'], 50)
-  // Overridden transaction should use the overridden category
   assert.strictEqual(dec.categories['custom-category'], 25)
 })

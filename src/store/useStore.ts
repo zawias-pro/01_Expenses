@@ -109,16 +109,9 @@ const useStore = create<AppState>()(
         set((state) => ({
           transactions: state.transactions.map((t) => {
             if (t.id === id) {
-              const originalCategory = t.originalCategory ?? (!t.categoryOverridden ? t.category : undefined)
-              if(originalCategory===null) {
-                throw new Error(`Unexpected null originalCategory for transaction ${id}`)
-              }
               return {
                 ...t,
                 category: categoryId,
-                categoryOverridden: true,
-                overridden: true,
-                originalCategory,
               }
             }
             return t
@@ -130,13 +123,9 @@ const useStore = create<AppState>()(
         set((state) => ({
           transactions: state.transactions.map((t) => {
             if (t.id === id) {
-              const originalDate = t.originalDate || (!t.dateOverridden ? t.date : undefined)
               return {
                 ...t,
                 date,
-                dateOverridden: true,
-                overridden: true,
-                originalDate,
               }
             }
             return t
@@ -165,15 +154,9 @@ const useStore = create<AppState>()(
         set({
           transactions: state.transactions.map((t) => {
             if (t.id === id) {
-              const restoredDate = t.originalDate || t.date
-              const dateOverridden = false
-              const overridden = t.categoryOverridden || false
               return {
                 ...t,
-                date: restoredDate,
-                dateOverridden,
-                overridden,
-                originalDate: undefined,
+                date: t.originalDate,
               }
             }
             return t
@@ -183,19 +166,13 @@ const useStore = create<AppState>()(
 
       resetTransactionCategory: (id) => {
         const state = get()
-        const allRules = computeAllRules(state.customRules)
+
         set({
           transactions: state.transactions.map((t) => {
             if (t.id === id) {
-              const newCategoryId = classifyDescription(t.description, allRules)
-              const categoryOverridden = false
-              const overridden = t.dateOverridden || false
               return {
                 ...t,
-                category: newCategoryId,
-                categoryOverridden,
-                overridden,
-                originalCategory: undefined,
+                category: t.originalCategory,
               }
             }
             return t
@@ -311,7 +288,7 @@ const useStore = create<AppState>()(
         const allRules = computeAllRules(state.customRules)
         set({
           transactions: state.transactions.map((t) => {
-            if (t.categoryOverridden) return { ...t }
+            if (t.category!==t.originalCategory) return { ...t }
             const newCategoryId = classifyDescription(t.description, allRules)
             return { ...t, category: newCategoryId }
           }),
@@ -364,13 +341,12 @@ const useCategoryMetadata = () => {
 
 const useSummaries = (): MonthlySummary[] | null => {
   const transactions = useStore((state) => state.transactions)
-  const allRules = useAllRules()
   const categoryMetadata = useStore((state) => state.categoryMetadata)
 
   if (transactions.length === 0) return null
   const activeTransactions = transactions.filter((t) => !t.excluded)
   if (activeTransactions.length === 0) return []
-  return processTransactions(activeTransactions, allRules, categoryMetadata)
+  return processTransactions(activeTransactions, categoryMetadata)
 }
 
 const exportState = (): string => {

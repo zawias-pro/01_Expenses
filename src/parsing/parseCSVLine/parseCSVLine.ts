@@ -60,17 +60,15 @@ const parseCSVLine = (
     id: Math.random().toString(36).substring(2, 11),
     hash,
     date,
+    originalDate: date,
     description,
     account,
     category,
+    originalCategory: category,
     amount,
     excluded: !validation.isValid, // Automatically exclude invalid rows
     isValid: validation.isValid,
     validationError: validation.error,
-    overridden: false,
-    dateOverridden: false,
-    categoryOverridden: false,
-    overrideMode: false,
   }
 }
 

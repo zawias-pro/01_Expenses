@@ -14,14 +14,10 @@ interface Transaction {
   excluded: boolean
   isValid: boolean
   validationError?: string
-  overridden: boolean // true if dateOverridden or categoryOverridden
-  dateOverridden?: boolean
-  categoryOverridden?: boolean
-  overrideMode: boolean
   comment?: string
-  originalDate?: string
-  originalCategory?: string
-  addedAt?: string // ISO timestamp when transaction was added
+  originalDate: string
+  originalCategory: string | null
+  addedAt?: string
 }
 
 interface MonthlySummary {

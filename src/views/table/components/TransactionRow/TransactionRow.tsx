@@ -42,7 +42,7 @@ const TransactionRow = ({
       <td>
         <div>
           <span>{transaction.date}</span>
-          {transaction.dateOverridden && (
+          {(transaction.date !== transaction.originalDate) && (
             <button
               onClick={() => { resetTransactionDate(transaction.id) }}
               title="Reset date to original"
@@ -58,7 +58,7 @@ const TransactionRow = ({
       <td>
         <div>
           <span>{getCategoryNameFromId(transaction.category, categoryMetadata)}</span>
-          {transaction.category === null && !transaction.categoryOverridden && (
+          {transaction.category === null && !(transaction.category!==transaction.originalCategory) && (
             <button
               onClick={() => { setQuickCategoryOpen(true) }}
               title="Quick add category"
@@ -70,7 +70,7 @@ const TransactionRow = ({
             transactionId={transaction.id}
             onCancel={() => { setQuickCategoryOpen(false) }}
           />}
-          {transaction.categoryOverridden && (
+          {(transaction.category!==transaction.originalCategory) && (
             <button
               onClick={() => { resetTransactionCategory(transaction.id) }}
               title="Reset category to auto-classified"
