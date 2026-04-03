@@ -1,9 +1,11 @@
+import { useMemo } from 'react'
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import type { Transaction, MonthlySummary } from '../parsing/types.ts'
 import { parseRules } from '../parsing/parseRules/parseRules.ts'
 import { classifyDescription } from '../parsing/classifyDescription/classifyDescription.ts'
 import { processTransactions } from '../parsing/processTransactions/processTransactions.ts'
+import { parsePolishAmount } from '../parsing/parsePolishAmount/parsePolishAmount.ts'
 
 // NOTE: This is a development app, not production. No migrations needed.
 // Start with 0 categories. User imports or adds categories.
@@ -328,6 +330,33 @@ const computeAllRules = (customRules: Record<string, string[]>): Record<string, 
   return merged
 }
 
+const useCategoriesSortedByTotalAmount = () => {
+  const transactions = useStore((state) => state.transactions)
+  const categoryMetadata = useStore((state) => state.categoryMetadata)
+
+  return useMemo(() => {
+    const totalsByCategoryId: Record<string, number> = {}
+
+    transactions.forEach((transaction) => {
+      if (transaction.excluded || !transaction.isValid || transaction.category === null) {
+        return
+      }
+
+      const amount = Math.abs(parsePolishAmount(transaction.amount))
+      totalsByCategoryId[transaction.category] = (totalsByCategoryId[transaction.category] || 0) + amount
+    })
+
+    return Object.entries(categoryMetadata)
+      .map(([categoryId, categoryName]) => ({
+        categoryId,
+        categoryName,
+        totalAmount: totalsByCategoryId[categoryId] || 0,
+      }))
+      .sort((a, b) => b.totalAmount - a.totalAmount || a.categoryName.localeCompare(b.categoryName))
+      .map(c=>c.categoryId)
+  }, [categoryMetadata, transactions])
+}
+
 const useAllRules = () => {
   const customRules = useStore((state) => state.customRules)
   return computeAllRules(customRules)
@@ -393,6 +422,7 @@ export {
   computeAllRules,
   useAllRules,
   useCategories,
+  useCategoriesSortedByTotalAmount,
   useCategoryMetadata,
   useSummaries,
   exportState,

@@ -11,6 +11,7 @@ import {
 import type { CategoryMetadata } from '../../../parsing/categoryTypes.ts'
 import { getCategoryColor, getCategoryNameFromSummaryKey } from '../../../parsing/categoryUtils.ts'
 import { formatPolishNumber } from '../../../parsing/formatPolishNumber/formatPolishNumber.ts'
+import { useCategoriesSortedByTotalAmount } from "../../../store/useStore.ts"
 
 const CategoryBarChart = ({
   categories,
@@ -19,8 +20,27 @@ const CategoryBarChart = ({
   categories: Record<string, number>
   categoryMetadata: CategoryMetadata
 }) => {
+  const categoryOrder = useCategoriesSortedByTotalAmount()
+  const categoryOrderIndex = new Map(categoryOrder.map((categoryId, index) => [categoryId, index]))
   const categoryEntries = Object.entries(categories)
-    .sort(([, a], [, b]) => b - a)
+    .sort(([categoryKeyA, amountA], [categoryKeyB, amountB]) => {
+      const indexA = categoryOrderIndex.get(categoryKeyA)
+      const indexB = categoryOrderIndex.get(categoryKeyB)
+
+      if (indexA !== undefined && indexB !== undefined && indexA !== indexB) {
+        return indexA - indexB
+      }
+
+      if (indexA !== undefined) {
+        return -1
+      }
+
+      if (indexB !== undefined) {
+        return 1
+      }
+
+      return amountB - amountA
+    })
     .map(([categoryKey, amount]) => {
       const name = getCategoryNameFromSummaryKey(categoryKey, categoryMetadata)
       return { categoryKey, name, amount, color: getCategoryColor(name) }
