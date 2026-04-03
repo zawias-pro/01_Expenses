@@ -1,44 +1,38 @@
 import { useState } from 'react'
-import type { MonthlySummary } from '../../parsing/types.ts'
 import { CategoryFilter } from './components/CategoryFilter.tsx'
 import { CumulativeChart } from './components/CumulativeChart.tsx'
 import { SectionHeader } from '../../components/SectionHeader/SectionHeader.tsx'
-import { Button } from '../../components/Button/Button.tsx'
 import { Panel } from "../../components/Panel/Panel.tsx"
+import { useSummaries } from "../../store/useStore.ts"
+import { useStore } from '../../store/useStore.ts'
 
 const monthNames = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
 ]
 
-const CumulativeBarChart = ({ summaries, onBack }: {
-  summaries: MonthlySummary[]
-  onBack?: () => void
-}) => {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
-  
-  // Collect all unique categories across all months
+const CumulativeBarChart = () => {
+  const summaries = useSummaries()
+  const transactions = useStore((state) => state.transactions)
+  const [selectedCategory, setSelectedCategory] = useState<string | null | undefined>(undefined)
+
   const allCategories = new Set<string>()
   summaries.forEach(summary => {
     Object.keys(summary.categories).forEach(cat => allCategories.add(cat))
   })
-  const categoriesList = Array.from(allCategories).sort()
 
-  // Sort summaries by year and month
   const sortedSummaries = [...summaries].sort((a, b) => {
     if (a.year !== b.year) return a.year - b.year
     return a.month - b.month
   })
 
-  // Transform data for Recharts: each month becomes a data point with all category values
   const chartData = sortedSummaries.map(summary => {
     const monthLabel = `${monthNames[summary.month - 1] ?? ''} ${String(summary.year)}`
     const dataPoint: Record<string, string | number> = {
       month: monthLabel,
-      monthKey: `${String(summary.year)}-${String(summary.month).padStart(2, '0')}` // For sorting
+      monthKey: `${String(summary.year)}-${String(summary.month).padStart(2, '0')}`
     }
 
-    // Add all categories (0 if not present in this month)
     allCategories.forEach(category => {
       dataPoint[category] = summary.categories[category] || 0
     })
@@ -46,7 +40,6 @@ const CumulativeBarChart = ({ summaries, onBack }: {
     return dataPoint
   })
 
-  // Filter categories based on selection
   const filteredCategories = selectedCategory 
     ? [selectedCategory].filter(cat => allCategories.has(cat))
     : Array.from(allCategories)
@@ -61,11 +54,6 @@ const CumulativeBarChart = ({ summaries, onBack }: {
       <div>
         <SectionHeader>Cumulative Bar Chart</SectionHeader>
         <p>No data available</p>
-        {onBack && (
-          <div>
-            <Button onClick={onBack}>Back</Button>
-          </div>
-        )}
       </div>
     )
   }
@@ -75,13 +63,45 @@ const CumulativeBarChart = ({ summaries, onBack }: {
       <SectionHeader>Cumulative Bar Chart</SectionHeader>
       <Panel>
         <CategoryFilter
-          categories={categoriesList}
           selectedCategory={selectedCategory}
           onCategoryChange={setSelectedCategory}
         />
       </Panel>
       <Panel>
         <CumulativeChart data={chartData} categories={categoryColors} />
+      </Panel>
+      <Panel>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Amount</th>
+              <th>Category</th>
+            </tr>
+          </thead>
+          <tbody>
+          {transactions
+            .filter(t=> {
+              if (selectedCategory === null) { return true }
+              if (selectedCategory === undefined) { return t.category === null }
+              return t.category === selectedCategory
+            })
+            .toSorted((a,b)=> {
+              if(a.date > b.date) {return 1}
+              if(a.date < b.date) {return -1}
+              return 0
+            })
+            .map(t=>(
+            <tr key={t.id}>
+              <td>{t.date}</td>
+              <td>{t.description}</td>
+              <td>{t.amount}</td>
+              <td>{t.category}</td>
+            </tr>
+          ))}
+          </tbody>
+        </table>
       </Panel>
     </>
   )

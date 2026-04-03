@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import type { MonthlySummary, Transaction } from '../../parsing/types.ts'
+import type { Transaction } from '../../parsing/types.ts'
 import { aggregateByYear } from '../../parsing/aggregateByYear/aggregateByYear.ts'
 import { aggregateAllData } from '../../parsing/aggregateAllData/aggregateAllData.ts'
 import { formatPolishNumber } from '../../parsing/formatPolishNumber/formatPolishNumber.ts'
@@ -7,7 +7,7 @@ import { parsePolishAmount } from '../../parsing/parsePolishAmount/parsePolishAm
 import { getYearFromDate } from '../../parsing/getYearFromDate/getYearFromDate.ts'
 import { getMonthFromDate } from '../../parsing/getMonthFromDate/getMonthFromDate.ts'
 import { NO_CATEGORY_KEY } from '../../parsing/types.ts'
-import { useCategoryMetadata, getCategoryNameFromId, useStore } from '../../store/useStore.ts'
+import { useCategoryMetadata, getCategoryNameFromId, useStore, useSummaries } from '../../store/useStore.ts'
 import { CategoryBarChart } from './components/CategoryBarChart.tsx'
 import { PeriodSelection } from './components/PeriodSelection.tsx'
 import { CategoryProcessingControls } from './components/CategoryProcessingControls.tsx'
@@ -23,10 +23,9 @@ const monthNames = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ]
 
-const DataByPeriod = ({ summaries, transactions }: {
-  summaries: MonthlySummary[]
-  transactions: Transaction[]
-}) => {
+const DataByPeriod = () => {
+  const transactions = useStore(state => state.transactions)
+  const summaries = useSummaries()
   const selectionType = useStore((state) => state.selectionType)
   const selectedYear = useStore((state) => state.selectedYear)
   const selectedMonth = useStore((state) => state.selectedMonth)

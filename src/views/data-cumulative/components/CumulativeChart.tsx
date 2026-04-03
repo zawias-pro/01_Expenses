@@ -24,6 +24,7 @@ const CumulativeChart = ({ data, categories }: CumulativeChartProps) => {
           <XAxis dataKey="month" angle={-45} textAnchor="end" height={80} interval={0} />
           <YAxis tickFormatter={(value: number) => formatPolishNumber(value)} />
           <Tooltip
+            wrapperStyle={{ zIndex: 100 }}
             formatter={(value: number | undefined) => {
               if (value === undefined) { return '???' }
               return formatPolishNumber(value)

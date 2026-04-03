@@ -1,23 +1,42 @@
 import { Select } from '../../../components/Select/Select.tsx'
+import { useStore } from "../../../store/useStore.ts"
 
-interface CategoryFilterProps {
-  categories: string[]
-  selectedCategory: string | null
-  onCategoryChange: (category: string | null) => void
-}
+const CategoryFilter = ({
+  selectedCategory,
+  onCategoryChange
+}: {
+  selectedCategory: string | null | undefined
+  onCategoryChange: (category: string | null | undefined) => void
+}) => {
+  const categoryMetadata = useStore((state) => state.categoryMetadata)
 
-const CategoryFilter = ({ categories, selectedCategory, onCategoryChange }: CategoryFilterProps) => {
+  const getCurrentValue = () => {
+    if(selectedCategory === null) {return '[all]'}
+    if(selectedCategory === undefined) {return '[no]'}
+    return selectedCategory
+  }
   return (
     <div>
       <Select
         id="category-filter"
         label="Category"
-        value={selectedCategory || ''}
-        onChange={e => { onCategoryChange(e.target.value || null) }}
+        value={getCurrentValue()}
+        onChange={e => {
+          if (e.target.value === '[no]') {
+            onCategoryChange(undefined)
+            return
+          }
+          if (e.target.value === '[all]') {
+            onCategoryChange(null)
+            return
+          }
+          onCategoryChange(e.target.value)
+        }}
       >
-        <option value="">All categories</option>
-        {categories.map(cat => (
-          <option key={cat} value={cat}>{cat}</option>
+        <option value="[all]">All categories</option>
+        <option value="[no]">No category</option>
+        {Object.entries(categoryMetadata).map(([id,name]) => (
+          <option key={id} value={id}>{name}</option>
         ))}
       </Select>
     </div>
