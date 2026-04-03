@@ -300,6 +300,7 @@ const DataByPeriod = () => {
               <CategoryBarChart categories={processedCategories} categoryMetadata={categoryMetadata} />
             )}
             {activeTab === 'categories'&&(
+              <>
             <table>
               <tbody>
               {Object.entries(processedCategories)
@@ -312,6 +313,17 @@ const DataByPeriod = () => {
               ))}
               </tbody>
             </table>
+                <p>
+                  {`Total: `}
+                  {formatPolishNumber(
+                    Object
+                    .values(processedCategories)
+                    .reduce((acc, curr) => {
+                      return acc+curr
+                    }, 0)
+                  )} zł
+                </p>
+              </>
             )}
               {activeTab === 'budget'&&(
                 <BudgetComparison
