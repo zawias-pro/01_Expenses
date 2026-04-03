@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { getCategoryNameFromId, getCategoryNameFromSummaryKey } from '../../parsing/categoryUtils.ts'
 import { NO_CATEGORY_ID } from '../../parsing/types.ts'
 import { CategoryFilter } from './components/CategoryFilter.tsx'
 import { CumulativeChart } from './components/CumulativeChart.tsx'
@@ -47,15 +46,6 @@ const CumulativeBarChart = () => {
     ? Array.from(allCategories)
     : [selectedCategory].filter(cat => allCategories.has(cat))
 
-  const categoryColors = filteredCategories.map((category, index) => {
-    const hue = (index * 137.5) % 360
-    return {
-      category,
-      label: getCategoryNameFromSummaryKey(category, categoryMetadata),
-      color: `hsl(${hue.toString()}, 70%, 50%)`
-    }
-  })
-
   if (chartData.length === 0) {
     return (
       <div>
@@ -75,7 +65,7 @@ const CumulativeBarChart = () => {
         />
       </Panel>
       <Panel>
-        <CumulativeChart data={chartData} categories={categoryColors} />
+        <CumulativeChart data={chartData} categories={filteredCategories} />
       </Panel>
       <Panel>
         <table>
@@ -103,7 +93,7 @@ const CumulativeBarChart = () => {
               <td>{t.date}</td>
               <td>{t.description}</td>
               <td>{t.amount}</td>
-              <td>{getCategoryNameFromId(t.category, categoryMetadata)}</td>
+              <td>{categoryMetadata[t.category ?? NO_CATEGORY_ID]}</td>
             </tr>
           ))}
           </tbody>

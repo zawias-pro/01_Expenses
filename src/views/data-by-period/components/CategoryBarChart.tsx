@@ -9,23 +9,8 @@ import {
   Cell
 } from 'recharts'
 import type { CategoryMetadata } from '../../../parsing/categoryTypes.ts'
-import { getCategoryNameFromSummaryKey } from '../../../parsing/categoryUtils.ts'
+import { getCategoryColor, getCategoryNameFromSummaryKey } from '../../../parsing/categoryUtils.ts'
 import { formatPolishNumber } from '../../../parsing/formatPolishNumber/formatPolishNumber.ts'
-
-const getCategoryColor = (categoryName: string) => {
-  if(categoryName==='(no category)'){
-    return 'rgb(0,0,0,0.1)'
-  }
-  let h = 0
-  for (let i = 0; i < categoryName.length; i++) {
-    h = Math.imul(31, h) + categoryName.charCodeAt(i) | 0
-  }
-  const r = (h & 0xFF0000) >> 16
-  const g = (h & 0x00FF00) >> 8
-  const b = (h & 0x0000FF)
-
-  return `rgb(${String((r + 256) % 256)}, ${String((g + 256) % 256)}, ${String((b + 256) % 256)})`
-}
 
 const CategoryBarChart = ({
   categories,

@@ -50,6 +50,21 @@ const getCategoryNameFromSummaryKey = (summaryKey: string, metadata: CategoryMet
   return getCategoryNameFromId(getCategoryIdFromSummaryKey(summaryKey), metadata)
 }
 
+const getCategoryColor = (categoryName: string) => {
+  if(categoryName==='(no category)'){
+    return 'rgb(0,0,0,0.1)'
+  }
+  let h = 0
+  for (let i = 0; i < categoryName.length; i++) {
+    h = Math.imul(31, h) + categoryName.charCodeAt(i) | 0
+  }
+  const r = (h & 0xFF0000) >> 16
+  const g = (h & 0x00FF00) >> 8
+  const b = (h & 0x0000FF)
+
+  return `rgb(${String((r + 256) % 256)}, ${String((g + 256) % 256)}, ${String((b + 256) % 256)})`
+}
+
 export {
   generateCategoryId,
   getCategoryIdFromName,
@@ -57,5 +72,6 @@ export {
   getCategoryNameFromId,
   getCategoryNameFromSummaryKey,
   getCategorySummaryKey,
-  getOrCreateCategoryId
+  getOrCreateCategoryId,
+  getCategoryColor
 }

@@ -9,13 +9,18 @@ import {
   ResponsiveContainer
 } from 'recharts'
 import { formatPolishNumber } from '../../../parsing/formatPolishNumber/formatPolishNumber.ts'
+import { useStore } from "../../../store/useStore.ts"
+import { getCategoryColor } from "../../../parsing/categoryUtils.ts"
 
-interface CumulativeChartProps {
+const CumulativeChart = ({
+  data,
+  categories
+}: {
   data: Record<string, string | number>[]
-  categories: { category: string; label: string; color: string }[]
-}
+  categories: string[]
+}) => {
+  const categoryMetadata = useStore((state) => state.categoryMetadata)
 
-const CumulativeChart = ({ data, categories }: CumulativeChartProps) => {
   return (
     <div className="chart-container">
       <ResponsiveContainer width="100%" height={400}>
@@ -31,15 +36,19 @@ const CumulativeChart = ({ data, categories }: CumulativeChartProps) => {
             }}
           />
           <Legend />
-          {categories.map(({ category, label, color }) => (
-            <Bar
-              key={category}
-              dataKey={category}
-              name={label}
-              stackId="expenses"
-              fill={color}
-            />
-          ))}
+          {categories.map((categoryId) => {
+            const name = categoryMetadata[categoryId] ?? '(no category)'
+
+            return (
+              <Bar
+                key={categoryId}
+                dataKey={categoryId}
+                name={name}
+                stackId="expenses"
+                fill={getCategoryColor(name)}
+              />
+            )
+          })}
         </BarChart>
       </ResponsiveContainer>
     </div>
