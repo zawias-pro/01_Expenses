@@ -10,14 +10,25 @@ import {
 } from 'recharts'
 import { formatPolishNumber } from '../../../parsing/formatPolishNumber/formatPolishNumber.ts'
 
+const getCategoryColor = (categoryName: string) => {
+  if(categoryName==='(no category)'){
+    return 'rgb(0,0,0,0.1)'
+  }
+  let h = 0
+  for (let i = 0; i < categoryName.length; i++) {
+    h = Math.imul(31, h) + categoryName.charCodeAt(i) | 0
+  }
+  const r = (h & 0xFF0000) >> 16
+  const g = (h & 0x00FF00) >> 8
+  const b = (h & 0x0000FF)
+
+  return `rgb(${String((r + 256) % 256)}, ${String((g + 256) % 256)}, ${String((b + 256) % 256)})`
+}
+
 const CategoryBarChart = ({ categories }: { categories: Record<string, number> }) => {
   const categoryEntries = Object.entries(categories)
-    .sort(([, a], [, b]) => b - a) // Sort by amount descending
-    .map(([name, amount], index) => ({
-      name,
-      amount,
-      color: `hsl(${String((index * 137.5) % 360)}, 70%, 50%)` // Generate distinct colors
-    }))
+    .sort(([, a], [, b]) => b - a)
+    .map(([name, amount]) => ({ name, amount, color: getCategoryColor(name) }))
 
   if (categoryEntries.length === 0) {
     return <p>No category data available</p>
