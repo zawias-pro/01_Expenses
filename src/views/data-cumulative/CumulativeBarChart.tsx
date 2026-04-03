@@ -79,6 +79,7 @@ const CumulativeBarChart = () => {
           </thead>
           <tbody>
           {transactions
+            .filter(t=>!t.excluded)
             .filter(t=> {
               if (selectedCategory === null) { return true }
               return (t.category ?? NO_CATEGORY_ID) === selectedCategory
