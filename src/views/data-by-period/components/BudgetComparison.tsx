@@ -1,12 +1,16 @@
 import { formatPolishNumber } from '../../../parsing/formatPolishNumber/formatPolishNumber.ts'
+import type { CategoryMetadata } from '../../../parsing/categoryTypes.ts'
+import { getCategoryNameFromSummaryKey } from '../../../parsing/categoryUtils.ts'
 import type { MonthlySummary } from '../../../parsing/types.ts'
 import { useStore } from '../../../store/useStore.ts'
 
 const BudgetComparison = ({
   processedCategories,
+  categoryMetadata,
   summaries,
 }: {
   processedCategories: Record<string, number>,
+  categoryMetadata: CategoryMetadata,
   summaries: MonthlySummary[]
 }) => {
   const selectionType = useStore((state) => state.selectionType)
@@ -39,6 +43,7 @@ const BudgetComparison = ({
       const percentage = periodBudget > 0 ? (actual / periodBudget) * 100 : (actual > 0 ? Infinity : 0)
       return {
         category,
+        categoryName: getCategoryNameFromSummaryKey(category, categoryMetadata),
         actual,
         budget: periodBudget,
         difference,
@@ -68,9 +73,9 @@ const BudgetComparison = ({
         </thead>
         {budgetComparison
           .sort((a, b) => Math.abs(b.difference) - Math.abs(a.difference))
-          .map(({ category, actual, budget, difference, percentage }) => (
+          .map(({ category, categoryName, actual, budget, difference, percentage }) => (
             <tr key={category}>
-              <td>{category}</td>
+              <td>{categoryName}</td>
               <td><span>{formatPolishNumber(actual)} PLN</span></td>
               <td><span>{formatPolishNumber(budget)} PLN</span></td>
               <td>{difference > 0 ? '+' : ''}{formatPolishNumber(difference)} PLN ({difference > 0 ? '+' : ''} {percentage === Infinity ? '∞' : percentage.toFixed(1)}%)</td>

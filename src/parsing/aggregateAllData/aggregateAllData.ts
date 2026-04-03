@@ -3,14 +3,14 @@ import type { MonthlySummary, AllDataSummary } from '../types.ts'
 /**
  * Example:
  * Input: [
- *   { year: 2025, month: 1, totalExpenses: 1000, totalIncome: 2000, balance: 1000, categories: { 'food': 500, 'transport': 500 } },
- *   { year: 2025, month: 2, totalExpenses: 1500, totalIncome: 2500, balance: 1000, categories: { 'food': 800, 'entertainment': 700 } }
+ *   { year: 2025, month: 1, totalExpenses: 1000, totalIncome: 2000, balance: 1000, categories: { 'cat_food': 500, 'cat_transport': 500 } },
+ *   { year: 2025, month: 2, totalExpenses: 1500, totalIncome: 2500, balance: 1000, categories: { 'cat_food': 800, 'cat_entertainment': 700 } }
  * ]
  * Output: {
  *   totalExpenses: 2500,
  *   totalIncome: 4500,
  *   balance: 2000,
- *   categories: { 'food': 1300, 'transport': 500, 'entertainment': 700 }
+ *   categories: { 'cat_food': 1300, 'cat_transport': 500, 'cat_entertainment': 700 }
  * }
  */
 const aggregateAllData = (summaries: MonthlySummary[]): AllDataSummary => {

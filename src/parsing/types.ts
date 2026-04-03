@@ -1,5 +1,7 @@
-/** Display label and summary key for transactions with no category */
+/** Display label for transactions with no category */
 const NO_CATEGORY_KEY = '(no category)'
+/** Summary key used when a transaction has no category ID */
+const NO_CATEGORY_ID = '__no_category__'
 /** Sentinel value for "filter by no category" in UI (not a real category ID) */
 const NO_CATEGORY_FILTER_VALUE = '__no_category__'
 
@@ -45,6 +47,7 @@ interface AllDataSummary {
 }
 
 export {
+  NO_CATEGORY_ID,
   NO_CATEGORY_KEY,
   NO_CATEGORY_FILTER_VALUE,
   type Transaction,

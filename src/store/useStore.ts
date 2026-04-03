@@ -344,11 +344,10 @@ const useCategoryMetadata = () => {
 
 const useSummaries = (): MonthlySummary[] => {
   const transactions = useStore((state) => state.transactions)
-  const categoryMetadata = useStore((state) => state.categoryMetadata)
 
   const activeTransactions = transactions.filter((t) => !t.excluded)
   if (activeTransactions.length === 0) return []
-  return processTransactions(activeTransactions, categoryMetadata)
+  return processTransactions(activeTransactions)
 }
 
 const exportState = (): string => {

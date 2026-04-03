@@ -6,8 +6,9 @@ import { formatPolishNumber } from '../../parsing/formatPolishNumber/formatPolis
 import { parsePolishAmount } from '../../parsing/parsePolishAmount/parsePolishAmount.ts'
 import { getYearFromDate } from '../../parsing/getYearFromDate/getYearFromDate.ts'
 import { getMonthFromDate } from '../../parsing/getMonthFromDate/getMonthFromDate.ts'
-import { NO_CATEGORY_KEY } from '../../parsing/types.ts'
-import { useCategoryMetadata, getCategoryNameFromId, useStore, useSummaries } from '../../store/useStore.ts'
+import { NO_CATEGORY_ID } from '../../parsing/types.ts'
+import { getCategoryNameFromSummaryKey, getCategorySummaryKey } from '../../parsing/categoryUtils.ts'
+import { useCategoryMetadata, useStore, useSummaries } from '../../store/useStore.ts'
 import { CategoryBarChart } from './components/CategoryBarChart.tsx'
 import { PeriodSelection } from './components/PeriodSelection.tsx'
 import { CategoryProcessingControls } from './components/CategoryProcessingControls.tsx'
@@ -132,8 +133,8 @@ const DataByPeriod = () => {
             if (absAmount < lowValueThreshold) {
               categoryId = null
             }
-            const categoryName = getCategoryNameFromId(categoryId, categoryMetadata)
-            processed[categoryName] = (processed[categoryName] || 0) + absAmount
+            const categoryKey = getCategorySummaryKey(categoryId)
+            processed[categoryKey] = (processed[categoryKey] || 0) + absAmount
           }
         } catch {
           // Skip invalid transactions
@@ -151,10 +152,10 @@ const DataByPeriod = () => {
       const totalExpenses = Object.values(categories).reduce((sum, amount) => sum + amount, 0)
       if (totalExpenses > 0) {
         const merged: Record<string, number> = {}
-        let noCategoryAmount = categories[NO_CATEGORY_KEY] || 0
+        let noCategoryAmount = categories[NO_CATEGORY_ID] || 0
 
         Object.entries(categories).forEach(([category, amount]) => {
-          if (category === NO_CATEGORY_KEY) {
+          if (category === NO_CATEGORY_ID) {
             return
           }
           const percentage = (amount / totalExpenses) * 100
@@ -165,14 +166,14 @@ const DataByPeriod = () => {
           }
         })
         if (noCategoryAmount > 0) {
-          merged[NO_CATEGORY_KEY] = noCategoryAmount
+          merged[NO_CATEGORY_ID] = noCategoryAmount
         }
         categories = merged
       }
     }
 
     return categories
-  }, [displaySummary, treatLowValueAsOthers, lowValueThreshold, mergeSmallCategories, categoryThresholdPercent, transactions, selectionType, effectiveMonth, selectedYear, categoryMetadata])
+  }, [displaySummary, treatLowValueAsOthers, lowValueThreshold, mergeSmallCategories, categoryThresholdPercent, transactions, selectionType, effectiveMonth, selectedYear])
 
   // Get top 10 expenses for the selected period
   const topExpenses = useMemo(() => {
@@ -296,7 +297,7 @@ const DataByPeriod = () => {
           </div>
             )}
             {activeTab === 'chart'&&(
-              <CategoryBarChart categories={processedCategories} />
+              <CategoryBarChart categories={processedCategories} categoryMetadata={categoryMetadata} />
             )}
             {activeTab === 'categories'&&(
             <table>
@@ -305,7 +306,7 @@ const DataByPeriod = () => {
                 .sort(([, a], [, b]) => b - a)
                 .map(([cat, amount]) => (
                 <tr key={cat}>
-                  <td>{cat}</td>
+                  <td>{getCategoryNameFromSummaryKey(cat, categoryMetadata)}</td>
                   <td>{formatPolishNumber(amount)}</td>
                 </tr>
               ))}
@@ -315,6 +316,7 @@ const DataByPeriod = () => {
               {activeTab === 'budget'&&(
                 <BudgetComparison
                   processedCategories={processedCategories}
+                  categoryMetadata={categoryMetadata}
                   summaries={summaries}
                 />
                )}

@@ -12,7 +12,7 @@ import { formatPolishNumber } from '../../../parsing/formatPolishNumber/formatPo
 
 interface CumulativeChartProps {
   data: Record<string, string | number>[]
-  categories: { category: string; color: string }[]
+  categories: { category: string; label: string; color: string }[]
 }
 
 const CumulativeChart = ({ data, categories }: CumulativeChartProps) => {
@@ -31,10 +31,11 @@ const CumulativeChart = ({ data, categories }: CumulativeChartProps) => {
             }}
           />
           <Legend />
-          {categories.map(({ category, color }) => (
+          {categories.map(({ category, label, color }) => (
             <Bar
               key={category}
               dataKey={category}
+              name={label}
               stackId="expenses"
               fill={color}
             />

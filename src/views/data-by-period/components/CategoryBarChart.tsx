@@ -8,6 +8,8 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts'
+import type { CategoryMetadata } from '../../../parsing/categoryTypes.ts'
+import { getCategoryNameFromSummaryKey } from '../../../parsing/categoryUtils.ts'
 import { formatPolishNumber } from '../../../parsing/formatPolishNumber/formatPolishNumber.ts'
 
 const getCategoryColor = (categoryName: string) => {
@@ -25,10 +27,19 @@ const getCategoryColor = (categoryName: string) => {
   return `rgb(${String((r + 256) % 256)}, ${String((g + 256) % 256)}, ${String((b + 256) % 256)})`
 }
 
-const CategoryBarChart = ({ categories }: { categories: Record<string, number> }) => {
+const CategoryBarChart = ({
+  categories,
+  categoryMetadata
+}: {
+  categories: Record<string, number>
+  categoryMetadata: CategoryMetadata
+}) => {
   const categoryEntries = Object.entries(categories)
     .sort(([, a], [, b]) => b - a)
-    .map(([name, amount]) => ({ name, amount, color: getCategoryColor(name) }))
+    .map(([categoryKey, amount]) => {
+      const name = getCategoryNameFromSummaryKey(categoryKey, categoryMetadata)
+      return { categoryKey, name, amount, color: getCategoryColor(name) }
+    })
 
   if (categoryEntries.length === 0) {
     return <p>No category data available</p>
@@ -49,7 +60,7 @@ const CategoryBarChart = ({ categories }: { categories: Record<string, number> }
           />
           <Bar dataKey="amount">
             {categoryEntries.map((entry) => (
-              <Cell key={entry.name} fill={entry.color} />
+              <Cell key={entry.categoryKey} fill={entry.color} />
             ))}
           </Bar>
         </BarChart>

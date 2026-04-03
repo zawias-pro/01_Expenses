@@ -1,9 +1,11 @@
 import { useState } from 'react'
+import { getCategoryNameFromId, getCategoryNameFromSummaryKey } from '../../parsing/categoryUtils.ts'
+import { NO_CATEGORY_ID } from '../../parsing/types.ts'
 import { CategoryFilter } from './components/CategoryFilter.tsx'
 import { CumulativeChart } from './components/CumulativeChart.tsx'
 import { SectionHeader } from '../../components/SectionHeader/SectionHeader.tsx'
 import { Panel } from "../../components/Panel/Panel.tsx"
-import { useSummaries } from "../../store/useStore.ts"
+import { useCategoryMetadata, useSummaries } from "../../store/useStore.ts"
 import { useStore } from '../../store/useStore.ts'
 
 const monthNames = [
@@ -14,7 +16,8 @@ const monthNames = [
 const CumulativeBarChart = () => {
   const summaries = useSummaries()
   const transactions = useStore((state) => state.transactions)
-  const [selectedCategory, setSelectedCategory] = useState<string | null | undefined>(undefined)
+  const categoryMetadata = useCategoryMetadata()
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(NO_CATEGORY_ID)
 
   const allCategories = new Set<string>()
   summaries.forEach(summary => {
@@ -40,13 +43,17 @@ const CumulativeBarChart = () => {
     return dataPoint
   })
 
-  const filteredCategories = selectedCategory 
-    ? [selectedCategory].filter(cat => allCategories.has(cat))
-    : Array.from(allCategories)
+  const filteredCategories = selectedCategory === null
+    ? Array.from(allCategories)
+    : [selectedCategory].filter(cat => allCategories.has(cat))
 
   const categoryColors = filteredCategories.map((category, index) => {
     const hue = (index * 137.5) % 360
-    return { category, color: `hsl(${hue.toString()}, 70%, 50%)` }
+    return {
+      category,
+      label: getCategoryNameFromSummaryKey(category, categoryMetadata),
+      color: `hsl(${hue.toString()}, 70%, 50%)`
+    }
   })
 
   if (chartData.length === 0) {
@@ -84,8 +91,7 @@ const CumulativeBarChart = () => {
           {transactions
             .filter(t=> {
               if (selectedCategory === null) { return true }
-              if (selectedCategory === undefined) { return t.category === null }
-              return t.category === selectedCategory
+              return (t.category ?? NO_CATEGORY_ID) === selectedCategory
             })
             .toSorted((a,b)=> {
               if(a.date > b.date) {return 1}
@@ -97,7 +103,7 @@ const CumulativeBarChart = () => {
               <td>{t.date}</td>
               <td>{t.description}</td>
               <td>{t.amount}</td>
-              <td>{t.category}</td>
+              <td>{getCategoryNameFromId(t.category, categoryMetadata)}</td>
             </tr>
           ))}
           </tbody>

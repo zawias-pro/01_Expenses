@@ -1,5 +1,6 @@
 // Category utility functions
 import type { CategoryMetadata } from './categoryTypes.ts'
+import { NO_CATEGORY_ID, NO_CATEGORY_KEY } from './types.ts'
 
 // Generate a unique category ID (independent of name)
 // Uses timestamp + random to ensure uniqueness
@@ -35,8 +36,26 @@ const getOrCreateCategoryId = (name: string, metadata: CategoryMetadata): string
 }
 
 const getCategoryNameFromId = (id: string | null, metadata: CategoryMetadata): string => {
-  if (id === null || id === '') return '(no category)'
-  return metadata[id] ?? '(no category)'
+  if (id === null || id === '') return NO_CATEGORY_KEY
+  return metadata[id] ?? NO_CATEGORY_KEY
 }
 
-export { generateCategoryId, getCategoryIdFromName, getCategoryNameFromId, getOrCreateCategoryId }
+const getCategorySummaryKey = (id: string | null): string => id ?? NO_CATEGORY_ID
+
+const getCategoryIdFromSummaryKey = (summaryKey: string): string | null => {
+  return summaryKey === NO_CATEGORY_ID ? null : summaryKey
+}
+
+const getCategoryNameFromSummaryKey = (summaryKey: string, metadata: CategoryMetadata): string => {
+  return getCategoryNameFromId(getCategoryIdFromSummaryKey(summaryKey), metadata)
+}
+
+export {
+  generateCategoryId,
+  getCategoryIdFromName,
+  getCategoryIdFromSummaryKey,
+  getCategoryNameFromId,
+  getCategoryNameFromSummaryKey,
+  getCategorySummaryKey,
+  getOrCreateCategoryId
+}
