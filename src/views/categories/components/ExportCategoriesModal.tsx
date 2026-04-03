@@ -37,6 +37,7 @@ const ExportCategoriesModal = ({
         value={exportRules()}
         readOnly
         onClick={e => { (e.target as HTMLTextAreaElement).select() }}
+        rows={10}
       />
     </Modal>
   )

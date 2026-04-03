@@ -19,9 +19,17 @@ const QuickAddCategoryModal = ({
 
   const transaction = transactionId ? transactions.find((t) => t.id === transactionId) ?? null : null
 
+  const initialKeyword = (() => {
+    return (transaction?.description ?? '')
+      .replace(/www/i, '')
+      .replace(/\.pl/i, '')
+      .replace(/\.com/i, '')
+      .split(' ')[0] ?? ''
+  })()
+
   const [selectedCategory, setSelectedCategory] = useState('new')
   const [customCategory, setCustomCategory] = useState('')
-  const [keyword, setKeyword] = useState(transaction?.description ?? '')
+  const [keyword, setKeyword] = useState(initialKeyword)
 
   if (transaction === null) {
     return null
