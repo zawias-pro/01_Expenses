@@ -1,6 +1,6 @@
 import type { Transaction, MonthlySummary } from '../types.ts'
 import { getMonthFromDate } from '../getMonthFromDate/getMonthFromDate.ts'
-import { parsePolishAmount } from '../parsePolishAmount/parsePolishAmount.ts'
+import { parseAmount } from '../parseAmount/parseAmount.ts'
 import { getYearFromDate } from '../getYearFromDate/getYearFromDate.ts'
 import { getCategorySummaryKey } from '../categoryUtils.ts'
 
@@ -24,7 +24,7 @@ const processTransactions = (
     try {
       const year = getYearFromDate(t.date)
       const month = getMonthFromDate(t.date)
-      const amount = parsePolishAmount(t.amount)
+      const amount = parseAmount(t.amount)
       const categoryKey = getCategorySummaryKey(t.category)
 
       const key = `${year.toString()}-${month.toString()}`

@@ -8,7 +8,7 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts'
-import { formatPolishNumber } from '../../../parsing/formatPolishNumber/formatPolishNumber.ts'
+import { formatNumber } from '../../../parsing/formatNumber/formatNumber.ts'
 import { useStore } from "../../../store/useStore.ts"
 import { getCategoryColor } from "../../../parsing/categoryUtils.ts"
 
@@ -27,12 +27,12 @@ const CumulativeChart = ({
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
           <XAxis dataKey="month" angle={-45} textAnchor="end" height={80} interval={0} />
-          <YAxis tickFormatter={(value: number) => formatPolishNumber(value)} />
+          <YAxis tickFormatter={(value: number) => formatNumber(value)} />
           <Tooltip
             wrapperStyle={{ zIndex: 100 }}
             formatter={(value: number | undefined) => {
               if (value === undefined) { return '???' }
-              return formatPolishNumber(value)
+              return formatNumber(value)
             }}
           />
           <Legend />

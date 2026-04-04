@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react'
 import type { Transaction } from '../../parsing/types.ts'
 import { aggregateByYear } from '../../parsing/aggregateByYear/aggregateByYear.ts'
 import { aggregateAllData } from '../../parsing/aggregateAllData/aggregateAllData.ts'
-import { formatPolishNumber } from '../../parsing/formatPolishNumber/formatPolishNumber.ts'
-import { parsePolishAmount } from '../../parsing/parsePolishAmount/parsePolishAmount.ts'
+import { formatNumber } from '../../parsing/formatNumber/formatNumber.ts'
+import { parseAmount } from '../../parsing/parseAmount/parseAmount.ts'
 import { getYearFromDate } from '../../parsing/getYearFromDate/getYearFromDate.ts'
 import { getMonthFromDate } from '../../parsing/getMonthFromDate/getMonthFromDate.ts'
 import { NO_CATEGORY_ID } from '../../parsing/types.ts'
@@ -126,7 +126,7 @@ const DataByPeriod = () => {
 
       periodTransactions.forEach(t => {
         try {
-          const amount = parsePolishAmount(t.amount)
+          const amount = parseAmount(t.amount)
           if (amount < 0) {
             const absAmount = Math.abs(amount)
             let categoryId: string | null = t.category
@@ -205,7 +205,7 @@ const DataByPeriod = () => {
     const expenses = periodTransactions
       .map(t => {
         try {
-          const amount = parsePolishAmount(t.amount)
+          const amount = parseAmount(t.amount)
           return { ...t, parsedAmount: amount }
         } catch {
           return null
@@ -306,14 +306,14 @@ const DataByPeriod = () => {
                 .map(([cat, amount]) => (
                 <tr key={cat}>
                   <td>{getCategoryNameFromSummaryKey(cat, categoryMetadata)}</td>
-                  <td>{formatPolishNumber(amount)}</td>
+                  <td>{formatNumber(amount)}</td>
                 </tr>
               ))}
               </tbody>
             </table>
                 <p>
                   {`Total: `}
-                  {formatPolishNumber(
+                  {formatNumber(
                     Object
                     .values(processedCategories)
                     .reduce((acc, curr) => {

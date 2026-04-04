@@ -7,7 +7,6 @@ import type { Transaction } from '../../parsing/types.ts'
 import { NO_CATEGORY_FILTER_VALUE } from '../../parsing/types.ts'
 import { getYearFromDate } from '../../parsing/getYearFromDate/getYearFromDate.ts'
 import { getMonthFromDate } from '../../parsing/getMonthFromDate/getMonthFromDate.ts'
-import { parsePolishAmount } from '../../parsing/parsePolishAmount/parsePolishAmount.ts'
 import { TransactionsFilters } from './components/TransactionsFilters/TransactionsFilters.tsx'
 import { TransactionsBulkActions } from './components/TransactionsBulkActions/TransactionsBulkActions.tsx'
 import {
@@ -16,6 +15,7 @@ import {
 import { TransactionRow } from './components/TransactionRow/TransactionRow.tsx'
 import { SectionHeader } from "../../components/SectionHeader/SectionHeader.tsx"
 import { Panel } from "../../components/Panel/Panel.tsx"
+import { parseAmount as baseParseAmount } from "../../parsing/parseAmount/parseAmount.ts"
 
 type BulkAction = 'delete' | 'exclude' | 'unexclude' | 'setCategory' | null
 
@@ -46,7 +46,7 @@ const TransactionsTable = () => {
   const parseAmount = (amountStr: string): number => {
     if (!amountStr || !amountStr.trim()) return 0
     try {
-      return parsePolishAmount(amountStr)
+      return baseParseAmount(amountStr)
     } catch {
       return 0
     }

@@ -10,7 +10,7 @@ import {
 } from 'recharts'
 import type { CategoryMetadata } from '../../../parsing/categoryTypes.ts'
 import { getCategoryColor, getCategoryNameFromSummaryKey } from '../../../parsing/categoryUtils.ts'
-import { formatPolishNumber } from '../../../parsing/formatPolishNumber/formatPolishNumber.ts'
+import { formatNumber } from '../../../parsing/formatNumber/formatNumber.ts'
 import { useCategoriesSortedByTotalAmount } from "../../../store/useStore.ts"
 
 const CategoryBarChart = ({
@@ -56,11 +56,11 @@ const CategoryBarChart = ({
         <BarChart data={categoryEntries}>
           <CartesianGrid />
           <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} interval={0} />
-          <YAxis tickFormatter={(value: number) => formatPolishNumber(value)} />
+          <YAxis tickFormatter={(value: number) => formatNumber(value)} />
           <Tooltip
             formatter={(value: number | undefined) => {
               if (value === undefined) { return '???' }
-              return formatPolishNumber(value)
+              return formatNumber(value)
             }}
           />
           <Bar dataKey="amount">

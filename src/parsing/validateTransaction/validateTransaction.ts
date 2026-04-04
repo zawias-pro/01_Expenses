@@ -1,5 +1,5 @@
 import { getMonthFromDate } from '../getMonthFromDate/getMonthFromDate.ts'
-import { parsePolishAmount } from '../parsePolishAmount/parsePolishAmount.ts'
+import { parseAmount } from '../parseAmount/parseAmount.ts'
 
 /**
  * Example:
@@ -30,7 +30,7 @@ const validateTransaction = (date: string, description: string, amount: string, 
   }
 
   try {
-    parsePolishAmount(amount)
+    parseAmount(amount)
   } catch {
     return { isValid: false, error: `Invalid amount format: ${amount}` }
   }

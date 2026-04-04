@@ -1,6 +1,6 @@
 import { parseCSVLine } from "../../parsing/parseCSVLine/parseCSVLine.ts"
 import { classifyDescription } from "../../parsing/classifyDescription/classifyDescription.ts"
-import { parsePolishAmount } from "../../parsing/parsePolishAmount/parsePolishAmount.ts"
+import { parseAmount } from "../../parsing/parseAmount/parseAmount.ts"
 import { hashTransaction } from "../../parsing/hashTransaction/hashTransaction.ts"
 import type { Transaction } from "../../parsing/types.ts"
 
@@ -32,7 +32,7 @@ const addTransactions = (
     const category = classifyDescription(t.description, allRules)
     let excluded = false
     try {
-      const amount = parsePolishAmount(t.amount)
+      const amount = parseAmount(t.amount)
       if (amount > 0) {
         excluded = true
       }

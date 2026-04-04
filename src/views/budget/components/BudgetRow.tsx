@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useStore } from '../../../store/useStore.ts'
-import { formatPolishNumber } from '../../../parsing/formatPolishNumber/formatPolishNumber.ts'
-import { parsePolishAmount } from '../../../parsing/parsePolishAmount/parsePolishAmount.ts'
+import { formatNumber } from '../../../parsing/formatNumber/formatNumber.ts'
+import { parseAmount } from '../../../parsing/parseAmount/parseAmount.ts'
 import { Button } from '../../../components/Button/Button.tsx'
 import { Input } from '../../../components/Input/Input.tsx'
 
@@ -19,12 +19,12 @@ const BudgetRow = ({ name, amount }: BudgetRowProps) => {
 
   const handleStartEdit = () => {
     setIsEditing(true)
-    setEditingAmount(formatPolishNumber(amount))
+    setEditingAmount(formatNumber(amount))
   }
 
   const handleSaveEdit = () => {
     try {
-      const parsedAmount = parsePolishAmount(editingAmount)
+      const parsedAmount = parseAmount(editingAmount)
       if (parsedAmount > 0) {
         setBudget(name, parsedAmount)
         setIsEditing(false)
@@ -66,7 +66,7 @@ const BudgetRow = ({ name, amount }: BudgetRowProps) => {
       ) : (
         <>
           <span>{name}</span>
-          <span>{formatPolishNumber(amount)} PLN</span>
+          <span>{formatNumber(amount)} PLN</span>
           <Button
             onClick={handleStartEdit}
           >

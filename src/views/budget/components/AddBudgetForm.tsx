@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useStore, useCategories, useCategoryMetadata, getCategoryIdFromName } from '../../../store/useStore.ts'
-import { parsePolishAmount } from '../../../parsing/parsePolishAmount/parsePolishAmount.ts'
+import { parseAmount } from '../../../parsing/parseAmount/parseAmount.ts'
 import { Button } from '../../../components/Button/Button.tsx'
 import { Input } from '../../../components/Input/Input.tsx'
 import { Select } from '../../../components/Select/Select.tsx'
@@ -18,7 +18,7 @@ const AddBudgetForm = () => {
   const handleAddBudget = () => {
     if (newCategory.trim() && newAmount.trim()) {
       try {
-        const amount = parsePolishAmount(newAmount)
+        const amount = parseAmount(newAmount)
         if (amount > 0) {
           setBudget(newCategory.trim(), amount)
           setNewCategory('')

@@ -1,4 +1,4 @@
-import { formatPolishNumber } from '../../../parsing/formatPolishNumber/formatPolishNumber.ts'
+import { formatNumber } from '../../../parsing/formatNumber/formatNumber.ts'
 import type { CategoryMetadata } from '../../../parsing/categoryTypes.ts'
 import { getCategoryNameFromSummaryKey } from '../../../parsing/categoryUtils.ts'
 import type { MonthlySummary } from '../../../parsing/types.ts'
@@ -76,9 +76,9 @@ const BudgetComparison = ({
           .map(({ category, categoryName, actual, budget, difference, percentage }) => (
             <tr key={category}>
               <td>{categoryName}</td>
-              <td><span>{formatPolishNumber(actual)} PLN</span></td>
-              <td><span>{formatPolishNumber(budget)} PLN</span></td>
-              <td>{difference > 0 ? '+' : ''}{formatPolishNumber(difference)} PLN ({difference > 0 ? '+' : ''} {percentage === Infinity ? '∞' : percentage.toFixed(1)}%)</td>
+              <td><span>{formatNumber(actual)} PLN</span></td>
+              <td><span>{formatNumber(budget)} PLN</span></td>
+              <td>{difference > 0 ? '+' : ''}{formatNumber(difference)} PLN ({difference > 0 ? '+' : ''} {percentage === Infinity ? '∞' : percentage.toFixed(1)}%)</td>
             </tr>
           ))}
       </table>
