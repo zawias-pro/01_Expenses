@@ -4,14 +4,14 @@
  * 
  * @param date - Transaction date
  * @param description - Transaction description
- * @param amount - Transaction amount string
+ * @param amount - Transaction amount
  * @returns A hash string (first 16 characters of SHA-256)
  */
-const hashTransaction = (date: string, description: string, amount: string): string => {
+const hashTransaction = (date: string, description: string, amount: number): string => {
   // Normalize inputs: trim and lowercase for consistent hashing
   const normalizedDate = (date || '').trim()
   const normalizedDescription = (description || '').trim().toLowerCase()
-  const normalizedAmount = (amount || '').trim()
+  const normalizedAmount = String(amount)
   
   // Combine into a single string
   const combined = `${normalizedDate}|${normalizedDescription}|${normalizedAmount}`

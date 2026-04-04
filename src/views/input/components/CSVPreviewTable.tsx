@@ -3,7 +3,7 @@ import styles from './CSVPreviewTable.module.css'
 const CSVPreviewTable = ({
   transactions,
 }: {
-  transactions: {id: string, date: string, description: string, amount: string, validationError: string|undefined }[]
+  transactions: {id: string, date: string, description: string, amount: number, validationError: string|undefined }[]
 }) => {
   if (transactions.length === 0) {
     return 'No data'

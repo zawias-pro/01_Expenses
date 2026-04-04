@@ -1,6 +1,5 @@
 import { parseCSVLine } from "../../parsing/parseCSVLine/parseCSVLine.ts"
 import { classifyDescription } from "../../parsing/classifyDescription/classifyDescription.ts"
-import { parseAmount } from "../../parsing/parseAmount/parseAmount.ts"
 import { hashTransaction } from "../../parsing/hashTransaction/hashTransaction.ts"
 import type { Transaction } from "../../parsing/types.ts"
 
@@ -30,15 +29,7 @@ const addTransactions = (
   const classified = validWithIndex.map((item) => {
     const t = item.transaction
     const category = classifyDescription(t.description, allRules)
-    let excluded = false
-    try {
-      const amount = parseAmount(t.amount)
-      if (amount > 0) {
-        excluded = true
-      }
-    } catch {
-      // ignore
-    }
+    const excluded = t.amount>0
 
     return {
       transaction: {

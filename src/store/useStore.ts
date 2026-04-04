@@ -5,7 +5,6 @@ import type { Transaction, MonthlySummary } from '../parsing/types.ts'
 import { parseRules } from '../parsing/parseRules/parseRules.ts'
 import { classifyDescription } from '../parsing/classifyDescription/classifyDescription.ts'
 import { processTransactions } from '../parsing/processTransactions/processTransactions.ts'
-import { parseAmount } from '../parsing/parseAmount/parseAmount.ts'
 
 // NOTE: This is a development app, not production. No migrations needed.
 // Start with 0 categories. User imports or adds categories.
@@ -313,7 +312,7 @@ const useCategoriesSortedByTotalAmount = () => {
         return
       }
 
-      const amount = Math.abs(parseAmount(transaction.amount))
+      const amount = Math.abs(transaction.amount)
       totalsByCategoryId[transaction.category] = (totalsByCategoryId[transaction.category] || 0) + amount
     })
 

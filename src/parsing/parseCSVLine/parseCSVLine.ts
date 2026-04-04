@@ -1,5 +1,6 @@
 import { validateTransaction } from '../validateTransaction/validateTransaction.ts'
 import { hashTransaction } from '../hashTransaction/hashTransaction.ts'
+import { parseAmount } from "../parseAmount/parseAmount.ts"
 
 const parseCSVLine = ({
   line,
@@ -24,7 +25,13 @@ const parseCSVLine = ({
   const category: string | null = null
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const amount = parts.length > amountIndex ? clean(parts[amountIndex]!) : ''
-  const hash = hashTransaction(date, description, amount)
+  let parsedAmount: number
+  try {
+    parsedAmount = parseAmount(amount)
+  } catch {
+    parsedAmount = 0
+  }
+  const hash = hashTransaction(date, description, parsedAmount)
   let validation = validateTransaction(date, description, amount, line)
   const maxIndex = Math.max(dateIndex, descriptionIndex, amountIndex)
   if (parts.length <= maxIndex && line.trim()) {
@@ -37,7 +44,7 @@ const parseCSVLine = ({
     date,
     description,
     category,
-    amount,
+    amount: parsedAmount,
     validationError: validation.error,
   }
 }

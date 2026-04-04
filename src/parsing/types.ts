@@ -8,7 +8,7 @@ interface Transaction {
   date: string
   description: string
   category: string | null
-  amount: string
+  amount: number
   excluded: boolean
   comment: string | null
   originalDate: string

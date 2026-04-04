@@ -15,7 +15,6 @@ import {
 import { TransactionRow } from './components/TransactionRow/TransactionRow.tsx'
 import { SectionHeader } from "../../components/SectionHeader/SectionHeader.tsx"
 import { Panel } from "../../components/Panel/Panel.tsx"
-import { parseAmount as baseParseAmount } from "../../parsing/parseAmount/parseAmount.ts"
 
 type BulkAction = 'delete' | 'exclude' | 'unexclude' | 'setCategory' | null
 
@@ -42,23 +41,9 @@ const TransactionsTable = () => {
   const updateTransactionCategory = useStore((state) => state.updateTransactionCategory)
   const removeTransaction = useStore((state) => state.removeTransaction)
 
-  // Parse amount string to number
-  const parseAmount = (amountStr: string): number => {
-    if (!amountStr || !amountStr.trim()) return 0
-    try {
-      return baseParseAmount(amountStr)
-    } catch {
-      return 0
-    }
-  }
-
-  // availableMonths moved into TransactionsFilters (UI store keeps filter selection)
-
-  // Filter and sort transactions
   const filteredAndSortedTransactions = useMemo(() => {
     let filtered = transactions
 
-    // Search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase()
       filtered = filtered.filter(t => {
@@ -67,7 +52,7 @@ const TransactionsTable = () => {
           t.description.toLowerCase().includes(query) ||
           categoryName.toLowerCase().includes(query) ||
           t.date.includes(query) ||
-          t.amount.includes(query) ||
+          String(t.amount).includes(query) ||
           t.hash.toLowerCase().includes(query)
         )
       })
@@ -96,15 +81,13 @@ const TransactionsTable = () => {
       })
     }
 
-    // Amount filter
     if (amountFilterType && amountFilterType !== 'none' && amountFilterValue !== null) {
       filtered = filtered.filter(t => {
-        const amount = parseAmount(t.amount)
         if (amountFilterType === 'less') {
-          return amount < amountFilterValue
+          return t.amount < amountFilterValue
         }
-        // amountFilterType === 'greater' is guaranteed here
-        return amount > amountFilterValue
+
+        return t.amount > amountFilterValue
       })
     }
 
@@ -129,7 +112,7 @@ const TransactionsTable = () => {
             return aName.localeCompare(bName)
           }
           if (sortColumn === 'amount') {
-            return parseAmount(a.amount) - parseAmount(b.amount)
+            return a.amount - b.amount
           }
           if(sortColumn==='hash') {
             return a.hash.localeCompare(b.hash)

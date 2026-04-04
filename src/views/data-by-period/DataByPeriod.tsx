@@ -3,7 +3,6 @@ import type { Transaction } from '../../parsing/types.ts'
 import { aggregateByYear } from '../../parsing/aggregateByYear/aggregateByYear.ts'
 import { aggregateAllData } from '../../parsing/aggregateAllData/aggregateAllData.ts'
 import { formatNumber } from '../../parsing/formatNumber/formatNumber.ts'
-import { parseAmount } from '../../parsing/parseAmount/parseAmount.ts'
 import { getYearFromDate } from '../../parsing/getYearFromDate/getYearFromDate.ts'
 import { getMonthFromDate } from '../../parsing/getMonthFromDate/getMonthFromDate.ts'
 import { NO_CATEGORY_ID } from '../../parsing/types.ts'
@@ -125,9 +124,8 @@ const DataByPeriod = () => {
 
       periodTransactions.forEach(t => {
         try {
-          const amount = parseAmount(t.amount)
-          if (amount < 0) {
-            const absAmount = Math.abs(amount)
+          if (t.amount < 0) {
+            const absAmount = Math.abs(t.amount)
             let categoryId: string | null = t.category
             if (absAmount < lowValueThreshold) {
               categoryId = null
@@ -198,14 +196,11 @@ const DataByPeriod = () => {
         }
       })
     }
-    // For 'all', we already have all transactions filtered
 
-    // Filter to expenses only (negative amounts) and sort by absolute amount
     const expenses = periodTransactions
       .map(t => {
         try {
-          const amount = parseAmount(t.amount)
-          return { ...t, parsedAmount: amount }
+          return { ...t, parsedAmount: t.amount }
         } catch {
           return null
         }

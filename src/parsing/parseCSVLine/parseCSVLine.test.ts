@@ -16,7 +16,7 @@ test('parseCSVLine - parses valid CSV line', () => {
   assert.strictEqual(result.date, '2025-12-12')
   assert.strictEqual(result.description, 'Description')
   assert.strictEqual(result.category, null)
-  assert.strictEqual(result.amount, '-5 000,00 PLN')
+  assert.strictEqual(result.amount, -5000)
   assert.strictEqual(result.validationError, undefined)
   assert(typeof result.id === 'string')
 })
