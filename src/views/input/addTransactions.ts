@@ -24,7 +24,7 @@ const addTransactions = (
     lineIndex: index
   }))
 
-  const validWithIndex = parsedWithIndex.filter(item => item.transaction.validationError)
+  const validWithIndex = parsedWithIndex.filter(item => !item.transaction.validationError)
   const invalidCount = parsedWithIndex.length - validWithIndex.length
 
   const classified = validWithIndex.map((item) => {
@@ -93,7 +93,6 @@ const addTransactions = (
           ...t,
           originalDate: t.date,
           originalCategory: t.category,
-          isValid: true,
         }))
       ]
     )
