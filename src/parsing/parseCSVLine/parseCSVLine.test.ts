@@ -7,9 +7,6 @@ test('parseCSVLine - parses valid CSV line', () => {
   const result = parseCSVLine(line, ';')
   assert.strictEqual(result.date, '2025-12-12')
   assert.strictEqual(result.description, 'Description')
-  // Account field is ignored and always set to empty string
-  assert.strictEqual(result.account, '')
-  // Category from CSV is ignored; set on classification (null = no category)
   assert.strictEqual(result.category, null)
   assert.strictEqual(result.amount, '-5 000,00 PLN')
   assert.strictEqual(result.excluded, false)
