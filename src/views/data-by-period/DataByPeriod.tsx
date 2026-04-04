@@ -12,12 +12,11 @@ import { useCategoryMetadata, useStore, useSummaries } from '../../store/useStor
 import { CategoryBarChart } from './components/CategoryBarChart.tsx'
 import { PeriodSelection } from './components/PeriodSelection.tsx'
 import { CategoryProcessingControls } from './components/CategoryProcessingControls.tsx'
-import { BudgetComparison } from './components/BudgetComparison.tsx'
 import { SectionHeader } from '../../components/SectionHeader/SectionHeader.tsx'
 import { Panel } from "../../components/Panel/Panel.tsx"
 import { FormGroup } from "../../components/FormGroup/FormGroup.tsx"
 
-type TabType = 'expenses' | 'chart' | 'categories' | 'budget'
+type TabType = 'expenses' | 'chart' | 'categories'
 
 const monthNames = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -259,11 +258,6 @@ const DataByPeriod = () => {
             >
               Categories
             </button>
-            <button
-              onClick={() => { setActiveTab('budget') }}
-            >
-              Vs Budget
-            </button>
           </div>
 
             {activeTab === 'expenses'&&(
@@ -323,13 +317,6 @@ const DataByPeriod = () => {
                 </p>
               </>
             )}
-              {activeTab === 'budget'&&(
-                <BudgetComparison
-                  processedCategories={processedCategories}
-                  categoryMetadata={categoryMetadata}
-                  summaries={summaries}
-                />
-               )}
           </Panel>
       )}
 

@@ -104,12 +104,6 @@ const Sidebar = ({
         >
           📊 Cumulative Bar Chart
         </button>
-        <button
-          className={view==='budget' ? styles['active'] : undefined}
-          onClick={() => { onViewChange('budget') }}
-        >
-          💰 Budget
-        </button>
       </nav>
     </div>
   )

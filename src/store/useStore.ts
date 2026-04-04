@@ -19,7 +19,7 @@ import { getCategoryIdFromName, getCategoryNameFromId, getOrCreateCategoryId } f
 
 const INITIAL_CATEGORY_METADATA = INITIAL_METADATA
 
-type View = 'csv' | 'categories' | 'transactions' | 'summary' | 'chart' | 'budget'
+type View = 'csv' | 'categories' | 'transactions' | 'summary' | 'chart'
 type PeriodSelectionType = 'month' | 'year' | 'all'
 
 interface PeriodSelectionState {
@@ -32,12 +32,10 @@ interface PeriodSelectionState {
   setSelectedMonth: (month: { year: number; month: number } | null) => void
 }
 
-/** Persistent state only: transactions, categories (metadata + rules), and bonds (budgets). */
 interface AppState extends PeriodSelectionState {
   transactions: Transaction[]
   customRules: Record<string, string[]> // category ID -> keywords
   categoryMetadata: CategoryMetadata // category ID -> category name
-  budgets: Record<string, number> // category ID -> monthly budget amount
 
   setTransactions: (transactions: Transaction[]) => void
   updateTransactionExcluded: (id: string, excluded: boolean) => void
@@ -57,9 +55,6 @@ interface AppState extends PeriodSelectionState {
   renameCategory: (oldName: string, newName: string) => void
   replaceCategories: (categories: Record<string, string[]>) => void
 
-  setBudget: (categoryName: string, amount: number) => void
-  removeBudget: (categoryName: string) => void
-
   clearAll: () => void
   reclassifyTransactions: () => void
 }
@@ -68,7 +63,6 @@ const initialData = {
   transactions: [] as Transaction[],
   customRules: {} as Record<string, string[]>,
   categoryMetadata: INITIAL_CATEGORY_METADATA,
-  budgets: {} as Record<string, number>,
   selectionType: 'month' as PeriodSelectionType,
   selectedYear: null as number | null,
   selectedMonth: null as { year: number; month: number } | null,
@@ -253,30 +247,8 @@ const useStore = create<AppState>()(
           metadata[id] = categoryName
           rules[id] = keywords
         }
-        set({ customRules: rules, categoryMetadata: metadata, budgets: {} })
+        set({ customRules: rules, categoryMetadata: metadata })
         get().reclassifyTransactions()
-      },
-
-      setBudget: (categoryName, amount) => {
-        set((state) => {
-          const categoryId = getCategoryIdFromName(categoryName, state.categoryMetadata)
-          if (!categoryId) return {}
-          return {
-            budgets: { ...state.budgets, [categoryId]: amount },
-          }
-        })
-      },
-
-      removeBudget: (categoryName) => {
-        set((state) => {
-          const categoryId = getCategoryIdFromName(categoryName, state.categoryMetadata)
-          if (!categoryId) return {}
-          const rest: Record<string, number> = {}
-          for (const [id, amount] of Object.entries(state.budgets)) {
-            if (id !== categoryId) rest[id] = amount
-          }
-          return { budgets: rest }
-        })
       },
 
       clearAll: () => set(initialData),
@@ -307,7 +279,6 @@ const useStore = create<AppState>()(
         transactions: state.transactions,
         customRules: state.customRules,
         categoryMetadata: state.categoryMetadata,
-        budgets: state.budgets,
         selectionType: state.selectionType,
         selectedYear: state.selectedYear,
         selectedMonth: state.selectedMonth,
@@ -385,7 +356,6 @@ const exportState = (): string => {
     transactions: state.transactions,
     customRules: state.customRules,
     categoryMetadata: state.categoryMetadata,
-    budgets: state.budgets,
   }
   return JSON.stringify(exportData, null, 2)
 }
@@ -396,7 +366,6 @@ const importState = (jsonString: string): boolean => {
       transactions?: Transaction[]
       customRules?: Record<string, string[]>
       categoryMetadata?: CategoryMetadata
-      budgets?: Record<string, number>
       selectionType?: PeriodSelectionType
       selectedYear?: number | null
       selectedMonth?: { year: number; month: number } | null
@@ -405,7 +374,6 @@ const importState = (jsonString: string): boolean => {
       transactions: data.transactions ?? [],
       customRules: data.customRules ?? {},
       categoryMetadata: data.categoryMetadata ?? INITIAL_CATEGORY_METADATA,
-      budgets: data.budgets ?? {},
       selectionType: data.selectionType ?? 'month',
       selectedYear: data.selectedYear ?? null,
       selectedMonth: data.selectedMonth ?? null,

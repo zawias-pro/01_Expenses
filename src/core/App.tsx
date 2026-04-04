@@ -6,7 +6,6 @@ import { TransactionsTable } from '../views/table/TransactionsTable.tsx'
 import { DataByPeriod } from '../views/data-by-period/DataByPeriod.tsx'
 import { CumulativeBarChart } from '../views/data-cumulative/CumulativeBarChart.tsx'
 import { Categories } from '../views/categories/Categories.tsx'
-import { Budget } from '../views/budget/Budget.tsx'
 import { ErrorBoundary } from "../components/ErrorBoundary/ErrorBoundary.tsx"
 import { Sidebar } from "../components/Sidebar/Sidebar.tsx"
 import { CSVInput } from "../views/input/CSVInput.tsx"
@@ -28,7 +27,6 @@ const App = () => {
             {view === 'transactions' && <TransactionsTable />}
             {view === 'summary' && <DataByPeriod />}
             {view === 'chart' && <CumulativeBarChart />}
-            {view === 'budget' && <Budget/>}
           </ErrorBoundary>
         </div>
       </div>
