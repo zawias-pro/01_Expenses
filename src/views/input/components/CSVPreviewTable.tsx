@@ -1,10 +1,9 @@
-import type { Transaction } from '../../../parsing/types.ts'
 import styles from './CSVPreviewTable.module.css'
 
 const CSVPreviewTable = ({
   transactions,
 }: {
-  transactions: Transaction[]
+  transactions: {id: string, date: string, description: string, amount: string, validationError: string|undefined }[]
 }) => {
   if (transactions.length === 0) {
     return 'No data'
@@ -22,7 +21,7 @@ const CSVPreviewTable = ({
       </tr>
       </thead>
       <tbody>
-      {transactions.map((t: Transaction) => (
+      {transactions.map((t) => (
         <tr key={t.id}>
           <td>{t.date}</td>
           <td>{t.description}</td>

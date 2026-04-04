@@ -19,12 +19,12 @@ const addTransactions = (
   const lines = csvContent.split('\n')
 
   const parsedWithIndex = lines.map((line, index) => ({
-    transaction: parseCSVLine(line, delimiter, dateIndex, descriptionIndex, amountIndex),
+    transaction: parseCSVLine({line, delimiter, dateIndex, descriptionIndex, amountIndex}),
     originalLine: line,
     lineIndex: index
   }))
 
-  const validWithIndex = parsedWithIndex.filter(item => item.transaction.isValid)
+  const validWithIndex = parsedWithIndex.filter(item => item.transaction.validationError)
   const invalidCount = parsedWithIndex.length - validWithIndex.length
 
   const classified = validWithIndex.map((item) => {
@@ -86,10 +86,17 @@ const addTransactions = (
   }
 
   if (unique.length > 0) {
-    setTransactions([
-      ...transactions,
-      ...unique.map(item => item.transaction)
-    ])
+    setTransactions(
+      [
+        ...transactions,
+        ...unique.map(item => item.transaction).map(t => ({
+          ...t,
+          originalDate: t.date,
+          originalCategory: t.category,
+          isValid: true,
+        }))
+      ]
+    )
   }
 
   const linesToRemove = new Set(unique.map(item => item.lineIndex))

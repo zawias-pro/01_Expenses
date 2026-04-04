@@ -1,14 +1,19 @@
-import type { Transaction } from '../types.ts'
 import { validateTransaction } from '../validateTransaction/validateTransaction.ts'
 import { hashTransaction } from '../hashTransaction/hashTransaction.ts'
 
-const parseCSVLine = (
-  line: string, 
-  delimiter: string = ';',
-  dateIndex: number = 0,
-  descriptionIndex: number = 1,
-  amountIndex: number = 4
-): Transaction => {
+const parseCSVLine = ({
+  line,
+  delimiter,
+  dateIndex,
+  descriptionIndex,
+  amountIndex,
+}: {
+  line: string,
+  delimiter: string
+  dateIndex: number
+  descriptionIndex: number
+  amountIndex: number
+}) => {
   const parts = line.split(delimiter)
   const clean = (s: string) => s.replace(/^"|"$/g, '').trim()
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -30,13 +35,9 @@ const parseCSVLine = (
     id: Math.random().toString(36).substring(2, 11),
     hash,
     date,
-    originalDate: date,
     description,
     category,
-    originalCategory: category,
     amount,
-    excluded: !validation.isValid,
-    isValid: validation.isValid,
     validationError: validation.error,
   }
 }

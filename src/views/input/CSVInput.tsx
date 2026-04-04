@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { parseCSVLine } from '../../parsing/parseCSVLine/parseCSVLine.ts'
 import { classifyDescription } from '../../parsing/classifyDescription/classifyDescription.ts'
-import type { Transaction } from '../../parsing/types.ts'
 import { useStore, useAllRules } from '../../store/useStore.ts'
 import { CSVPreviewTable } from './components/CSVPreviewTable.tsx'
 import { SectionHeader } from '../../components/SectionHeader/SectionHeader.tsx'
@@ -26,12 +25,12 @@ const CSVInput = () => {
   const setTransactions = useStore((state) => state.setTransactions)
   const allRules = useAllRules()
 
-  const getPreviewTransactions = (): Transaction[] => {
+  const getPreviewTransactions = () => {
     if (csvContent.trim()==='') return []
 
     const lines = csvContent.trim().split('\n')
     return lines.map(line => {
-      const parsed = parseCSVLine(line, delimiter, dateIndex, descriptionIndex, amountIndex)
+      const parsed = parseCSVLine({line, delimiter, dateIndex, descriptionIndex, amountIndex})
       return {
         ...parsed,
         category: classifyDescription(parsed.description, allRules)
