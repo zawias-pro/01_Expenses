@@ -17,7 +17,6 @@ test('processTransactions - processes transactions correctly', () => {
       originalCategory: category1Id,
       amount: '-5 000,00 PLN',
       excluded: false,
-      isValid: true,
       hash: '111',
     },
     {
@@ -29,7 +28,6 @@ test('processTransactions - processes transactions correctly', () => {
       originalCategory: category1Id,
       amount: '2 000,00 PLN',
       excluded: false,
-      isValid: true,
       hash: '222',
     },
     {
@@ -41,7 +39,6 @@ test('processTransactions - processes transactions correctly', () => {
       originalCategory: category1Id,
       amount: '-1 000,00 PLN',
       excluded: false,
-      isValid: true,
       hash: '333',
     },
   ]
@@ -76,7 +73,6 @@ test('processTransactions - processes all transactions passed to it', () => {
       originalCategory: category1Id,
       amount: '-5 000,00 PLN',
       excluded: true,
-      isValid: true,
       hash: '111',
     },
     {
@@ -88,7 +84,6 @@ test('processTransactions - processes all transactions passed to it', () => {
       originalCategory: category1Id,
       amount: '2 000,00 PLN',
       excluded: false,
-      isValid: true,
       hash: '222',
     },
   ]
@@ -118,7 +113,6 @@ test('processTransactions - uses current categories and respects overrides', () 
       originalCategory: groceryId,
       amount: '-100,00 PLN',
       excluded: false,
-      isValid: true,
       hash: '111',
     },
     {
@@ -130,7 +124,6 @@ test('processTransactions - uses current categories and respects overrides', () 
       originalCategory: null,
       amount: '-50,00 PLN',
       excluded: false,
-      isValid: true,
       hash: '222',
     },
     {
@@ -142,7 +135,6 @@ test('processTransactions - uses current categories and respects overrides', () 
       originalCategory: othersId,
       amount: '-25,00 PLN',
       excluded: false,
-      isValid: true,
       hash: '333',
     },
   ]

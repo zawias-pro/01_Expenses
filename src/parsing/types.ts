@@ -10,8 +10,6 @@ interface Transaction {
   category: string | null
   amount: string
   excluded: boolean
-  isValid: boolean
-  validationError?: string
   comment?: string
   originalDate: string
   originalCategory: string | null

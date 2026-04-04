@@ -309,7 +309,7 @@ const useCategoriesSortedByTotalAmount = () => {
     const totalsByCategoryId: Record<string, number> = {}
 
     transactions.forEach((transaction) => {
-      if (transaction.excluded || !transaction.isValid || transaction.category === null) {
+      if (transaction.excluded || transaction.category === null) {
         return
       }
 

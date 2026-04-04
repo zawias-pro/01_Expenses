@@ -96,7 +96,7 @@ const DataByPeriod = () => {
     
     if (treatLowValueAsOthers) {
       // Get transactions for the selected period
-      let periodTransactions = transactions.filter(t => !t.excluded && t.isValid)
+      let periodTransactions = transactions.filter(t => !t.excluded)
       
       if (selectionType === 'month' && effectiveMonth) {
         periodTransactions = periodTransactions.filter(t => {
@@ -176,7 +176,7 @@ const DataByPeriod = () => {
 
   const topExpenses = useMemo(() => {
     // Filter transactions for the selected period
-    let periodTransactions = transactions.filter(t => !t.excluded && t.isValid)
+    let periodTransactions = transactions.filter(t => !t.excluded)
     
     if (selectionType === 'month') {
       periodTransactions = periodTransactions.filter(t => {
