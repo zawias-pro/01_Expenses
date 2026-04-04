@@ -135,8 +135,8 @@ const TransactionsTable = () => {
             return a.hash.localeCompare(b.hash)
           }
 
-          const aTime = a.addedAt ?? ''
-          const bTime = b.addedAt ?? ''
+          const aTime = a.addedAt
+          const bTime = b.addedAt
           return aTime.localeCompare(bTime)
         })()
         return sortDirection === 'asc' ? comparison : -comparison

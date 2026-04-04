@@ -10,10 +10,10 @@ interface Transaction {
   category: string | null
   amount: string
   excluded: boolean
-  comment?: string
+  comment: string | null
   originalDate: string
   originalCategory: string | null
-  addedAt?: string
+  addedAt: string
 }
 
 interface MonthlySummary {

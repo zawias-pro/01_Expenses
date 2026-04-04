@@ -5,10 +5,16 @@ import type { Transaction } from '../types.ts'
 import { NO_CATEGORY_ID } from '../types.ts'
 import { generateCategoryId } from '../categoryUtils.ts'
 
+const createTransaction = (transaction: Omit<Transaction, 'comment' | 'addedAt'>): Transaction => ({
+  ...transaction,
+  comment: null,
+  addedAt: '2025-01-01T00:00:00.000Z',
+})
+
 test('processTransactions - processes transactions correctly', () => {
   const category1Id = generateCategoryId()
   const transactions: Transaction[] = [
-    {
+    createTransaction({
       id: '1',
       date: '2025-12-12',
       originalDate: '2025-12-12',
@@ -18,8 +24,8 @@ test('processTransactions - processes transactions correctly', () => {
       amount: '-5 000,00 PLN',
       excluded: false,
       hash: '111',
-    },
-    {
+    }),
+    createTransaction({
       id: '2',
       date: '2025-12-12',
       originalDate: '2025-12-12',
@@ -29,8 +35,8 @@ test('processTransactions - processes transactions correctly', () => {
       amount: '2 000,00 PLN',
       excluded: false,
       hash: '222',
-    },
-    {
+    }),
+    createTransaction({
       id: '3',
       date: '2025-11-11',
       originalDate: '2025-11-11',
@@ -40,7 +46,7 @@ test('processTransactions - processes transactions correctly', () => {
       amount: '-1 000,00 PLN',
       excluded: false,
       hash: '333',
-    },
+    }),
   ]
   const result = processTransactions(transactions)
 
@@ -64,7 +70,7 @@ test('processTransactions - processes transactions correctly', () => {
 test('processTransactions - processes all transactions passed to it', () => {
   const category1Id = generateCategoryId()
   const transactions: Transaction[] = [
-    {
+    createTransaction({
       id: '1',
       date: '2025-12-12',
       originalDate: '2025-12-12',
@@ -74,8 +80,8 @@ test('processTransactions - processes all transactions passed to it', () => {
       amount: '-5 000,00 PLN',
       excluded: true,
       hash: '111',
-    },
-    {
+    }),
+    createTransaction({
       id: '2',
       date: '2025-12-12',
       originalDate: '2025-12-12',
@@ -85,7 +91,7 @@ test('processTransactions - processes all transactions passed to it', () => {
       amount: '2 000,00 PLN',
       excluded: false,
       hash: '222',
-    },
+    }),
   ]
   // Note: processTransactions processes all transactions - filtering excluded ones
   // should happen before calling this function
@@ -104,7 +110,7 @@ test('processTransactions - uses current categories and respects overrides', () 
   const othersId = generateCategoryId()
   const customCategoryId = generateCategoryId()
   const transactions: Transaction[] = [
-    {
+    createTransaction({
       id: '1',
       date: '2025-12-12',
       originalDate: '2025-12-12',
@@ -114,8 +120,8 @@ test('processTransactions - uses current categories and respects overrides', () 
       amount: '-100,00 PLN',
       excluded: false,
       hash: '111',
-    },
-    {
+    }),
+    createTransaction({
       id: '2',
       date: '2025-12-12',
       originalDate: '2025-12-12',
@@ -125,8 +131,8 @@ test('processTransactions - uses current categories and respects overrides', () 
       amount: '-50,00 PLN',
       excluded: false,
       hash: '222',
-    },
-    {
+    }),
+    createTransaction({
       id: '3',
       date: '2025-12-12',
       originalDate: '2025-12-12',
@@ -136,7 +142,7 @@ test('processTransactions - uses current categories and respects overrides', () 
       amount: '-25,00 PLN',
       excluded: false,
       hash: '333',
-    },
+    }),
   ]
   const result = processTransactions(transactions)
 

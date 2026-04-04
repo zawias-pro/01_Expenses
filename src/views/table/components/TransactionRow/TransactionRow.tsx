@@ -86,7 +86,7 @@ const TransactionRow = ({
         {transaction.amount}
       </td>
       <td>
-        {transaction.addedAt !== undefined ? new Date(transaction.addedAt).toLocaleString() : 'N/A'}
+        {new Date(transaction.addedAt).toISOString()}
       </td>
       <td>
         <code>

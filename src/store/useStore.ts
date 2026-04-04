@@ -140,7 +140,7 @@ const useStore = create<AppState>()(
       updateTransactionComment: (id, comment) => {
         set((state) => ({
           transactions: state.transactions.map((t) =>
-            t.id === id ? { ...t, comment: comment.trim() || undefined } : t
+            t.id === id ? { ...t, comment: comment.trim() || null } : t
           ),
         }))
       },

@@ -93,6 +93,7 @@ const addTransactions = (
           ...t,
           originalDate: t.date,
           originalCategory: t.category,
+          comment: null,
         }))
       ]
     )
