@@ -94,7 +94,7 @@ const CumulativeBarChart = () => {
               <td>{t.date}</td>
               <td>{t.description}</td>
               <td>{t.amount}</td>
-              <td>{categoryMetadata[t.category ?? NO_CATEGORY_ID]}</td>
+              <td>{categoryMetadata[t.category ?? NO_CATEGORY_ID]?.name ?? 'error'}</td>
             </tr>
           ))}
           </tbody>

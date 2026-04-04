@@ -1,4 +1,6 @@
-// Category metadata: maps category ID to category name
-type CategoryMetadata = Record<string, string> // ID -> name
+type CategoryMetadata = Record<string, {
+  name: string
+  keywords: string[]
+}>
 
 export type { CategoryMetadata }

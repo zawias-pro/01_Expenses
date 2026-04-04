@@ -14,7 +14,7 @@ const AddCategoryForm = () => {
     if (!newKeywords.trim() || !newCategory.trim()) {
       return
     }
-    if(Object.values(categories).includes(newCategory.toLowerCase())) {
+    if (Object.values(categories).find(c=>c.name.toLowerCase()===newCategory)) {
       alert("Category already exists")
       return
     }

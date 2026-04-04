@@ -11,8 +11,8 @@ const generateCategoryId = (): string => {
 // Only looks up existing IDs - never generates new ones
 const getCategoryIdFromName = (name: string, metadata: CategoryMetadata): string | null => {
   // Find existing ID for this name
-  for (const [id, categoryName] of Object.entries(metadata)) {
-    if (categoryName === name) {
+  for (const [id, meta] of Object.entries(metadata)) {
+    if (meta.name === name) {
       return id
     }
   }
@@ -32,7 +32,8 @@ const getOrCreateCategoryId = (name: string, metadata: CategoryMetadata): string
 
 const getCategoryNameFromId = (id: string | null, metadata: CategoryMetadata): string => {
   if (id === null || id === '') return NO_CATEGORY_KEY
-  return metadata[id] ?? NO_CATEGORY_KEY
+
+  return metadata[id]?.name ?? NO_CATEGORY_KEY
 }
 
 const getCategorySummaryKey = (id: string | null): string => id ?? NO_CATEGORY_ID

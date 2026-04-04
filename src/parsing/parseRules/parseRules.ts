@@ -1,4 +1,5 @@
 import { getOrCreateCategoryId } from '../categoryUtils.ts'
+import type { CategoryMetadata } from "../categoryTypes.ts"
 
 /**
  * Example:
@@ -6,9 +7,9 @@ import { getOrCreateCategoryId } from '../categoryUtils.ts'
  * Output: { "cat_xyz": ["walmart"], "cat_abc": ["vodafone"], "cat_def": ["transfer"] }
  * Returns rules with category IDs as keys (not names)
  */
-const parseRules = (content: string): { rules: Record<string, string[]>, metadata: Record<string, string> } => {
+const parseRules = (content: string): { rules: Record<string, string[]>, metadata: CategoryMetadata } => {
   const rules: Record<string, string[]> = {}
-  const metadata: Record<string, string> = {}
+  const metadata: CategoryMetadata = {}
   const lines = content.split('\n')
   for (const line of lines) {
     const parts = line.split(';')
@@ -22,7 +23,7 @@ const parseRules = (content: string): { rules: Record<string, string[]>, metadat
         const categoryId = getOrCreateCategoryId(categoryName, metadata)
         if (!(categoryId in rules)) {
           rules[categoryId] = []
-          metadata[categoryId] = categoryName
+          metadata[categoryId] = {name: categoryName, keywords: []}
         }
         rules[categoryId]?.push(keyword)
       }

@@ -91,8 +91,8 @@ const TransactionsFilters = () => {
         >
           <option value="">All categories</option>
           <option value={NO_CATEGORY_FILTER_VALUE}>{NO_CATEGORY_KEY}</option>
-          {categories.map(cat => (
-            <option key={cat} value={cat}>{cat}</option>
+          {Object.entries(categories).map(([id, metadata]) => (
+            <option key={id} value={id}>{metadata.name}</option>
           ))}
         </Select>
 

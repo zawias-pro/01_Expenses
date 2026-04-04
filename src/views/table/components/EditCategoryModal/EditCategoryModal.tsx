@@ -47,10 +47,8 @@ const EditCategoryModal = ({
         <option value={undefined}>
           no category
         </option>
-        {Object.entries(categoryMetadata).map(([id,name]) => (
-          <option key={id} value={id}>
-            {name}
-          </option>
+        {Object.entries(categoryMetadata).map(([id, metadata]) => (
+          <option key={id} value={id}>{metadata.name}</option>
         ))}
       </Select>
     </Modal>

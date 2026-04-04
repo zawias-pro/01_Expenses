@@ -51,7 +51,7 @@ const CategoryRow = ({
   const handleSaveRename = () => {
     const oldName = name
     const newName = renamingCategoryName.trim()
-    const existingNames = Object.values(categoryMetadata)
+    const existingNames = Object.values(categoryMetadata).map(c=>c.name)
     if (existingNames.includes(newName) && oldName !== newName) {
       alert(`Category "${newName}" already exists. Please choose a different name.`)
       return

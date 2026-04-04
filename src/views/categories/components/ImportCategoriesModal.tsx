@@ -9,7 +9,7 @@ const ImportCategoriesModal = ({
 }: {
   onClose: () => void
 }) => {
-  const onImport = useStore((state) => state.replaceCategories)
+  const setCategoryMetadata = useStore((state) => state.setCategoryMetadata)
   const [csvContent, setCsvContent] = useState('')
   const [error, setError] = useState<string | null>(null)
 
@@ -75,8 +75,8 @@ const ImportCategoriesModal = ({
       setError('No valid categories found')
       return
     }
-    
-    onImport(categories)
+
+    // setCategoryMetadata(categories) // todo
     handleClose()
   }
 

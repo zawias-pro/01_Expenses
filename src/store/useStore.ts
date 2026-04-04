@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { produce } from 'immer'
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import type { Transaction, MonthlySummary } from '../parsing/types.ts'
@@ -33,8 +34,7 @@ interface PeriodSelectionState {
 
 interface AppState extends PeriodSelectionState {
   transactions: Transaction[]
-  customRules: Record<string, string[]> // category ID -> keywords
-  categoryMetadata: CategoryMetadata // category ID -> category name
+  categoryMetadata: CategoryMetadata
 
   setTransactions: (transactions: Transaction[]) => void
   updateTransactionExcluded: (id: string, excluded: boolean) => void
@@ -47,12 +47,11 @@ interface AppState extends PeriodSelectionState {
   resetTransactionCategory: (id: string) => void
   removeTransaction: (id: string) => void
 
-  setCustomRules: (rules: Record<string, string[]>) => void
   setCategoryMetadata: (metadata: CategoryMetadata) => void
-  updateCategory: (categoryName: string, keywords: string[], preservePreviousKeywords?: boolean) => void
+  updateCategory: (categoryName: string, keywords: string[]) => void
+  addKeywordToCategory: (categoryName: string, newKeyword: string) => void
   removeCategory: (categoryName: string) => void
   renameCategory: (oldName: string, newName: string) => void
-  replaceCategories: (categories: Record<string, string[]>) => void
 
   clearAll: () => void
   reclassifyTransactions: () => void
@@ -87,7 +86,6 @@ const useStore = create<AppState>()(
       },
 
       toggleTransactionExcluded: (id) => {
-
         set((state) => ({
           transactions: state.transactions.map((t) => {
               if (t.id === id) {
@@ -178,75 +176,52 @@ const useStore = create<AppState>()(
         }))
       },
 
-      setCustomRules: (rules) => {
-        set({ customRules: rules })
-        get().reclassifyTransactions()
-      },
-
       setCategoryMetadata: (metadata) => set({ categoryMetadata: metadata }),
 
-      updateCategory: (categoryName, keywords, preservePreviousKeywords) => {
-        set((state) => {
-          const categoryId = getOrCreateCategoryId(categoryName, state.categoryMetadata)
+      updateCategory: (name, keywords) => {
+        set(produce((state: AppState) => {
+          const categoryId = getOrCreateCategoryId(name, state.categoryMetadata)
 
-          const previousKeywords = preservePreviousKeywords
-            ?(state.customRules[categoryId] || [])
-            :[]
-
-          const filtered = [...previousKeywords, ...keywords].filter((k) => k.trim()).map((k) => k.trim())
-
-          const newMetadata = { ...state.categoryMetadata }
-          if (!newMetadata[categoryId]) {
-            newMetadata[categoryId] = categoryName
-          }
-          if (filtered.length === 0) {
-            const rest = Object.fromEntries(
-              Object.entries(state.customRules).filter(([key]) => key !== categoryId)
-            )
-            return { customRules: rest, categoryMetadata: newMetadata }
-          }
-          return {
-            customRules: { ...state.customRules, [categoryId]: filtered },
-            categoryMetadata: newMetadata,
-          }
-        })
+          state.categoryMetadata[categoryId] = { name, keywords }
+        }))
         get().reclassifyTransactions()
       },
 
-      removeCategory: (categoryName) => {
-        set((state) => {
-          const categoryId = getCategoryIdFromName(categoryName, state.categoryMetadata)
-          if (!categoryId) return {}
-          const rest = Object.fromEntries(
-            Object.entries(state.customRules).filter(([key]) => key !== categoryId)
-          )
-          return { customRules: rest }
-        })
+      addKeywordToCategory: (name: string, newKeyword: string) => {
+        set(produce((state: AppState) => {
+          const categoryId = getOrCreateCategoryId(name, state.categoryMetadata)
+
+          state.categoryMetadata[categoryId]?.keywords.push(newKeyword)
+        }))
+        get().reclassifyTransactions()
+      },
+
+      removeCategory: (name) => {
+        set(produce((state: AppState) => {
+          const categoryId = getOrCreateCategoryId(name, state.categoryMetadata)
+
+          if (categoryId in state.categoryMetadata) {
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete state.categoryMetadata[categoryId]
+          }
+        }))
         get().reclassifyTransactions()
       },
 
       renameCategory: (oldName, newName) => {
-        set((state) => {
-          const categoryId = getCategoryIdFromName(oldName, state.categoryMetadata)
-          if (!categoryId) return {}
-          return {
-            categoryMetadata: {
-              ...state.categoryMetadata,
-              [categoryId]: newName,
-            },
-          }
-        })
+        set(produce((state: AppState) => {
+          const categoryId = getOrCreateCategoryId(oldName, state.categoryMetadata)
+
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          state.categoryMetadata[categoryId]!.name = newName
+        }))
       },
 
-      replaceCategories: (categories) => {
-        const metadata: CategoryMetadata = {}
-        const rules: Record<string, string[]> = {}
-        for (const [categoryName, keywords] of Object.entries(categories)) {
-          const id = getOrCreateCategoryId(categoryName, metadata)
-          metadata[id] = categoryName
-          rules[id] = keywords
-        }
-        set({ customRules: rules, categoryMetadata: metadata })
+      replaceCategories: (categories: CategoryMetadata) => {
+        set(state => ({
+          ...state,
+          categoryMetadata: categories
+        }))
         get().reclassifyTransactions()
       },
 
@@ -254,7 +229,7 @@ const useStore = create<AppState>()(
 
       reclassifyTransactions: () => {
         set((state) => {
-          const allRules = computeAllRules(state.customRules)
+          const allRules = computeAllRules(state.categoryMetadata)
 
           return {
             transactions: state.transactions.map((t) => {
@@ -276,7 +251,6 @@ const useStore = create<AppState>()(
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         transactions: state.transactions,
-        customRules: state.customRules,
         categoryMetadata: state.categoryMetadata,
         selectionType: state.selectionType,
         selectedYear: state.selectedYear,
@@ -286,15 +260,15 @@ const useStore = create<AppState>()(
   )
 )
 
-const computeAllRules = (customRules: Record<string, string[]>): Record<string, string[]> => {
+const computeAllRules = (customRules: CategoryMetadata): Record<string, string[]> => {
   const merged: Record<string, string[]> = { ...RULES }
-  for (const [categoryId, keywords] of Object.entries(customRules)) {
+  for (const [categoryId, meta] of Object.entries(customRules)) {
     if (merged[categoryId]) {
       const existing = new Set(merged[categoryId])
-      keywords.forEach((k) => existing.add(k))
+      meta.keywords.forEach((k) => existing.add(k))
       merged[categoryId] = Array.from(existing)
     } else {
-      merged[categoryId] = [...keywords]
+      merged[categoryId] = [...meta.keywords]
     }
   }
   return merged
@@ -317,9 +291,9 @@ const useCategoriesSortedByTotalAmount = () => {
     })
 
     return Object.entries(categoryMetadata)
-      .map(([categoryId, categoryName]) => ({
+      .map(([categoryId, meta]) => ({
         categoryId,
-        categoryName,
+        categoryName: meta.name,
         totalAmount: totalsByCategoryId[categoryId] || 0,
       }))
       .sort((a, b) => b.totalAmount - a.totalAmount || a.categoryName.localeCompare(b.categoryName))
@@ -328,8 +302,8 @@ const useCategoriesSortedByTotalAmount = () => {
 }
 
 const useAllRules = () => {
-  const customRules = useStore((state) => state.customRules)
-  return computeAllRules(customRules)
+  const categoryMetadata = useStore((state) => state.categoryMetadata)
+  return computeAllRules(categoryMetadata)
 }
 
 const useCategories = () => {
@@ -353,7 +327,6 @@ const exportState = (): string => {
   const state = useStore.getState()
   const exportData = {
     transactions: state.transactions,
-    customRules: state.customRules,
     categoryMetadata: state.categoryMetadata,
   }
   return JSON.stringify(exportData, null, 2)
@@ -363,7 +336,6 @@ const importState = (jsonString: string): boolean => {
   try {
     const data = JSON.parse(jsonString) as {
       transactions?: Transaction[]
-      customRules?: Record<string, string[]>
       categoryMetadata?: CategoryMetadata
       selectionType?: PeriodSelectionType
       selectedYear?: number | null
@@ -371,7 +343,6 @@ const importState = (jsonString: string): boolean => {
     }
     useStore.setState({
       transactions: data.transactions ?? [],
-      customRules: data.customRules ?? {},
       categoryMetadata: data.categoryMetadata ?? INITIAL_CATEGORY_METADATA,
       selectionType: data.selectionType ?? 'month',
       selectedYear: data.selectedYear ?? null,

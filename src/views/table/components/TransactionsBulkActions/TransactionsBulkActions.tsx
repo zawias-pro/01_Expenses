@@ -65,8 +65,8 @@ const TransactionsBulkActions = ({
             onChange={e => { onBulkCategoryChange(e.target.value) }}
           >
             <option value="">Select category...</option>
-            {categories.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
+            {Object.entries(categories).map(([id, metadata]) => (
+              <option key={id} value={id}>{metadata.name}</option>
             ))}
           </Select>
         )}

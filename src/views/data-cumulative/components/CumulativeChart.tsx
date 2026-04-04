@@ -37,7 +37,7 @@ const CumulativeChart = ({
           />
           <Legend />
           {categories.map((categoryId) => {
-            const name = categoryMetadata[categoryId] ?? '(no category)'
+            const name = categoryMetadata[categoryId]?.name ?? '(no category)'
 
             return (
               <Bar

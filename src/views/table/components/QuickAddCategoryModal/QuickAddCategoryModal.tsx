@@ -13,7 +13,7 @@ const QuickAddCategoryModal = ({
   onCancel: () => void
 }) => {
   const categories = useCategories()
-  const updateCategory = useStore((s) => s.updateCategory)
+  const addKeywordToCategory = useStore((s) => s.addKeywordToCategory)
   const reclassifyTransactions = useStore((s) => s.reclassifyTransactions)
   const transactions = useStore((s) => s.transactions)
 
@@ -45,12 +45,12 @@ const QuickAddCategoryModal = ({
       return
     }
 
-    if (selectedCategory === 'new' && categories.includes(categoryName)) {
+    if (selectedCategory === 'new' && categories.find(c=>c.name===categoryName)) {
       alert('Category with this name already exists. Please choose a different name.')
       return
     }
 
-    updateCategory(categoryName, [keyword], true)
+    addKeywordToCategory(categoryName, keyword)
     reclassifyTransactions()
 
     setSelectedCategory('new')
@@ -87,10 +87,8 @@ const QuickAddCategoryModal = ({
           }}
         >
           <option value="new">New category</option>
-          {categories.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
+          {Object.entries(categories).map(([id, metadata]) => (
+            <option key={id} value={id}>{metadata.name}</option>
           ))}
         </Select>
 

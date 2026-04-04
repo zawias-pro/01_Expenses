@@ -31,8 +31,8 @@ const CategoryFilter = ({
         >
           <option value="[all]">All categories</option>
           <option value={NO_CATEGORY_ID}>No category</option>
-          {Object.entries(categoryMetadata).map(([id,name]) => (
-            <option key={id} value={id}>{name}</option>
+          {Object.entries(categoryMetadata).map(([id, metadata]) => (
+            <option key={id} value={id}>{metadata.name}</option>
           ))}
       </Select>
     </div>
