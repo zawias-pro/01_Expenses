@@ -14,6 +14,7 @@ const QuickAddCategoryModal = ({
 }) => {
   const categories = useCategories()
   const addKeywordToCategory = useStore((s) => s.addKeywordToCategory)
+  const updateCategory = useStore((s) => s.updateCategory)
   const reclassifyTransactions = useStore((s) => s.reclassifyTransactions)
   const transactions = useStore((s) => s.transactions)
 
@@ -50,7 +51,11 @@ const QuickAddCategoryModal = ({
       return
     }
 
-    addKeywordToCategory(categoryName, keyword)
+    if(selectedCategory==='new') {
+      updateCategory(categoryName, [keyword])
+    } else {
+      addKeywordToCategory(categoryName, keyword)
+    }
     reclassifyTransactions()
 
     setSelectedCategory('new')
