@@ -1,15 +1,10 @@
-// Category utility functions
 import type { CategoryMetadata } from './categoryTypes.ts'
 import { NO_CATEGORY_ID, NO_CATEGORY_KEY } from './types.ts'
 
-// Generate a unique category ID (independent of name)
-// Uses timestamp + random to ensure uniqueness
-let idCounter = 0
 const generateCategoryId = (): string => {
-  idCounter++
   const timestamp = Date.now()
   const random = Math.random().toString(36).substring(2, 9)
-  return `cat_${String(timestamp)}_${random}_${String(idCounter)}`
+  return `cat_${String(timestamp)}_${random}`
 }
 
 // Helper functions for ID/name conversion
