@@ -175,7 +175,6 @@ const DataByPeriod = () => {
     return categories
   }, [displaySummary, treatLowValueAsOthers, lowValueThreshold, mergeSmallCategories, categoryThresholdPercent, transactions, selectionType, effectiveMonth, selectedYear])
 
-  // Get top 10 expenses for the selected period
   const topExpenses = useMemo(() => {
     // Filter transactions for the selected period
     let periodTransactions = transactions.filter(t => !t.excluded && t.isValid)
@@ -214,7 +213,6 @@ const DataByPeriod = () => {
       })
       .filter((t): t is Transaction & { parsedAmount: number } => t !== null && t.parsedAmount < 0)
       .sort((a, b) => Math.abs(b.parsedAmount) - Math.abs(a.parsedAmount))
-      .slice(0, 10)
 
     return expenses
   }, [transactions, selectionType, effectiveMonth, selectedYear])
@@ -249,7 +247,7 @@ const DataByPeriod = () => {
             <button
               onClick={() => { setActiveTab('expenses') }}
             >
-              Top 10 Expenses
+              Transactions
             </button>
             <button
               onClick={() => { setActiveTab('chart') }}
