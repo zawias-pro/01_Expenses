@@ -10,9 +10,8 @@ const StatusBar = () => {
   const transactions = useStore((state) => state.transactions)
   const transactionsWithoutCategory = transactions.filter(t => t.category === null)
   const transactionsWithoutCategoryShare = Math.round((transactionsWithoutCategory.length / transactions.length) * 100)
-  const totalAmount = transactions.reduce((acc, curr) => acc + Math.max(curr.amount, 0), 0)
-  const totalAmountNoCategory = transactionsWithoutCategory.reduce((acc, curr) => acc + Math.max(curr.amount, 0), 0)
-  // todo: for some reason always displays 100%
+  const totalAmount = Math.abs(transactions.reduce((acc, curr) => acc + Math.min(curr.amount, 0), 0))
+  const totalAmountNoCategory = Math.abs(transactionsWithoutCategory.reduce((acc, curr) => acc + Math.min(curr.amount, 0), 0))
   const totalAmountNoCategoryShare = Math.round((totalAmountNoCategory / totalAmount) * 100)
 
   return (
