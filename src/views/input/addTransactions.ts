@@ -91,7 +91,9 @@ const addTransactions = (
   }
 
   const linesToRemove = new Set(unique.map(item => item.lineIndex))
-  const remainingLines = lines.filter((_, index) => !linesToRemove.has(index))
+  const remainingLines = lines
+    .filter((_, index) => !linesToRemove.has(index))
+    .filter((line) => line!=='')
   setCsvContent(remainingLines.join('\n'))
 }
 
