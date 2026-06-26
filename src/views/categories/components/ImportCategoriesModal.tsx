@@ -12,6 +12,7 @@ const ImportCategoriesModal = ({
   const setCategoryMetadata = useStore((state) => state.setCategoryMetadata)
   const [csvContent, setCsvContent] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const reclassifyTransactions = useStore((s) => s.reclassifyTransactions)
 
   useEffect(() => {
     if (error) {
@@ -76,7 +77,18 @@ const ImportCategoriesModal = ({
       return
     }
 
-    // setCategoryMetadata(categories) // todo
+    setCategoryMetadata(
+      Object.entries(categories).reduce((acc, [importCategoryName, importCategoryKeywords]) => {
+        return {
+          ...acc,
+          [importCategoryName]: {
+            name: importCategoryName,
+            keywords: importCategoryKeywords,
+          }
+        }
+      }, {})
+    )
+    reclassifyTransactions()
     handleClose()
   }
 
