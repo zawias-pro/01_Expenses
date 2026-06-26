@@ -51,7 +51,10 @@ const Sidebar = ({
   }
 
   const handleClear = () => {
-    clearAll()
+    const clearConfirmed = window.confirm('Are you sure you want to clear all data?')
+    if (clearConfirmed) {
+      clearAll()
+    }
   }
 
   return (

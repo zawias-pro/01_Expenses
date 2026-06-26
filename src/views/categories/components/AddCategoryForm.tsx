@@ -25,7 +25,12 @@ const AddCategoryForm = () => {
   }
 
   return (
-    <>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        handleAddCategory()
+      }}
+    >
       <FormGroup>
         <Input
           id={'category'}
@@ -34,34 +39,23 @@ const AddCategoryForm = () => {
           placeholder="category"
           value={newCategory}
           onChange={e => { setNewCategory(e.target.value) }}
-          onKeyDown={e => {
-            if (e.key === 'Enter') {
-              handleAddCategory()
-            }
-          }}
         />
         <Input
           id={'keywords'}
           label="Keywords"
           type="text"
-          placeholder="keyword1, keyword2, keyword3"
+          placeholder="keyword1,keyword2,keyword3"
           value={newKeywords}
           onChange={e => { setNewKeywords(e.target.value) }}
-          onKeyDown={e => {
-            if (e.key === 'Enter') {
-              handleAddCategory()
-            }
-          }}
         />
       </FormGroup>
-
       <Button
-        onClick={handleAddCategory}
+        type="submit"
         disabled={!newCategory.trim() || !newKeywords.trim()}
       >
         Add
       </Button>
-    </>
+    </form>
   )
 }
 

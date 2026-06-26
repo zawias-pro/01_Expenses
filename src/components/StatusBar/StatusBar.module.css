@@ -1,0 +1,8 @@
+.status-bar {
+  position: sticky;
+  display: flex;
+  gap: 2rem;
+  background-color: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  padding: 0.5rem 0;
+}

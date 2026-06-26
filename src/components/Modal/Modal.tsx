@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import styles from './Modal.module.css'
+import { createPortal } from "react-dom"
+import { ErrorBoundary } from "../ErrorBoundary/ErrorBoundary.tsx"
 
 const Modal = ({
   title,
@@ -23,7 +25,8 @@ const Modal = ({
     return () => { document.removeEventListener('keydown', handleKeyDown) }
   }, [onClose])
 
-  return (
+  return createPortal(
+    <ErrorBoundary>
     <div
       ref={overlayRef}
       className={styles['modalOverlay']}
@@ -47,6 +50,8 @@ const Modal = ({
         )}
       </div>
     </div>
+    </ErrorBoundary>,
+    document.body
   )
 }
 

@@ -1,9 +1,12 @@
-import { useCategories, useStore } from '../../../../store/useStore.ts'
+import { useCategoryMetadata, useStore } from '../../../../store/useStore.ts'
 import { Modal } from '../../../../components/Modal/Modal.tsx'
 import { Button } from '../../../../components/Button/Button.tsx'
 import { Input } from '../../../../components/Input/Input.tsx'
 import { Select } from '../../../../components/Select/Select.tsx'
 import { useState } from 'react'
+
+const FORM_NAME = 'quick-add-category-form'
+const CATEGORY_ID_NEW = 'new'
 
 const QuickAddCategoryModal = ({
   transactionId,
@@ -12,7 +15,7 @@ const QuickAddCategoryModal = ({
   transactionId: string | null
   onCancel: () => void
 }) => {
-  const categories = useCategories()
+  const categories = useCategoryMetadata()
   const addKeywordToCategory = useStore((s) => s.addKeywordToCategory)
   const updateCategory = useStore((s) => s.updateCategory)
   const reclassifyTransactions = useStore((s) => s.reclassifyTransactions)
@@ -28,7 +31,7 @@ const QuickAddCategoryModal = ({
       .split(' ')[0] ?? ''
   })()
 
-  const [selectedCategory, setSelectedCategory] = useState('new')
+  const [selectedCategoryId, setSelectedCategoryId] = useState(CATEGORY_ID_NEW)
   const [customCategory, setCustomCategory] = useState('')
   const [keyword, setKeyword] = useState(initialKeyword)
 
@@ -37,28 +40,24 @@ const QuickAddCategoryModal = ({
   }
 
   const handleSave = () => {
-    const categoryName = selectedCategory === 'new'
-      ? customCategory.trim()
-      : selectedCategory
-
-    if (selectedCategory === 'new' && !categoryName) {
+    if (selectedCategoryId === CATEGORY_ID_NEW && customCategory.trim()==='') {
       alert('Please enter a category name')
       return
     }
 
-    if (selectedCategory === 'new' && categories.find(c=>c.name===categoryName)) {
+    if (selectedCategoryId === CATEGORY_ID_NEW && Object.values(categories).find(c=>c.name===customCategory.trim())) {
       alert('Category with this name already exists. Please choose a different name.')
       return
     }
 
-    if(selectedCategory==='new') {
-      updateCategory(categoryName, [keyword])
+    if (selectedCategoryId === CATEGORY_ID_NEW) {
+      updateCategory(customCategory.trim(), [keyword])
     } else {
-      addKeywordToCategory(categoryName, keyword)
+      addKeywordToCategory(selectedCategoryId, keyword)
     }
     reclassifyTransactions()
 
-    setSelectedCategory('new')
+    setSelectedCategoryId(CATEGORY_ID_NEW)
     setCustomCategory('')
     setKeyword('')
     onCancel()
@@ -66,7 +65,7 @@ const QuickAddCategoryModal = ({
 
   return (
     <Modal
-      title="Quick Add Category"
+      title="Quick add category"
       onClose={onCancel}
       footer={
         <>
@@ -74,51 +73,51 @@ const QuickAddCategoryModal = ({
             Cancel
           </Button>
           <Button
-            onClick={handleSave}
-            disabled={!keyword.trim() || (selectedCategory === 'new' && !customCategory.trim())}
+            type="submit"
+            disabled={!keyword.trim() || (selectedCategoryId === CATEGORY_ID_NEW && !customCategory.trim())}
+            form={FORM_NAME}
           >
             Save
           </Button>
         </>
       }
     >
-      <>
+      <form
+        id={FORM_NAME}
+        onSubmit={(e) => {
+          e.preventDefault()
+          handleSave()
+        }}
+      >
         <Select
           id="quick-add-category-select"
           label="Category"
-          value={selectedCategory}
-          onChange={(e) => {
-            setSelectedCategory(e.target.value)
-          }}
+          value={selectedCategoryId}
+          onChange={(e) => { console.log(e); setSelectedCategoryId(e.target.value) }}
+          autoFocus
         >
           <option value="new">New category</option>
           {Object.entries(categories).map(([id, metadata]) => (
             <option key={id} value={id}>{metadata.name}</option>
           ))}
         </Select>
-
-        {selectedCategory === 'new' && (
+        {selectedCategoryId === CATEGORY_ID_NEW && (
           <Input
             id="quick-add-custom-category"
-            label="Custom Category Name"
+            label="New category name"
             type="text"
             value={customCategory}
-            onChange={(e) => {
-              setCustomCategory(e.target.value)
-            }}
+            onChange={(e) => { setCustomCategory(e.target.value) }}
           />
         )}
-
         <Input
           id="quick-add-keyword"
           label="Keyword"
           type="text"
           value={keyword}
-          onChange={(e) => {
-            setKeyword(e.target.value)
-          }}
+          onChange={(e) => { setKeyword(e.target.value) }}
         />
-      </>
+      </form>
     </Modal>
   )
 }

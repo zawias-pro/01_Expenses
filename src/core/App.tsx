@@ -9,6 +9,7 @@ import { Categories } from '../views/categories/Categories.tsx'
 import { ErrorBoundary } from "../components/ErrorBoundary/ErrorBoundary.tsx"
 import { Sidebar } from "../components/Sidebar/Sidebar.tsx"
 import { CSVInput } from "../views/input/CSVInput.tsx"
+import { StatusBar } from "../components/StatusBar/StatusBar.tsx"
 
 const App = () => {
   const [view, setView] = useState<View>('csv')
@@ -16,19 +17,19 @@ const App = () => {
   return (
     <ErrorBoundary>
       <div className={styles['wrapper']}>
-        <Sidebar
-          view={view}
-          onViewChange={setView}
-        />
-        <div className={styles['main']}>
-          <ErrorBoundary>
-            {view === 'csv' && <CSVInput />}
-            {view === 'categories' && <Categories />}
-            {view === 'transactions' && <TransactionsTable />}
-            {view === 'summary' && <DataByPeriod />}
-            {view === 'chart' && <CumulativeBarChart />}
-          </ErrorBoundary>
-        </div>
+        <Sidebar view={view} onViewChange={setView}/>
+        <ErrorBoundary>
+          <div className={styles['main']}>
+            <StatusBar/>
+            <div className={styles['content']}>
+              {view === 'csv' && <CSVInput/>}
+              {view === 'categories' && <Categories/>}
+              {view === 'transactions' && <TransactionsTable/>}
+              {view === 'summary' && <DataByPeriod/>}
+              {view === 'chart' && <CumulativeBarChart/>}
+            </div>
+          </div>
+        </ErrorBoundary>
       </div>
     </ErrorBoundary>
   )

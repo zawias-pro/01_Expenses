@@ -187,11 +187,13 @@ const useStore = create<AppState>()(
         get().reclassifyTransactions()
       },
 
-      addKeywordToCategory: (name: string, newKeyword: string) => {
+      addKeywordToCategory: (categoryId: string, newKeyword: string) => {
         set(produce((state: AppState) => {
-          const categoryId = getOrCreateCategoryId(name, state.categoryMetadata)
-
-          state.categoryMetadata[categoryId]?.keywords.push(newKeyword)
+          const category = state.categoryMetadata[categoryId]
+          if (category === undefined) {
+            throw new Error(`Category with id "${categoryId}" does not exist.`)
+          }
+          category.keywords.push(newKeyword)
         }))
         get().reclassifyTransactions()
       },
@@ -215,14 +217,6 @@ const useStore = create<AppState>()(
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           state.categoryMetadata[categoryId]!.name = newName
         }))
-      },
-
-      replaceCategories: (categories: CategoryMetadata) => {
-        set(state => ({
-          ...state,
-          categoryMetadata: categories
-        }))
-        get().reclassifyTransactions()
       },
 
       clearAll: () => set(initialData),

@@ -7,6 +7,9 @@
     flex: 1;
     overflow-y: auto;
     background-color: var(--surface);
-    padding: 2rem;
+
+    .content {
+      padding: 1rem;
+    }
   }
 }
