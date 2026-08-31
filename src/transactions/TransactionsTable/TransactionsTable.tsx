@@ -23,6 +23,8 @@ import { AmountFilterForm, type AmountFilter } from './AmountFilterForm.tsx'
 import { DescriptionFilterForm } from './DescriptionFilterForm.tsx'
 import { descriptionMatches } from './descriptionMatches.ts'
 import { ImportedAtFilterForm, type ImportedAtFilter } from './ImportedAtFilterForm.tsx'
+import { SetAccountForm } from './SetAccountForm.tsx'
+import { TableBottomBar } from './TableBottomBar.tsx'
 import styles from './TransactionsTable.module.css'
 
 type TableData = {
@@ -154,6 +156,8 @@ const TransactionsTable = () => {
   const [isDescriptionFilterOpen, setIsDescriptionFilterOpen] = useState(false)
   const [isImportedAtFilterOpen, setIsImportedAtFilterOpen] = useState(false)
   const [isImportNameFilterOpen, setIsImportNameFilterOpen] = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [isSetAccountOpen, setIsSetAccountOpen] = useState(false)
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -254,6 +258,29 @@ const TransactionsTable = () => {
       { value: 'none', label: 'Unnamed import' },
     ]
   }, [data])
+
+  const selectedIds = Object.keys(rowSelection).map(Number)
+
+  const handleDelete = async () => {
+    if (selectedIds.length === 0) {
+      return
+    }
+    await db.transactions.bulkDelete(selectedIds)
+    setRowSelection({})
+    setConfirmingDelete(false)
+  }
+
+  const handleSetAccount = async (accountId: number | null) => {
+    if (selectedIds.length === 0) {
+      return
+    }
+    await db.transactions.toCollection().modify((transaction) => {
+      if (selectedIds.includes(transaction.id)) {
+        transaction.accountId = accountId
+      }
+    })
+    setIsSetAccountOpen(false)
+  }
 
   return (
     <div ref={scrollRef} className={styles.scroll}>
@@ -364,6 +391,34 @@ const TransactionsTable = () => {
           </table>
         )}
       </div>
+      <TableBottomBar
+        selectedCount={selectedIds.length}
+        onDelete={() => setConfirmingDelete(true)}
+        onSetAccount={() => setIsSetAccountOpen(true)}
+      />
+      {confirmingDelete ? (
+        <Modal title="Delete transactions" onClose={() => setConfirmingDelete(false)}>
+          <p>Delete {selectedIds.length} selected transaction(s)?</p>
+          <div className={styles.modalActions}>
+            <button type="button" onClick={() => setConfirmingDelete(false)}>
+              No
+            </button>
+            <button type="button" onClick={handleDelete}>
+              Yes, delete
+            </button>
+          </div>
+        </Modal>
+      ) : null}
+      {isSetAccountOpen ? (
+        <Modal title="Set account" onClose={() => setIsSetAccountOpen(false)}>
+          <SetAccountForm
+            accounts={data.accounts}
+            currentAccountId={null}
+            onApply={handleSetAccount}
+            onClose={() => setIsSetAccountOpen(false)}
+          />
+        </Modal>
+      ) : null}
       {isDescriptionFilterOpen ? (
         <Modal title="Filter by description" onClose={() => setIsDescriptionFilterOpen(false)}>
           <DescriptionFilterForm

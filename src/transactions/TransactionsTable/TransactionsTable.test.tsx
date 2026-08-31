@@ -148,4 +148,65 @@ describe('TransactionsTable', () => {
 
     expect(await screen.findByText('No transactions')).toBeInTheDocument()
   })
+
+  it('deletes selected transactions after confirmation', async () => {
+    const user = userEvent.setup()
+    await db.transactions.add({ id: 1, amount: 10, description: 'a', categoryId: null, accountId: null, importedAt: 0, importName: null })
+    await db.transactions.add({ id: 2, amount: 20, description: 'b', categoryId: null, accountId: null, importedAt: 0, importName: null })
+
+    render(<TransactionsTable />)
+    await screen.findByText('a')
+
+    const firstRowCheckbox = screen.getAllByRole('row')[1].querySelector('input[type=checkbox]') as Element
+    await user.click(firstRowCheckbox)
+    expect(screen.getByText('1 selected')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Delete' }))
+    await screen.findByRole('dialog')
+    await user.click(screen.getByRole('button', { name: 'Yes, delete' }))
+
+    await screen.findByText('b')
+    expect(screen.queryByText('a')).not.toBeInTheDocument()
+    expect(await db.transactions.count()).toBe(1)
+  })
+
+  it('keeps selection when delete is cancelled', async () => {
+    const user = userEvent.setup()
+    await db.transactions.add({ id: 1, amount: 10, description: 'a', categoryId: null, accountId: null, importedAt: 0, importName: null })
+
+    render(<TransactionsTable />)
+    await screen.findByText('a')
+
+    const firstRowCheckbox = screen.getAllByRole('row')[1].querySelector('input[type=checkbox]') as Element
+    await user.click(firstRowCheckbox)
+    await user.click(screen.getByRole('button', { name: 'Delete' }))
+    await screen.findByRole('dialog')
+    await user.click(screen.getByRole('button', { name: 'No' }))
+
+    expect(screen.getByText('1 selected')).toBeInTheDocument()
+    expect(await db.transactions.count()).toBe(1)
+  })
+
+  it('sets account on selected transactions after confirmation', async () => {
+    const user = userEvent.setup()
+    await db.accounts.add({ id: 1, name: 'Revolut' })
+    await db.transactions.add({ id: 1, amount: 10, description: 'a', categoryId: null, accountId: null, importedAt: 0, importName: null })
+    await db.transactions.add({ id: 2, amount: 20, description: 'b', categoryId: null, accountId: null, importedAt: 0, importName: null })
+
+    render(<TransactionsTable />)
+    await screen.findByText('a')
+
+    const firstRowCheckbox = screen.getAllByRole('row')[1].querySelector('input[type=checkbox]') as Element
+    await user.click(firstRowCheckbox)
+
+    await user.click(screen.getByRole('button', { name: 'Set account' }))
+    await screen.findByRole('dialog')
+    await user.selectOptions(screen.getByLabelText('Account'), '1')
+    await user.click(screen.getByRole('button', { name: 'Apply' }))
+
+    const rows = await db.transactions.toArray()
+    expect(rows.find((row) => row.id === 1)!.accountId).toBe(1)
+    expect(rows.find((row) => row.id === 2)!.accountId).toBeNull()
+    expect(screen.getByText('Revolut')).toBeInTheDocument()
+  })
 })
