@@ -6,15 +6,15 @@ const baseOptions = { delimiter: ';', descriptionColumn: 1, amountColumn: 2 }
 describe('parseCsv', () => {
   it('parses rows with default settings', () => {
     expect(parseCsv('lunch;25\ncoffee;10', baseOptions)).toEqual([
-      { description: 'lunch', amount: '25' },
-      { description: 'coffee', amount: '10' },
+      { description: 'lunch', amountText: '25', amount: 25, error: undefined },
+      { description: 'coffee', amountText: '10', amount: 10, error: undefined },
     ])
   })
 
   it('honors custom columns', () => {
     expect(parseCsv('25;lunch\n10;coffee', { delimiter: ';', descriptionColumn: 2, amountColumn: 1 })).toEqual([
-      { description: 'lunch', amount: '25' },
-      { description: 'coffee', amount: '10' },
+      { description: 'lunch', amountText: '25', amount: 25, error: undefined },
+      { description: 'coffee', amountText: '10', amount: 10, error: undefined },
     ])
   })
 
@@ -25,12 +25,33 @@ describe('parseCsv', () => {
 
   it('skips empty lines', () => {
     expect(parseCsv('lunch;25\n\n\ncoffee;10\n', baseOptions)).toEqual([
-      { description: 'lunch', amount: '25' },
-      { description: 'coffee', amount: '10' },
+      { description: 'lunch', amountText: '25', amount: 25, error: undefined },
+      { description: 'coffee', amountText: '10', amount: 10, error: undefined },
+    ])
+  })
+
+  it('accepts comma as a decimal separator', () => {
+    expect(parseCsv('lunch;10,50\ncoffee;1,25', baseOptions)).toEqual([
+      { description: 'lunch', amountText: '10,50', amount: 10.5, error: undefined },
+      { description: 'coffee', amountText: '1,25', amount: 1.25, error: undefined },
+    ])
+  })
+
+  it('marks invalid rows', () => {
+    expect(parseCsv('lunch;25\nnoamount\nnondigit;abc', baseOptions)).toEqual([
+      { description: 'lunch', amountText: '25', amount: 25, error: undefined },
+      { description: 'noamount', amountText: '', amount: null, error: 'Amount is empty' },
+      { description: 'nondigit', amountText: 'abc', amount: null, error: 'Amount is not a number' },
     ])
   })
 
   it('does not crash on messy input', () => {
     expect(() => parseCsv('a;b;"unterminated\n;;;', baseOptions)).not.toThrow()
+  })
+
+  it('treats one line as one row regardless of delimiter', () => {
+    const source = 'a;"x;y"\nb\nc;2'
+    expect(parseCsv(source, baseOptions)).toHaveLength(3)
+    expect(parseCsv(source, { delimiter: ',', descriptionColumn: 1, amountColumn: 2 })).toHaveLength(3)
   })
 })

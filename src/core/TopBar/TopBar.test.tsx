@@ -10,7 +10,7 @@ describe('TopBar', () => {
   })
 
   it('shows transaction and category counts', async () => {
-    await db.transactions.add({ amount: 10, description: 'coffee', categoryId: 1 })
+    await db.transactions.add({ amount: 10, description: 'coffee', categoryId: null, importedAt: 0 })
     await db.categories.add({ name: 'food' })
 
     render(<TopBar />)

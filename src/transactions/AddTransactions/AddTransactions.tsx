@@ -1,7 +1,27 @@
 import { useState } from 'react'
-import { parseCsv } from './parseCsv.ts'
+import { db } from '../../db.ts'
+import { parseCsv, type ParsedRow } from './parseCsv.ts'
 import { presets } from './presets.ts'
 import styles from './AddTransactions.module.css'
+
+const importRows = (preview: ParsedRow[]) => {
+  const invalid = preview.find((row) => row.error)
+  if (invalid) {
+    alert('Cannot import: some rows are invalid.')
+    return false
+  }
+
+  const importedAt = Date.now()
+  void db.transactions.bulkAdd(
+    preview.map((row) => ({
+      description: row.description,
+      amount: row.amount as number,
+      categoryId: null,
+      importedAt,
+    })),
+  )
+  return true
+}
 
 const AddTransactions = () => {
   const [source, setSource] = useState('')
@@ -10,6 +30,12 @@ const AddTransactions = () => {
   const [amountColumn, setAmountColumn] = useState(2)
 
   const preview = parseCsv(source, { delimiter: separator, descriptionColumn, amountColumn })
+
+  const handleImport = () => {
+    if (importRows(preview)) {
+      setSource('')
+    }
+  }
 
   return (
     <div className={styles.layout}>
@@ -79,8 +105,11 @@ const AddTransactions = () => {
                   </td>
                 </tr>
               ) : (
-                preview.map((row, index) => (
-                  <tr key={index}>
+preview.map((row, index) => (
+                  <tr
+                    key={index}
+                    className={row.error ? styles.invalidRow : undefined}
+                  >
                     <td>{row.description}</td>
                     <td>{row.amount}</td>
                   </tr>
@@ -89,7 +118,7 @@ const AddTransactions = () => {
             </tbody>
           </table>
         </div>
-        <button type="button" className={styles.importButton}>
+        <button type="button" className={styles.importButton} onClick={handleImport}>
           Import
         </button>
       </section>

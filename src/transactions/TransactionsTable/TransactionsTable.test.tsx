@@ -11,7 +11,7 @@ describe('TransactionsTable', () => {
 
   it('renders transactions with category names', async () => {
     await db.categories.add({ id: 1, name: 'food' })
-    await db.transactions.add({ id: 1, amount: 10, description: 'coffee', categoryId: 1 })
+    await db.transactions.add({ id: 1, amount: 10, description: 'coffee', categoryId: 1, importedAt: 0 })
 
     render(<TransactionsTable />)
 

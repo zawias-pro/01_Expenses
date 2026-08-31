@@ -15,9 +15,9 @@ describe('db', () => {
   })
 
   it('stores transactions', async () => {
-    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: 1 })
+    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, importedAt: 100 })
     const transactions = await db.transactions.toArray()
     expect(transactions).toHaveLength(1)
-    expect(transactions[0]).toMatchObject({ amount: 25, description: 'lunch', categoryId: 1 })
+    expect(transactions[0]).toMatchObject({ amount: 25, description: 'lunch', categoryId: null, importedAt: 100 })
   })
 })

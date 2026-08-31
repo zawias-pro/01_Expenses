@@ -1,8 +1,9 @@
 type Transaction = {
   id: number
-  amount: number
+amount: number
   description: string
-  categoryId: number
+  categoryId: number | null
+  importedAt: number
 }
 
 export type { Transaction }

@@ -72,3 +72,7 @@
 .empty {
   font-style: italic;
 }
+
+.invalidRow {
+  background: #fdd;
+}

@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { db } from '../../db.ts'
 import { AddTransactions } from './AddTransactions.tsx'
 
 const pasteCsv = (value: string) => {
@@ -9,13 +10,19 @@ const pasteCsv = (value: string) => {
 }
 
 describe('AddTransactions', () => {
+  beforeEach(async () => {
+    await db.transactions.clear()
+    await db.categories.clear()
+    vi.spyOn(window, 'alert').mockImplementation(() => {})
+  })
+
   it('renders a preview from pasted csv', () => {
-    pasteCsv('lunch;25\ncoffee;10')
+    pasteCsv('lunch;25\ncoffee;10,50')
 
     expect(screen.getByText('lunch')).toBeInTheDocument()
     expect(screen.getByText('25')).toBeInTheDocument()
     expect(screen.getByText('coffee')).toBeInTheDocument()
-    expect(screen.getByText('10')).toBeInTheDocument()
+    expect(screen.getByText('10.5')).toBeInTheDocument()
   })
 
   it('shows default option values', () => {
@@ -54,5 +61,38 @@ describe('AddTransactions', () => {
     fireEvent.click(screen.getByText('Fill with Example 1'))
 
     expect(screen.getByRole('button', { name: 'Import' })).toBeInTheDocument()
+  })
+
+  it('imports valid rows with a shared importedAt timestamp', async () => {
+    pasteCsv('lunch;25\ncoffee;10')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }))
+
+    await waitFor(async () => {
+      const transactions = await db.transactions.toArray()
+      expect(transactions).toHaveLength(2)
+      expect(transactions[0].categoryId).toBeNull()
+      expect(transactions[0].importedAt).toEqual(transactions[1].importedAt)
+    })
+  })
+
+  it('clears the textarea after a successful import', async () => {
+    pasteCsv('lunch;25')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }))
+
+    await waitFor(async () => {
+      expect(await db.transactions.count()).toBe(1)
+    })
+    expect((screen.getByPlaceholderText('Paste CSV here') as HTMLTextAreaElement).value).toBe('')
+  })
+
+  it('aborts and alerts when any row is invalid', async () => {
+    pasteCsv('lunch;25\nbad;abc')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }))
+
+    expect(window.alert).toHaveBeenCalled()
+    expect(await db.transactions.count()).toBe(0)
   })
 })

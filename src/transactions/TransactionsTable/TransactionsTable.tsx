@@ -20,8 +20,16 @@ const TransactionsTable = () => {
     return { transactions, categories }
   }, [], defaultData)
 
-  const categoryName = (categoryId: number) =>
-    data.categories.find((category) => category.id === categoryId)?.name
+  const categoryName = (categoryId: number | null) => {
+    if (categoryId === null) {
+      return '-'
+    }
+    const category = data.categories.find((category) => category.id === categoryId)
+    if (!category) {
+      throw new Error(`Transaction references unknown category ${categoryId}`)
+    }
+    return category.name
+  }
 
   return (
     <table className={styles.table}>
