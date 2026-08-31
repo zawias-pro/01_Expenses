@@ -1,0 +1,16 @@
+.filterButton {
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: none;
+  padding: 0 0.35rem;
+  font: inherit;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.active {
+  background: #2f6fed;
+  border-color: #2f6fed;
+  color: white;
+}

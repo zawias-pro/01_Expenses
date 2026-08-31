@@ -11,10 +11,13 @@ import {
 import { sortFn_alphanumeric, sortFn_basic, sortFn_datetime, sortFn_text } from '@tanstack/table-core'
 import type { ColumnDef, SortingState } from '@tanstack/table-core'
 import { useVirtualizer } from '@tanstack/react-virtual'
+import { FilterButton } from '../../components/FilterButton/FilterButton.tsx'
+import { Modal } from '../../components/Modal/Modal.tsx'
 import { db } from '../../db.ts'
 import type { Account } from '../../accounts/Account.ts'
 import type { Category } from '../../categories/Category.ts'
 import type { Transaction } from '../Transaction.ts'
+import { AmountFilterForm, type AmountFilter } from './AmountFilterForm.tsx'
 import styles from './TransactionsTable.module.css'
 
 type TableData = {
@@ -33,6 +36,16 @@ type ViewRow = {
 }
 
 const defaultData: TableData = { transactions: [], categories: [], accounts: [] }
+
+const emptyAmountFilter: AmountFilter = { min: '', max: '' }
+
+const amountFilterActive = (filter: AmountFilter) => filter.min !== '' || filter.max !== ''
+
+const applyAmountFilter = (rows: ViewRow[], filter: AmountFilter) => {
+  const min = filter.min === '' ? Number.NEGATIVE_INFINITY : Number(filter.min)
+  const max = filter.max === '' ? Number.POSITIVE_INFINITY : Number(filter.max)
+  return rows.filter((row) => row.amount >= min && row.amount <= max)
+}
 
 const features = tableFeatures({
   rowSelectionFeature,
@@ -86,6 +99,8 @@ const TransactionsTable = () => {
 
   const [rowSelection, setRowSelection] = useState({})
   const [sorting, setSorting] = useState<SortingState>([])
+  const [amountFilter, setAmountFilter] = useState<AmountFilter>(emptyAmountFilter)
+  const [isAmountFilterOpen, setIsAmountFilterOpen] = useState(false)
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -112,7 +127,7 @@ const TransactionsTable = () => {
       return account.name
     }
 
-    return data.transactions.map((transaction) => ({
+    const viewRows = data.transactions.map((transaction) => ({
       id: transaction.id,
       amount: transaction.amount,
       description: transaction.description,
@@ -120,7 +135,9 @@ const TransactionsTable = () => {
       account: accountName(transaction.accountId),
       importedAt: new Date(transaction.importedAt).toLocaleString(),
     }))
-  }, [data])
+
+    return applyAmountFilter(viewRows, amountFilter)
+  }, [data, amountFilter])
 
   const table = useTable({
     features,
@@ -145,10 +162,6 @@ const TransactionsTable = () => {
 
   const virtualRows = rowVirtualizer.getVirtualItems()
 
-  if (rows.length === 0) {
-    return <p>No transactions</p>
-  }
-
   return (
     <div ref={scrollRef} className={styles.scroll}>
       <div className={styles.stickyHeader}>
@@ -161,17 +174,27 @@ const TransactionsTable = () => {
                     {header.column.id === 'select' ? (
                       <table.FlexRender header={header} />
                     ) : (
-                      <button
-                        type="button"
-                        className={styles.sortButton}
-                        onClick={header.column.getToggleSortingHandler()}
-                      >
-                        <table.FlexRender header={header} />
-                        {{
-                          asc: ' ▲',
-                          desc: ' ▼',
-                        }[header.column.getIsSorted() as string] ?? ''}
-                      </button>
+                      <div className={styles.headerCell}>
+                        <button
+                          type="button"
+                          className={styles.sortButton}
+                          onClick={header.column.getToggleSortingHandler()}
+                        >
+                          <table.FlexRender header={header} />
+                          {{
+                            asc: ' ▲',
+                            desc: ' ▼',
+                          }[header.column.getIsSorted() as string] ?? ''}
+                        </button>
+                        {header.column.id === 'amount' ? (
+                          <FilterButton
+                            active={amountFilterActive(amountFilter)}
+                            label="Filter"
+                            title="Filter by amount"
+                            onClick={() => setIsAmountFilterOpen(true)}
+                          />
+                        ) : null}
+                      </div>
                     )}
                   </th>
                 ))}
@@ -181,29 +204,42 @@ const TransactionsTable = () => {
         </table>
       </div>
       <div className={styles.body} style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
-        <table className={styles.table}>
-          <tbody>
-            {virtualRows.map((virtualRow, index) => {
-              const row = table.getRowModel().rows[virtualRow.index]
-              return (
-                <tr
-                  key={row.id}
-                  style={{
-                    height: `${virtualRow.size}px`,
-                    transform: `translateY(${virtualRow.start - index * virtualRow.size}px)`,
-                  }}
-                >
-                  {row.getAllCells().map((cell) => (
-                    <td key={cell.id} title={String(cell.getValue())}>
-                      <table.FlexRender cell={cell} />
-                    </td>
-                  ))}
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+        {rows.length === 0 ? (
+          <p>No transactions</p>
+        ) : (
+          <table className={styles.table}>
+            <tbody>
+              {virtualRows.map((virtualRow, index) => {
+                const row = table.getRowModel().rows[virtualRow.index]
+                return (
+                  <tr
+                    key={row.id}
+                    style={{
+                      height: `${virtualRow.size}px`,
+                      transform: `translateY(${virtualRow.start - index * virtualRow.size}px)`,
+                    }}
+                  >
+                    {row.getAllCells().map((cell) => (
+                      <td key={cell.id} title={String(cell.getValue())}>
+                        <table.FlexRender cell={cell} />
+                      </td>
+                    ))}
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        )}
       </div>
+      {isAmountFilterOpen ? (
+        <Modal title="Filter by amount" onClose={() => setIsAmountFilterOpen(false)}>
+          <AmountFilterForm
+            filter={amountFilter}
+            onApply={setAmountFilter}
+            onClose={() => setIsAmountFilterOpen(false)}
+          />
+        </Modal>
+      ) : null}
     </div>
   )
 }

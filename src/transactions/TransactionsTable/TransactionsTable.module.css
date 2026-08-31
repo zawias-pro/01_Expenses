@@ -18,7 +18,13 @@
   font: inherit;
   cursor: pointer;
   text-align: left;
-  width: 100%;
+  flex: 1;
+}
+
+.headerCell {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .body {
