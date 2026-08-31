@@ -56,19 +56,19 @@ const parseCsv = (source: string, { delimiter, descriptionColumn, amountColumn }
       if (description === '' && amountText === '') {
         return null
       }
+
+      const amount = amountText === '' ? NaN : parseAmount(amountText)
+
+      let error: string | undefined
       if (description === '') {
-        return { description, amountText, amount: null, error: 'Description is empty' }
-      }
-      if (amountText === '') {
-        return { description, amountText, amount: null, error: 'Amount is empty' }
-      }
-
-      const amount = parseAmount(amountText)
-      if (!Number.isFinite(amount)) {
-        return { description, amountText, amount: null, error: 'Amount is not a number' }
+        error = 'Description is empty'
+      } else if (amountText === '') {
+        error = 'Amount is empty'
+      } else if (!Number.isFinite(amount)) {
+        error = 'Amount is not a number'
       }
 
-      return { description, amountText, amount, error: undefined }
+      return { description, amountText, amount: Number.isFinite(amount) ? amount : null, error }
     })
     .filter((row) => row !== null)
 }

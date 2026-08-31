@@ -45,6 +45,12 @@ describe('AddTransactions', () => {
     expect(screen.getByText('No rows')).toBeInTheDocument()
   })
 
+  it('shows the amount even when the description is missing', () => {
+    pasteCsv(';42.00')
+
+    expect(screen.getByText('42')).toBeInTheDocument()
+  })
+
   it('fills the textarea from a preset', () => {
     render(<AddTransactions />)
 

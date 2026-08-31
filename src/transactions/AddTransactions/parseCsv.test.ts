@@ -45,6 +45,12 @@ describe('parseCsv', () => {
     ])
   })
 
+  it('keeps a valid amount when only the description is missing', () => {
+    expect(parseCsv(';42.00', baseOptions)).toEqual([
+      { description: '', amountText: '42.00', amount: 42, error: 'Description is empty' },
+    ])
+  })
+
   it('does not crash on messy input', () => {
     expect(() => parseCsv('a;b;"unterminated\n;;;', baseOptions)).not.toThrow()
   })

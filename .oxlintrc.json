@@ -5,6 +5,7 @@
     "react/rules-of-hooks": "error",
     "react/only-export-components": ["warn", { "allowConstantExport": true }],
     "import/no-default-export": "error",
-    "func-style": ["error", "expression"]
+    "func-style": ["error", "expression"],
+    "no-nested-ternary": "error"
   }
 }
