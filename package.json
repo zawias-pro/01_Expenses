@@ -12,6 +12,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@tanstack/react-table": "^9.2.4",
+    "@tanstack/react-virtual": "^3.14.10",
     "dexie": "^4.4.5",
     "dexie-react-hooks": "^4.4.0",
     "papaparse": "^5.7.0",

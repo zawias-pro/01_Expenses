@@ -14,3 +14,4 @@
 - Tests: vitest + jsdom + fake-indexeddb + testing-library, colocated with component.
 - In tests, `vi.restoreAllMocks()` before re-spying on globals (`window.confirm`/`alert`) — jsdom is shared across tests, so spies otherwise accumulate call history.
 - Verify: `npm run lint`, `npx tsc -b`, `npm test`.
+- Dev server: use the one started by the user at http://localhost:5173/. Never start or `pkill` a Vite process; leave the running server alone.
