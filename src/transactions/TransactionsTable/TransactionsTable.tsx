@@ -1,7 +1,7 @@
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { createColumnHelper, tableFeatures, useTable } from '@tanstack/react-table'
-import type { ColumnDef, TableFeatures } from '@tanstack/table-core'
+import { createColumnHelper, rowSelectionFeature, tableFeatures, useTable } from '@tanstack/react-table'
+import type { ColumnDef } from '@tanstack/table-core'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { db } from '../../db.ts'
 import type { Account } from '../../accounts/Account.ts'
@@ -26,10 +26,31 @@ type ViewRow = {
 
 const defaultData: TableData = { transactions: [], categories: [], accounts: [] }
 
-const features = tableFeatures({})
+const features = tableFeatures({
+  rowSelectionFeature,
+})
 const columnHelper = createColumnHelper<typeof features, ViewRow>()
 
-const columns: ColumnDef<TableFeatures, ViewRow, any>[] = [
+const columns: ColumnDef<typeof features, ViewRow, any>[] = [
+  columnHelper.display({
+    id: 'select',
+    header: ({ table }) => (
+      <input
+        type="checkbox"
+        checked={table.getIsAllRowsSelected()}
+        title="Select all"
+        onChange={table.getToggleAllRowsSelectedHandler()}
+      />
+    ),
+    cell: ({ row }) => (
+      <input
+        type="checkbox"
+        checked={row.getIsSelected()}
+        onChange={row.getToggleSelectedHandler()}
+      />
+    ),
+  }),
+  columnHelper.accessor('id', { header: 'ID' }),
   columnHelper.accessor('amount', { header: 'Amount' }),
   columnHelper.accessor('description', { header: 'Description' }),
   columnHelper.accessor('category', { header: 'Category' }),
@@ -46,6 +67,8 @@ const TransactionsTable = () => {
     ])
     return { transactions, categories, accounts }
   }, [], defaultData)
+
+  const [rowSelection, setRowSelection] = useState({})
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -86,6 +109,11 @@ const TransactionsTable = () => {
     features,
     columns,
     data: rows,
+    state: {
+      rowSelection,
+    },
+    onRowSelectionChange: setRowSelection,
+    getRowId: (row) => String(row.id),
   })
 
   // oxlint-disable-next-line react/incompatible-library -- useVirtualizer is the supported API
