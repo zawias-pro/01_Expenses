@@ -104,19 +104,23 @@ const TransactionsTable = () => {
 
   return (
     <div ref={scrollRef} className={styles.scroll}>
-      <div className={styles.body} style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
+      <div className={styles.stickyHeader}>
         <table className={styles.table}>
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <th key={header.id}>
-                    <table.FlexRender header={header} />
-                  </th>
+                <th key={header.id}>
+                  <table.FlexRender header={header} />
+                </th>
                 ))}
               </tr>
             ))}
           </thead>
+        </table>
+      </div>
+      <div className={styles.body} style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
+        <table className={styles.table}>
           <tbody>
             {virtualRows.map((virtualRow, index) => {
               const row = table.getRowModel().rows[virtualRow.index]
@@ -128,7 +132,7 @@ const TransactionsTable = () => {
                     transform: `translateY(${virtualRow.start - index * virtualRow.size}px)`,
                   }}
                 >
-{row.getAllCells().map((cell) => (
+                  {row.getAllCells().map((cell) => (
                     <td key={cell.id} title={String(cell.getValue())}>
                       <table.FlexRender cell={cell} />
                     </td>

@@ -4,6 +4,13 @@
   overflow: auto;
 }
 
+.stickyHeader {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: white;
+}
+
 .body {
   position: relative;
 }
@@ -55,11 +62,4 @@
 .table th:last-child,
 .table td:last-child {
   border-right: 0;
-}
-
-.table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: white;
 }
