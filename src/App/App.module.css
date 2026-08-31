@@ -1,0 +1,8 @@
+.appBody {
+  display: flex;
+}
+
+.appContent {
+  flex: 1;
+  padding: 1rem;
+}
