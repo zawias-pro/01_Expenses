@@ -1,6 +1,5 @@
-import { useSyncExternalStore } from 'react'
-import { viewStore } from './viewStore.ts'
+import { useAppStore } from '../appStore.ts'
 
-const useView = () => useSyncExternalStore(viewStore.subscribe, viewStore.get)
+const useView = () => useAppStore((state) => state.view)
 
 export { useView }

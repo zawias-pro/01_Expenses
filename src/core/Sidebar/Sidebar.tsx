@@ -1,6 +1,6 @@
 import type { View } from '../view.ts'
 import { useView } from '../useView.ts'
-import { viewStore } from '../viewStore.ts'
+import { useAppStore } from '../../appStore.ts'
 import styles from './Sidebar.module.css'
 
 const items: { view: View; label: string }[] = [
@@ -10,6 +10,7 @@ const items: { view: View; label: string }[] = [
 
 const Sidebar = () => {
   const view = useView()
+  const setView = useAppStore((state) => state.setView)
 
   return (
     <nav className={styles.sidebar}>
@@ -18,7 +19,7 @@ const Sidebar = () => {
           key={item.view}
           type="button"
           className={item.view === view ? styles.itemActive : undefined}
-          onClick={() => viewStore.set(item.view)}
+          onClick={() => setView(item.view)}
         >
           {item.label}
         </button>

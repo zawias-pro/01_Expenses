@@ -9,5 +9,6 @@
 - `src` organized by domain: `transactions/`, `categories/`, plus `core/` (app shell) and `components/` (shared reusable ui).
 - Minimal styling, one CSS module per component, no inline styles.
 - Persistence: dexie + dexie-react-hooks.
+- App state: zustand, single app store.
 - Tests: vitest + jsdom + fake-indexeddb + testing-library, colocated with component.
 - Verify: `npm run lint`, `npx tsc -b`, `npm test`.
