@@ -20,7 +20,7 @@ const hasInvalidRows = (preview: ParsedRow[]) => {
   return false
 }
 
-const importRows = async (rows: ParsedRow[], accountId: number | null) => {
+const importRows = async (rows: ParsedRow[], accountId: number | null, importName: string | null) => {
   const importedAt = Date.now()
   await db.transactions.bulkAdd(
     rows.map((row) => ({
@@ -28,6 +28,7 @@ const importRows = async (rows: ParsedRow[], accountId: number | null) => {
       amount: row.amount as number,
       categoryId: null,
       accountId,
+      importName,
       importedAt,
     })),
   )
@@ -39,6 +40,7 @@ const AddTransactions = () => {
   const [descriptionColumn, setDescriptionColumn] = useState(1)
   const [amountColumn, setAmountColumn] = useState(2)
   const [accountId, setAccountId] = useState<number | null>(null)
+  const [importName, setImportName] = useState('')
   const [importDecision, setImportDecision] = useState<{ rows: ParsedRow[]; duplicates: ParsedRow[] } | null>(null)
 
   const preview = parseCsv(source, { delimiter: separator, descriptionColumn, amountColumn })
@@ -55,7 +57,7 @@ const AddTransactions = () => {
       return
     }
 
-    await importRows(preview, accountId)
+    await importRows(preview, accountId, importName === '' ? null : importName)
     setSource('')
   }
 
@@ -63,7 +65,7 @@ const AddTransactions = () => {
     if (!importDecision) {
       return
     }
-    await importRows(importDecision.rows, accountId)
+    await importRows(importDecision.rows, accountId, importName === '' ? null : importName)
     setImportDecision(null)
     setSource('')
   }
@@ -77,6 +79,7 @@ const AddTransactions = () => {
     await importRows(
       importDecision.rows.filter((row) => !duplicateKeys.has(`${row.amount}\u0000${row.description}`)),
       accountId,
+      importName === '' ? null : importName,
     )
     setImportDecision(null)
     setSource(remainingSource)
@@ -176,6 +179,16 @@ const AddTransactions = () => {
               </option>
             ))}
           </select>
+        </label>
+        <label className={styles.accountRow}>
+          <span>Import name</span>
+          <input
+            type="text"
+            maxLength={1000}
+            value={importName}
+            onChange={(event) => setImportName(event.target.value)}
+            placeholder="Optional"
+          />
         </label>
         <button type="button" className={styles.importButton} onClick={handleImport}>
           Import

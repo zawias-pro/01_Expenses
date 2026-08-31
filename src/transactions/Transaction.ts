@@ -5,6 +5,7 @@ type Transaction = {
   categoryId: number | null
   accountId: number | null
   importedAt: number
+  importName: string | null
 }
 
 export type { Transaction }

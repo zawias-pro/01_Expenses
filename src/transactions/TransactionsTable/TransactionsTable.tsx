@@ -38,6 +38,7 @@ type ViewRow = {
   account: string
   accountId: number | null
   importedAt: string
+  importName: string
 }
 
 const defaultData: TableData = { transactions: [], categories: [], accounts: [] }
@@ -106,6 +107,7 @@ const columns: ColumnDef<typeof features, ViewRow, any>[] = [
   columnHelper.accessor('category', { id: 'category', header: 'Category' }),
   columnHelper.accessor('account', { id: 'account', header: 'Account' }),
   columnHelper.accessor('importedAt', { id: 'importedAt', header: 'Imported', sortFn: 'datetime' }),
+  columnHelper.accessor('importName', { id: 'importName', header: 'Import name' }),
 ]
 
 const TransactionsTable = () => {
@@ -163,6 +165,7 @@ const TransactionsTable = () => {
       account: accountName(transaction.accountId),
       accountId: transaction.accountId,
       importedAt: new Date(transaction.importedAt).toLocaleString(),
+      importName: transaction.importName ?? '-',
     }))
 
     let filtered = applyAmountFilter(viewRows, amountFilter)

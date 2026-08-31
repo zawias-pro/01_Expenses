@@ -135,7 +135,7 @@ describe('AddTransactions', () => {
   })
 
   it('shows a modal listing duplicates and imports all when chosen', async () => {
-    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, importedAt: 0, accountId: null })
+    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, importedAt: 0, accountId: null, importName: null })
     pasteCsv('lunch;25')
 
     fireEvent.click(screen.getByRole('button', { name: 'Import' }))
@@ -152,7 +152,7 @@ describe('AddTransactions', () => {
   })
 
   it('skips duplicates and imports the rest when chosen', async () => {
-    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, importedAt: 0, accountId: null })
+    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, importedAt: 0, accountId: null, importName: null })
     pasteCsv('lunch;25\ncoffee;10')
 
     fireEvent.click(screen.getByRole('button', { name: 'Import' }))
@@ -172,7 +172,7 @@ describe('AddTransactions', () => {
   })
 
   it('aborts the import when the modal is closed', async () => {
-    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, importedAt: 0, accountId: null })
+    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, importedAt: 0, accountId: null, importName: null })
     pasteCsv('lunch;25')
 
     fireEvent.click(screen.getByRole('button', { name: 'Import' }))
@@ -194,5 +194,30 @@ describe('AddTransactions', () => {
       expect(await db.transactions.count()).toBe(1)
     })
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('stores null importName when the field is empty', async () => {
+    pasteCsv('lunch;25')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }))
+
+    await waitFor(async () => {
+      const transactions = await db.transactions.toArray()
+      expect(transactions).toHaveLength(1)
+      expect(transactions[0].importName).toBeNull()
+    })
+  })
+
+  it('stores the typed import name', async () => {
+    pasteCsv('lunch;25')
+
+    fireEvent.change(screen.getByLabelText('Import name'), { target: { value: 'january salaries' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }))
+
+    await waitFor(async () => {
+      const transactions = await db.transactions.toArray()
+      expect(transactions).toHaveLength(1)
+      expect(transactions[0].importName).toBe('january salaries')
+    })
   })
 })

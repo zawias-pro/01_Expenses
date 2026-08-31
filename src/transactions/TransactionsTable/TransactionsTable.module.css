@@ -67,22 +67,27 @@
 
 .table th:nth-child(4),
 .table td:nth-child(4) {
-  width: 27%;
+  width: 24%;
 }
 
 .table th:nth-child(5),
 .table td:nth-child(5) {
-  width: 16%;
+  width: 14%;
 }
 
 .table th:nth-child(6),
 .table td:nth-child(6) {
-  width: 16%;
+  width: 14%;
 }
 
 .table th:nth-child(7),
 .table td:nth-child(7) {
-  width: 16%;
+  width: 15%;
+}
+
+.table th:nth-child(8),
+.table td:nth-child(8) {
+  width: 8%;
 }
 
 .table th:last-child,
