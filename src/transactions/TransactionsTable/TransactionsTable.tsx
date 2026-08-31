@@ -38,12 +38,13 @@ const TransactionsTable = () => {
           <th>Amount</th>
           <th>Description</th>
           <th>Category</th>
+          <th>Imported</th>
         </tr>
       </thead>
       <tbody>
         {data.transactions.length === 0 ? (
           <tr>
-            <td colSpan={3}>No transactions</td>
+            <td colSpan={4}>No transactions</td>
           </tr>
         ) : (
           data.transactions.map((transaction) => (
@@ -51,6 +52,7 @@ const TransactionsTable = () => {
               <td>{transaction.amount}</td>
               <td>{transaction.description}</td>
               <td>{categoryName(transaction.categoryId)}</td>
+              <td>{new Date(transaction.importedAt).toLocaleString()}</td>
             </tr>
           ))
         )}

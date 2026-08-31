@@ -12,4 +12,5 @@
 - Persistence: dexie + dexie-react-hooks.
 - App state: zustand, single app store.
 - Tests: vitest + jsdom + fake-indexeddb + testing-library, colocated with component.
+- In tests, `vi.restoreAllMocks()` before re-spying on globals (`window.confirm`/`alert`) — jsdom is shared across tests, so spies otherwise accumulate call history.
 - Verify: `npm run lint`, `npx tsc -b`, `npm test`.

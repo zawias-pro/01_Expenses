@@ -4,16 +4,29 @@ import { parseCsv, type ParsedRow } from './parseCsv.ts'
 import { presets } from './presets.ts'
 import styles from './AddTransactions.module.css'
 
-const importRows = (preview: ParsedRow[]) => {
+const importRows = async (preview: ParsedRow[]) => {
   const invalid = preview.find((row) => row.error)
   if (invalid) {
     alert('Cannot import: some rows are invalid.')
     return false
   }
 
+  const existing = await db.transactions.toArray()
+  const existingKeys = new Set(existing.map((transaction) => `${transaction.amount}\u0000${transaction.description}`))
+
+  const duplicateRows = preview.filter((row) => existingKeys.has(`${row.amount}\u0000${row.description}`))
+
+  let rowsToImport = preview
+  if (duplicateRows.length > 0) {
+    const includeDuplicates = confirm(`Found ${duplicateRows.length} duplicate transaction(s). Import them anyway?`)
+    if (!includeDuplicates) {
+      rowsToImport = preview.filter((row) => !existingKeys.has(`${row.amount}\u0000${row.description}`))
+    }
+  }
+
   const importedAt = Date.now()
-  void db.transactions.bulkAdd(
-    preview.map((row) => ({
+  await db.transactions.bulkAdd(
+    rowsToImport.map((row) => ({
       description: row.description,
       amount: row.amount as number,
       categoryId: null,
@@ -31,8 +44,8 @@ const AddTransactions = () => {
 
   const preview = parseCsv(source, { delimiter: separator, descriptionColumn, amountColumn })
 
-  const handleImport = () => {
-    if (importRows(preview)) {
+  const handleImport = async () => {
+    if (await importRows(preview)) {
       setSource('')
     }
   }

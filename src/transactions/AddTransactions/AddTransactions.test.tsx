@@ -11,9 +11,11 @@ const pasteCsv = (value: string) => {
 
 describe('AddTransactions', () => {
   beforeEach(async () => {
+    vi.restoreAllMocks()
     await db.transactions.clear()
     await db.categories.clear()
     vi.spyOn(window, 'alert').mockImplementation(() => {})
+    vi.spyOn(window, 'confirm').mockImplementation(() => true)
   })
 
   it('renders a preview from pasted csv', () => {
@@ -100,5 +102,44 @@ describe('AddTransactions', () => {
 
     expect(window.alert).toHaveBeenCalled()
     expect(await db.transactions.count()).toBe(0)
+  })
+
+  it('imports duplicates when the user accepts', async () => {
+    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, importedAt: 0 })
+    pasteCsv('lunch;25')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }))
+
+    await waitFor(() => expect(window.confirm).toHaveBeenCalled())
+    await waitFor(async () => {
+      expect(await db.transactions.count()).toBe(2)
+    })
+  })
+
+  it('skips duplicates when the user declines, importing the rest', async () => {
+    vi.mocked(window.confirm).mockReturnValue(false)
+    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, importedAt: 0 })
+    pasteCsv('lunch;25\ncoffee;10')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }))
+
+    await waitFor(() => expect(window.confirm).toHaveBeenCalled())
+    await waitFor(async () => {
+      const transactions = await db.transactions.toArray()
+      expect(transactions).toHaveLength(2)
+      expect(transactions.filter((t) => t.description === 'coffee')).toHaveLength(1)
+      expect(transactions.filter((t) => t.description === 'lunch')).toHaveLength(1)
+    })
+  })
+
+  it('does not prompt when there are no duplicates', async () => {
+    pasteCsv('coffee;10')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }))
+
+    await waitFor(async () => {
+      expect(await db.transactions.count()).toBe(1)
+    })
+    expect(window.confirm).not.toHaveBeenCalled()
   })
 })
