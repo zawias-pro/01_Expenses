@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { parseCsv } from './parseCsv.ts'
+import { presets } from './presets.ts'
 import styles from './AddTransactions.module.css'
 
 const AddTransactions = () => {
@@ -47,6 +48,18 @@ const AddTransactions = () => {
               onChange={(event) => setAmountColumn(Number(event.target.value))}
             />
           </label>
+          <div className={styles.presets}>
+            <span>Presets</span>
+            {presets.map((preset) => (
+              <button
+                key={preset.name}
+                type="button"
+                onClick={() => setSource(preset.source)}
+              >
+                Fill with {preset.name}
+              </button>
+            ))}
+          </div>
         </div>
       </section>
       <section className={styles.bottom}>

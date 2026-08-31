@@ -37,4 +37,14 @@ describe('AddTransactions', () => {
 
     expect(screen.getByText('No rows')).toBeInTheDocument()
   })
+
+  it('fills the textarea from a preset', () => {
+    render(<AddTransactions />)
+
+    fireEvent.click(screen.getByText('Fill with Example 1'))
+
+    const textarea = screen.getByPlaceholderText('Paste CSV here') as HTMLTextAreaElement
+    expect(textarea.value).toContain('TEST-0001;10')
+    expect(screen.getAllByRole('row')).toHaveLength(11)
+  })
 })
