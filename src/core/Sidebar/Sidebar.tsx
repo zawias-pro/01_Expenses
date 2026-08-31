@@ -6,6 +6,7 @@ import styles from './Sidebar.module.css'
 const items: { view: View; label: string }[] = [
   { view: 'table', label: 'Table' },
   { view: 'add', label: 'Add transactions' },
+  { view: 'imports', label: 'Imports' },
   { view: 'accounts', label: 'Accounts' },
 ]
 

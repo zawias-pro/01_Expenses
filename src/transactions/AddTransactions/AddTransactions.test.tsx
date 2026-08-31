@@ -220,4 +220,28 @@ describe('AddTransactions', () => {
       expect(transactions[0].importName).toBe('january salaries')
     })
   })
+
+  it('rejects a duplicate import name case-insensitively', async () => {
+    await db.transactions.add({ id: 1, amount: 5, description: 'old', categoryId: null, accountId: null, importName: 'January', importedAt: 0 })
+    pasteCsv('lunch;25')
+
+    fireEvent.change(screen.getByLabelText('Import name'), { target: { value: 'january' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }))
+
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByText(/already exists/)).toBeInTheDocument()
+    expect(await db.transactions.count()).toBe(1)
+  })
+
+  it('allows the same import name when it differs only by case from an unnamed import', async () => {
+    pasteCsv('lunch;25')
+
+    fireEvent.change(screen.getByLabelText('Import name'), { target: { value: 'November' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }))
+
+    await waitFor(async () => {
+      expect(await db.transactions.count()).toBe(1)
+    })
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
 })

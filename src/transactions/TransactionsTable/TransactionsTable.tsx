@@ -11,6 +11,7 @@ import {
 import { sortFn_alphanumeric, sortFn_basic, sortFn_datetime, sortFn_text } from '@tanstack/table-core'
 import type { ColumnDef, SortingState } from '@tanstack/table-core'
 import { useVirtualizer } from '@tanstack/react-virtual'
+import { useAppStore } from '../../appStore.ts'
 import { FilterButton } from '../../components/FilterButton/FilterButton.tsx'
 import { Modal } from '../../components/Modal/Modal.tsx'
 import { MultiSelectFilterForm } from '../../components/MultiSelectFilterForm/MultiSelectFilterForm.tsx'
@@ -21,6 +22,7 @@ import type { Transaction } from '../Transaction.ts'
 import { AmountFilterForm, type AmountFilter } from './AmountFilterForm.tsx'
 import { DescriptionFilterForm } from './DescriptionFilterForm.tsx'
 import { descriptionMatches } from './descriptionMatches.ts'
+import { ImportedAtFilterForm, type ImportedAtFilter } from './ImportedAtFilterForm.tsx'
 import styles from './TransactionsTable.module.css'
 
 type TableData = {
@@ -38,12 +40,12 @@ type ViewRow = {
   account: string
   accountId: number | null
   importedAt: string
+  importedAtMs: number
   importName: string
+  importNameRaw: string | null
 }
 
 const defaultData: TableData = { transactions: [], categories: [], accounts: [] }
-
-const emptyAmountFilter: AmountFilter = { min: '', max: '' }
 
 const amountFilterActive = (filter: AmountFilter) => filter.min !== '' || filter.max !== ''
 
@@ -51,6 +53,17 @@ const applyAmountFilter = (rows: ViewRow[], filter: AmountFilter) => {
   const min = filter.min === '' ? Number.NEGATIVE_INFINITY : Number(filter.min)
   const max = filter.max === '' ? Number.POSITIVE_INFINITY : Number(filter.max)
   return rows.filter((row) => row.amount >= min && row.amount <= max)
+}
+
+const importedAtFilterActive = (filter: ImportedAtFilter) => filter.from !== '' || filter.to !== ''
+
+const datetimeLocalToMs = (value: string) => new Date(value).getTime()
+
+const applyImportedAtFilter = (rows: ViewRow[], filter: ImportedAtFilter) => {
+  const from = filter.from === '' ? Number.NEGATIVE_INFINITY : datetimeLocalToMs(filter.from)
+  const to = filter.to === '' ? Number.POSITIVE_INFINITY : datetimeLocalToMs(filter.to)
+  const effectiveTo = filter.from !== '' && filter.to !== '' && filter.from === filter.to ? to + 59_999 : to
+  return rows.filter((row) => row.importedAtMs >= from && row.importedAtMs <= effectiveTo)
 }
 
 const keyForReference = (id: number | null) => (id === null ? 'none' : String(id))
@@ -122,14 +135,25 @@ const TransactionsTable = () => {
 
   const [rowSelection, setRowSelection] = useState({})
   const [sorting, setSorting] = useState<SortingState>([])
-  const [amountFilter, setAmountFilter] = useState<AmountFilter>(emptyAmountFilter)
+  const amountFilter = useAppStore((state) => state.amountFilter)
+  const categoryFilter = useAppStore((state) => state.categoryFilter)
+  const accountFilter = useAppStore((state) => state.accountFilter)
+  const descriptionFilter = useAppStore((state) => state.descriptionFilter)
+  const importedAtFilter = useAppStore((state) => state.importedAtFilter)
+  const importNameFilter = useAppStore((state) => state.importNameFilter)
+  const setAmountFilter = useAppStore((state) => state.setAmountFilter)
+  const setCategoryFilter = useAppStore((state) => state.setCategoryFilter)
+  const setAccountFilter = useAppStore((state) => state.setAccountFilter)
+  const setDescriptionFilter = useAppStore((state) => state.setDescriptionFilter)
+  const setImportedAtFilter = useAppStore((state) => state.setImportedAtFilter)
+  const setImportNameFilter = useAppStore((state) => state.setImportNameFilter)
+
   const [isAmountFilterOpen, setIsAmountFilterOpen] = useState(false)
-  const [categoryFilter, setCategoryFilter] = useState<Set<string>>(new Set())
   const [isCategoryFilterOpen, setIsCategoryFilterOpen] = useState(false)
-  const [accountFilter, setAccountFilter] = useState<Set<string>>(new Set())
   const [isAccountFilterOpen, setIsAccountFilterOpen] = useState(false)
-  const [descriptionFilter, setDescriptionFilter] = useState('')
   const [isDescriptionFilterOpen, setIsDescriptionFilterOpen] = useState(false)
+  const [isImportedAtFilterOpen, setIsImportedAtFilterOpen] = useState(false)
+  const [isImportNameFilterOpen, setIsImportNameFilterOpen] = useState(false)
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -165,15 +189,19 @@ const TransactionsTable = () => {
       account: accountName(transaction.accountId),
       accountId: transaction.accountId,
       importedAt: new Date(transaction.importedAt).toLocaleString(),
+      importedAtMs: transaction.importedAt,
       importName: transaction.importName ?? '-',
+      importNameRaw: transaction.importName,
     }))
 
     let filtered = applyAmountFilter(viewRows, amountFilter)
     filtered = applyDescriptionFilter(filtered, descriptionFilter)
+    filtered = applyImportedAtFilter(filtered, importedAtFilter)
     filtered = applyReferenceFilter(filtered, categoryFilter, (row) => keyForReference(row.categoryId))
     filtered = applyReferenceFilter(filtered, accountFilter, (row) => keyForReference(row.accountId))
+    filtered = applyReferenceFilter(filtered, importNameFilter, (row) => row.importNameRaw ?? 'none')
     return filtered
-  }, [data, amountFilter, descriptionFilter, categoryFilter, accountFilter])
+  }, [data, amountFilter, descriptionFilter, importedAtFilter, categoryFilter, accountFilter, importNameFilter])
 
   const table = useTable({
     features,
@@ -213,6 +241,19 @@ const TransactionsTable = () => {
     ],
     [data],
   )
+
+  const importNameOptions = useMemo(() => {
+    const names = new Set<string>()
+    for (const transaction of data.transactions) {
+      if (transaction.importName !== null) {
+        names.add(transaction.importName)
+      }
+    }
+    return [
+      ...[...names].map((name) => ({ value: name, label: name })),
+      { value: 'none', label: 'Unnamed import' },
+    ]
+  }, [data])
 
   return (
     <div ref={scrollRef} className={styles.scroll}>
@@ -268,6 +309,22 @@ const TransactionsTable = () => {
                             label="Filter"
                             title="Filter by account"
                             onClick={() => setIsAccountFilterOpen(true)}
+                          />
+                        ) : null}
+                        {header.column.id === 'importedAt' ? (
+                          <FilterButton
+                            active={importedAtFilterActive(importedAtFilter)}
+                            label="Filter"
+                            title="Filter by imported at"
+                            onClick={() => setIsImportedAtFilterOpen(true)}
+                          />
+                        ) : null}
+                        {header.column.id === 'importName' ? (
+                          <FilterButton
+                            active={importNameFilter.size > 0}
+                            label="Filter"
+                            title="Filter by import name"
+                            onClick={() => setIsImportNameFilterOpen(true)}
                           />
                         ) : null}
                       </div>
@@ -342,6 +399,25 @@ const TransactionsTable = () => {
             selection={accountFilter}
             onApply={setAccountFilter}
             onClose={() => setIsAccountFilterOpen(false)}
+          />
+        </Modal>
+      ) : null}
+      {isImportedAtFilterOpen ? (
+        <Modal title="Filter by imported at" onClose={() => setIsImportedAtFilterOpen(false)}>
+          <ImportedAtFilterForm
+            filter={importedAtFilter}
+            onApply={setImportedAtFilter}
+            onClose={() => setIsImportedAtFilterOpen(false)}
+          />
+        </Modal>
+      ) : null}
+      {isImportNameFilterOpen ? (
+        <Modal title="Filter by import name" onClose={() => setIsImportNameFilterOpen(false)}>
+          <MultiSelectFilterForm
+            options={importNameOptions}
+            selection={importNameFilter}
+            onApply={setImportNameFilter}
+            onClose={() => setIsImportNameFilterOpen(false)}
           />
         </Modal>
       ) : null}

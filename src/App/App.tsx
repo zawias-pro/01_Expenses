@@ -3,6 +3,7 @@ import { TopBar } from '../core/TopBar/TopBar.tsx'
 import { Sidebar } from '../core/Sidebar/Sidebar.tsx'
 import { TransactionsTable } from '../transactions/TransactionsTable/TransactionsTable.tsx'
 import { AddTransactions } from '../transactions/AddTransactions/AddTransactions.tsx'
+import { Imports } from '../imports/Imports/Imports.tsx'
 import { Accounts } from '../accounts/Accounts/Accounts.tsx'
 import styles from './App.module.css'
 
@@ -18,6 +19,7 @@ const App = () => {
           {view === 'table' ? <TransactionsTable /> : null}
           {view === 'add' ? <AddTransactions /> : null}
           {view === 'accounts' ? <Accounts /> : null}
+          {view === 'imports' ? <Imports /> : null}
         </main>
       </div>
     </div>

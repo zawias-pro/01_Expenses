@@ -20,6 +20,14 @@ const hasInvalidRows = (preview: ParsedRow[]) => {
   return false
 }
 
+const importNameExists = async (importName: string) => {
+  const normalized = importName.trim().toLowerCase()
+  const existing = await db.transactions.toArray()
+  return existing.some(
+    (transaction) => transaction.importName !== null && transaction.importName.trim().toLowerCase() === normalized,
+  )
+}
+
 const importRows = async (rows: ParsedRow[], accountId: number | null, importName: string | null) => {
   const importedAt = Date.now()
   await db.transactions.bulkAdd(
@@ -42,12 +50,18 @@ const AddTransactions = () => {
   const [accountId, setAccountId] = useState<number | null>(null)
   const [importName, setImportName] = useState('')
   const [importDecision, setImportDecision] = useState<{ rows: ParsedRow[]; duplicates: ParsedRow[] } | null>(null)
+  const [nameError, setNameError] = useState('')
 
   const preview = parseCsv(source, { delimiter: separator, descriptionColumn, amountColumn })
   const accounts = useLiveQuery(() => db.accounts.toArray(), [], [])
 
   const handleImport = async () => {
     if (hasInvalidRows(preview)) {
+      return
+    }
+
+    if (importName.trim() !== '' && (await importNameExists(importName))) {
+      setNameError(`Import name "${importName.trim()}" already exists`)
       return
     }
 
@@ -221,6 +235,11 @@ const AddTransactions = () => {
               Import all
             </button>
           </div>
+        </Modal>
+      ) : null}
+      {nameError ? (
+        <Modal title="Cannot import" onClose={() => setNameError('')}>
+          <p>{nameError}</p>
         </Modal>
       ) : null}
     </div>

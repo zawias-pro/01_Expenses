@@ -1,11 +1,24 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useAppStore } from '../../appStore.ts'
 import { db } from '../../db.ts'
 import { TransactionsTable } from './TransactionsTable.tsx'
 
+const resetFilters = () => {
+  useAppStore.setState({
+    amountFilter: { min: '', max: '' },
+    categoryFilter: new Set(),
+    accountFilter: new Set(),
+    descriptionFilter: '',
+    importedAtFilter: { from: '', to: '' },
+    importNameFilter: new Set(),
+  })
+}
+
 describe('TransactionsTable', () => {
   beforeEach(async () => {
+    resetFilters()
     await db.transactions.clear()
     await db.categories.clear()
     await db.accounts.clear()
@@ -98,6 +111,36 @@ describe('TransactionsTable', () => {
 
     expect(await screen.findByText('TEST-0002')).toBeInTheDocument()
     expect(screen.queryByText('Coffee')).not.toBeInTheDocument()
+  })
+
+  it('filters by import name including unnamed', async () => {
+    const user = userEvent.setup()
+    await db.transactions.add({ id: 1, amount: 10, description: 'jan', categoryId: null, accountId: null, importName: 'January', importedAt: 1000 })
+    await db.transactions.add({ id: 2, amount: 20, description: 'unnamed', categoryId: null, accountId: null, importName: null, importedAt: 2000 })
+
+    render(<TransactionsTable />)
+    expect(await screen.findByText('jan')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Filter by import name' }))
+    await screen.findByRole('dialog')
+    await user.click(screen.getByLabelText('Unnamed import'))
+    await user.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(await screen.findByText('unnamed')).toBeInTheDocument()
+    expect(screen.queryByText('jan')).not.toBeInTheDocument()
+  })
+
+  it('filters by imported at via the store (focus)', async () => {
+    const importedAt = new Date(2026, 0, 5, 10, 30, 12, 500).getTime()
+    const otherImportedAt = new Date(2026, 1, 5, 10, 30).getTime()
+    await db.transactions.add({ id: 1, amount: 10, description: 'sel', categoryId: null, accountId: null, importName: 'January', importedAt })
+    await db.transactions.add({ id: 2, amount: 20, description: 'oth', categoryId: null, accountId: null, importName: 'February', importedAt: otherImportedAt })
+
+    useAppStore.getState().focusImport(importedAt)
+    render(<TransactionsTable />)
+
+    expect(await screen.findByText('sel')).toBeInTheDocument()
+    expect(screen.queryByText('oth')).not.toBeInTheDocument()
   })
 
   it('shows an empty state when there are no transactions', async () => {
