@@ -63,30 +63,35 @@ const AddTransactions = () => {
         </div>
       </section>
       <section className={styles.bottom}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Description</th>
-              <th>Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {preview.length === 0 ? (
+        <div className={styles.preview}>
+          <table className={styles.table}>
+            <thead>
               <tr>
-                <td className={styles.empty} colSpan={2}>
-                  No rows
-                </td>
+                <th>Description</th>
+                <th>Amount</th>
               </tr>
-            ) : (
-              preview.map((row, index) => (
-                <tr key={index}>
-                  <td>{row.description}</td>
-                  <td>{row.amount}</td>
+            </thead>
+            <tbody>
+              {preview.length === 0 ? (
+                <tr>
+                  <td className={styles.empty} colSpan={2}>
+                    No rows
+                  </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                preview.map((row, index) => (
+                  <tr key={index}>
+                    <td>{row.description}</td>
+                    <td>{row.amount}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+        <button type="button" className={styles.importButton}>
+          Import
+        </button>
       </section>
     </div>
   )

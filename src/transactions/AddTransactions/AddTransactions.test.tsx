@@ -47,4 +47,12 @@ describe('AddTransactions', () => {
     expect(textarea.value).toContain('TEST-0001;10')
     expect(screen.getAllByRole('row')).toHaveLength(11)
   })
+
+  it('renders the Import button below the preview', () => {
+    render(<AddTransactions />)
+
+    fireEvent.click(screen.getByText('Fill with Example 1'))
+
+    expect(screen.getByRole('button', { name: 'Import' })).toBeInTheDocument()
+  })
 })

@@ -9,7 +9,7 @@ const App = () => {
   const view = useView()
 
   return (
-    <div>
+    <div className={styles.app}>
       <TopBar />
       <div className={styles.appBody}>
         <Sidebar />
