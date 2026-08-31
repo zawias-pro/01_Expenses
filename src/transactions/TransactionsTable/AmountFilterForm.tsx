@@ -20,8 +20,8 @@ const AmountFilterForm = ({ filter, onApply, onClose }: {
   }
 
   const clear = () => {
-    onApply({ min: '', max: '' })
-    onClose()
+    setDraftMin('')
+    setDraftMax('')
   }
 
   return (

@@ -18,16 +18,18 @@ describe('AmountFilterForm', () => {
     expect(onClose).toHaveBeenCalled()
   })
 
-  it('clears the filter', async () => {
+  it('clears the draft without applying', async () => {
     const user = userEvent.setup()
     const onApply = vi.fn()
     const onClose = vi.fn()
     render(<AmountFilterForm filter={{ min: '10', max: '50' }} onApply={onApply} onClose={onClose} />)
 
     await user.click(screen.getByRole('button', { name: 'Clear' }))
+    await user.click(screen.getByRole('button', { name: 'Apply' }))
 
+    expect(onApply).toHaveBeenCalledTimes(1)
     expect(onApply).toHaveBeenCalledWith({ min: '', max: '' })
-    expect(onClose).toHaveBeenCalled()
+    expect(onClose).toHaveBeenCalledTimes(1)
   })
 
   it('trims whitespace from values', async () => {

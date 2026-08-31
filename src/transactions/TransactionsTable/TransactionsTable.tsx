@@ -13,6 +13,7 @@ import type { ColumnDef, SortingState } from '@tanstack/table-core'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { FilterButton } from '../../components/FilterButton/FilterButton.tsx'
 import { Modal } from '../../components/Modal/Modal.tsx'
+import { MultiSelectFilterForm } from '../../components/MultiSelectFilterForm/MultiSelectFilterForm.tsx'
 import { db } from '../../db.ts'
 import type { Account } from '../../accounts/Account.ts'
 import type { Category } from '../../categories/Category.ts'
@@ -31,7 +32,9 @@ type ViewRow = {
   amount: number
   description: string
   category: string
+  categoryId: number | null
   account: string
+  accountId: number | null
   importedAt: string
 }
 
@@ -45,6 +48,15 @@ const applyAmountFilter = (rows: ViewRow[], filter: AmountFilter) => {
   const min = filter.min === '' ? Number.NEGATIVE_INFINITY : Number(filter.min)
   const max = filter.max === '' ? Number.POSITIVE_INFINITY : Number(filter.max)
   return rows.filter((row) => row.amount >= min && row.amount <= max)
+}
+
+const keyForReference = (id: number | null) => (id === null ? 'none' : String(id))
+
+const applyReferenceFilter = (rows: ViewRow[], filter: Set<string>, key: (row: ViewRow) => string) => {
+  if (filter.size === 0) {
+    return rows
+  }
+  return rows.filter((row) => filter.has(key(row)))
 }
 
 const features = tableFeatures({
@@ -101,6 +113,10 @@ const TransactionsTable = () => {
   const [sorting, setSorting] = useState<SortingState>([])
   const [amountFilter, setAmountFilter] = useState<AmountFilter>(emptyAmountFilter)
   const [isAmountFilterOpen, setIsAmountFilterOpen] = useState(false)
+  const [categoryFilter, setCategoryFilter] = useState<Set<string>>(new Set())
+  const [isCategoryFilterOpen, setIsCategoryFilterOpen] = useState(false)
+  const [accountFilter, setAccountFilter] = useState<Set<string>>(new Set())
+  const [isAccountFilterOpen, setIsAccountFilterOpen] = useState(false)
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -132,12 +148,20 @@ const TransactionsTable = () => {
       amount: transaction.amount,
       description: transaction.description,
       category: categoryName(transaction.categoryId),
+      categoryId: transaction.categoryId,
       account: accountName(transaction.accountId),
+      accountId: transaction.accountId,
       importedAt: new Date(transaction.importedAt).toLocaleString(),
     }))
 
-    return applyAmountFilter(viewRows, amountFilter)
-  }, [data, amountFilter])
+    return applyReferenceFilter(
+      applyReferenceFilter(applyAmountFilter(viewRows, amountFilter), categoryFilter, (row) =>
+        keyForReference(row.categoryId),
+      ),
+      accountFilter,
+      (row) => keyForReference(row.accountId),
+    )
+  }, [data, amountFilter, categoryFilter, accountFilter])
 
   const table = useTable({
     features,
@@ -161,6 +185,22 @@ const TransactionsTable = () => {
   })
 
   const virtualRows = rowVirtualizer.getVirtualItems()
+
+  const categoryOptions = useMemo(
+    () => [
+      ...data.categories.map((category) => ({ value: String(category.id), label: category.name })),
+      { value: 'none', label: 'No category' },
+    ],
+    [data],
+  )
+
+  const accountOptions = useMemo(
+    () => [
+      ...data.accounts.map((account) => ({ value: String(account.id), label: account.name })),
+      { value: 'none', label: 'No account' },
+    ],
+    [data],
+  )
 
   return (
     <div ref={scrollRef} className={styles.scroll}>
@@ -192,6 +232,22 @@ const TransactionsTable = () => {
                             label="Filter"
                             title="Filter by amount"
                             onClick={() => setIsAmountFilterOpen(true)}
+                          />
+                        ) : null}
+                        {header.column.id === 'category' ? (
+                          <FilterButton
+                            active={categoryFilter.size > 0}
+                            label="Filter"
+                            title="Filter by category"
+                            onClick={() => setIsCategoryFilterOpen(true)}
+                          />
+                        ) : null}
+                        {header.column.id === 'account' ? (
+                          <FilterButton
+                            active={accountFilter.size > 0}
+                            label="Filter"
+                            title="Filter by account"
+                            onClick={() => setIsAccountFilterOpen(true)}
                           />
                         ) : null}
                       </div>
@@ -237,6 +293,26 @@ const TransactionsTable = () => {
             filter={amountFilter}
             onApply={setAmountFilter}
             onClose={() => setIsAmountFilterOpen(false)}
+          />
+        </Modal>
+      ) : null}
+      {isCategoryFilterOpen ? (
+        <Modal title="Filter by category" onClose={() => setIsCategoryFilterOpen(false)}>
+          <MultiSelectFilterForm
+            options={categoryOptions}
+            selection={categoryFilter}
+            onApply={setCategoryFilter}
+            onClose={() => setIsCategoryFilterOpen(false)}
+          />
+        </Modal>
+      ) : null}
+      {isAccountFilterOpen ? (
+        <Modal title="Filter by account" onClose={() => setIsAccountFilterOpen(false)}>
+          <MultiSelectFilterForm
+            options={accountOptions}
+            selection={accountFilter}
+            onApply={setAccountFilter}
+            onClose={() => setIsAccountFilterOpen(false)}
           />
         </Modal>
       ) : null}

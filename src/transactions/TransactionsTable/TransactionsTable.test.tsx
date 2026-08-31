@@ -43,6 +43,45 @@ describe('TransactionsTable', () => {
     expect(screen.queryByText('low')).not.toBeInTheDocument()
   })
 
+  it('filters by category via checkboxes', async () => {
+    const user = userEvent.setup()
+    await db.categories.add({ id: 1, name: 'food' })
+    await db.categories.add({ id: 2, name: 'transport' })
+    await db.transactions.add({ id: 1, amount: 10, description: 'lunch', categoryId: 1, accountId: null, importedAt: 0 })
+    await db.transactions.add({ id: 2, amount: 20, description: 'bus', categoryId: 2, accountId: null, importedAt: 0 })
+    await db.transactions.add({ id: 3, amount: 30, description: 'none', categoryId: null, accountId: null, importedAt: 0 })
+
+    render(<TransactionsTable />)
+    expect(await screen.findByText('lunch')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Filter by category' }))
+    await screen.findByRole('dialog')
+    await user.click(screen.getByLabelText('transport'))
+    await user.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(await screen.findByText('bus')).toBeInTheDocument()
+    expect(screen.queryByText('lunch')).not.toBeInTheDocument()
+    expect(screen.queryByText('none')).not.toBeInTheDocument()
+  })
+
+  it('filters by account including the no-account option', async () => {
+    const user = userEvent.setup()
+    await db.accounts.add({ id: 1, name: 'Revolut' })
+    await db.transactions.add({ id: 1, amount: 10, description: 'with', categoryId: null, accountId: 1, importedAt: 0 })
+    await db.transactions.add({ id: 2, amount: 20, description: 'without', categoryId: null, accountId: null, importedAt: 0 })
+
+    render(<TransactionsTable />)
+    expect(await screen.findByText('with')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Filter by account' }))
+    await screen.findByRole('dialog')
+    await user.click(screen.getByLabelText('No account'))
+    await user.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(await screen.findByText('without')).toBeInTheDocument()
+    expect(screen.queryByText('with')).not.toBeInTheDocument()
+  })
+
   it('shows an empty state when there are no transactions', async () => {
     render(<TransactionsTable />)
 
