@@ -1,39 +1,34 @@
 import { useState } from 'react'
+import { Modal } from '../../components/Modal/Modal.tsx'
 import { db } from '../../db.ts'
 import { parseCsv, type ParsedRow } from './parseCsv.ts'
 import { presets } from './presets.ts'
 import styles from './AddTransactions.module.css'
 
-const importRows = async (preview: ParsedRow[]) => {
-  const invalid = preview.find((row) => row.error)
-  if (invalid) {
-    alert('Cannot import: some rows are invalid.')
-    return false
-  }
-
+const getDuplicateRows = async (preview: ParsedRow[]) => {
   const existing = await db.transactions.toArray()
   const existingKeys = new Set(existing.map((transaction) => `${transaction.amount}\u0000${transaction.description}`))
+  return preview.filter((row) => existingKeys.has(`${row.amount}\u0000${row.description}`))
+}
 
-  const duplicateRows = preview.filter((row) => existingKeys.has(`${row.amount}\u0000${row.description}`))
-
-  let rowsToImport = preview
-  if (duplicateRows.length > 0) {
-    const includeDuplicates = confirm(`Found ${duplicateRows.length} duplicate transaction(s). Import them anyway?`)
-    if (!includeDuplicates) {
-      rowsToImport = preview.filter((row) => !existingKeys.has(`${row.amount}\u0000${row.description}`))
-    }
+const hasInvalidRows = (preview: ParsedRow[]) => {
+  if (preview.some((row) => row.error)) {
+    alert('Cannot import: some rows are invalid.')
+    return true
   }
+  return false
+}
 
+const importRows = async (rows: ParsedRow[]) => {
   const importedAt = Date.now()
   await db.transactions.bulkAdd(
-    rowsToImport.map((row) => ({
+    rows.map((row) => ({
       description: row.description,
       amount: row.amount as number,
       categoryId: null,
       importedAt,
     })),
   )
-  return true
 }
 
 const AddTransactions = () => {
@@ -41,13 +36,43 @@ const AddTransactions = () => {
   const [separator, setSeparator] = useState(';')
   const [descriptionColumn, setDescriptionColumn] = useState(1)
   const [amountColumn, setAmountColumn] = useState(2)
+  const [importDecision, setImportDecision] = useState<{ rows: ParsedRow[]; duplicates: ParsedRow[] } | null>(null)
 
   const preview = parseCsv(source, { delimiter: separator, descriptionColumn, amountColumn })
 
   const handleImport = async () => {
-    if (await importRows(preview)) {
-      setSource('')
+    if (hasInvalidRows(preview)) {
+      return
     }
+
+    const duplicates = await getDuplicateRows(preview)
+    if (duplicates.length > 0) {
+      setImportDecision({ rows: preview, duplicates })
+      return
+    }
+
+    await importRows(preview)
+    setSource('')
+  }
+
+  const handleImportAll = async () => {
+    if (!importDecision) {
+      return
+    }
+    await importRows(importDecision.rows)
+    setImportDecision(null)
+    setSource('')
+  }
+
+  const handleSkipDuplicates = async () => {
+    if (!importDecision) {
+      return
+    }
+    const duplicateKeys = new Set(importDecision.duplicates.map((row) => `${row.amount}\u0000${row.description}`))
+    const remainingSource = importDecision.duplicates.map((row) => row.line).join('\n')
+    await importRows(importDecision.rows.filter((row) => !duplicateKeys.has(`${row.amount}\u0000${row.description}`)))
+    setImportDecision(null)
+    setSource(remainingSource)
   }
 
   return (
@@ -117,8 +142,8 @@ const AddTransactions = () => {
                     No rows
                   </td>
                 </tr>
-              ) : (
-preview.map((row, index) => (
+) : (
+                preview.map((row, index) => (
                   <tr
                     key={index}
                     className={row.error ? styles.invalidRow : undefined}
@@ -135,6 +160,35 @@ preview.map((row, index) => (
           Import
         </button>
       </section>
+      {importDecision ? (
+        <Modal title="Duplicate transactions" onClose={() => setImportDecision(null)}>
+          <p>The following {importDecision.duplicates.length} row(s) already exist:</p>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {importDecision.duplicates.map((row, index) => (
+                <tr key={index}>
+                  <td>{row.description}</td>
+                  <td>{row.amount}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className={styles.modalActions}>
+            <button type="button" onClick={handleSkipDuplicates}>
+              Skip duplicates
+            </button>
+            <button type="button" onClick={handleImportAll}>
+              Import all
+            </button>
+          </div>
+        </Modal>
+      ) : null}
     </div>
   )
 }

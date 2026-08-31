@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { db } from '../../db.ts'
 import { AddTransactions } from './AddTransactions.tsx'
 
@@ -15,7 +15,6 @@ describe('AddTransactions', () => {
     await db.transactions.clear()
     await db.categories.clear()
     vi.spyOn(window, 'alert').mockImplementation(() => {})
-    vi.spyOn(window, 'confirm').mockImplementation(() => true)
   })
 
   it('renders a preview from pasted csv', () => {
@@ -104,35 +103,58 @@ describe('AddTransactions', () => {
     expect(await db.transactions.count()).toBe(0)
   })
 
-  it('imports duplicates when the user accepts', async () => {
+  it('shows a modal listing duplicates and imports all when chosen', async () => {
     await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, importedAt: 0 })
     pasteCsv('lunch;25')
 
     fireEvent.click(screen.getByRole('button', { name: 'Import' }))
 
-    await waitFor(() => expect(window.confirm).toHaveBeenCalled())
+    const dialog = await screen.findByRole('dialog')
+    expect(dialog).toBeInTheDocument()
+    expect(within(dialog).getByText('lunch')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Import all' }))
+
     await waitFor(async () => {
       expect(await db.transactions.count()).toBe(2)
     })
   })
 
-  it('skips duplicates when the user declines, importing the rest', async () => {
-    vi.mocked(window.confirm).mockReturnValue(false)
+  it('skips duplicates and imports the rest when chosen', async () => {
     await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, importedAt: 0 })
     pasteCsv('lunch;25\ncoffee;10')
 
     fireEvent.click(screen.getByRole('button', { name: 'Import' }))
 
-    await waitFor(() => expect(window.confirm).toHaveBeenCalled())
+    await screen.findByRole('dialog')
+    fireEvent.click(screen.getByRole('button', { name: 'Skip duplicates' }))
+
     await waitFor(async () => {
       const transactions = await db.transactions.toArray()
       expect(transactions).toHaveLength(2)
       expect(transactions.filter((t) => t.description === 'coffee')).toHaveLength(1)
       expect(transactions.filter((t) => t.description === 'lunch')).toHaveLength(1)
     })
+    const textarea = screen.getByPlaceholderText('Paste CSV here') as HTMLTextAreaElement
+    expect(textarea.value).toBe('lunch;25')
+    expect((screen.getByPlaceholderText('Paste CSV here') as HTMLTextAreaElement).value).not.toContain('coffee;10')
   })
 
-  it('does not prompt when there are no duplicates', async () => {
+  it('aborts the import when the modal is closed', async () => {
+    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, importedAt: 0 })
+    pasteCsv('lunch;25')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }))
+
+    await screen.findByRole('dialog')
+    fireEvent.click(screen.getByLabelText('Close'))
+
+    await waitFor(async () => {
+      expect(await db.transactions.count()).toBe(1)
+    })
+  })
+
+  it('does not show the modal when there are no duplicates', async () => {
     pasteCsv('coffee;10')
 
     fireEvent.click(screen.getByRole('button', { name: 'Import' }))
@@ -140,6 +162,6 @@ describe('AddTransactions', () => {
     await waitFor(async () => {
       expect(await db.transactions.count()).toBe(1)
     })
-    expect(window.confirm).not.toHaveBeenCalled()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 })

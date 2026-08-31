@@ -10,6 +10,7 @@ type ParsedRow = {
   description: string
   amountText: string
   amount: number | null
+  line: string
   error?: string
 }
 
@@ -47,9 +48,10 @@ const parseCsv = (source: string, { delimiter, descriptionColumn, amountColumn }
 
   const descriptionIndex = descriptionColumn - 1
   const amountIndex = amountColumn - 1
+  const lines = trimmed.split('\n').filter((line) => line.trim() !== '')
 
   return rows
-    .map((row) => {
+    .map((row, index) => {
       const description = (row[descriptionIndex] ?? '').trim()
       const amountText = (row[amountIndex] ?? '').trim()
 
@@ -68,7 +70,7 @@ const parseCsv = (source: string, { delimiter, descriptionColumn, amountColumn }
         error = 'Amount is not a number'
       }
 
-      return { description, amountText, amount: Number.isFinite(amount) ? amount : null, error }
+      return { description, amountText, amount: Number.isFinite(amount) ? amount : null, line: lines[index] ?? '', error }
     })
     .filter((row) => row !== null)
 }
