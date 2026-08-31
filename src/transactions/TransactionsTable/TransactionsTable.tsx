@@ -19,6 +19,8 @@ import type { Account } from '../../accounts/Account.ts'
 import type { Category } from '../../categories/Category.ts'
 import type { Transaction } from '../Transaction.ts'
 import { AmountFilterForm, type AmountFilter } from './AmountFilterForm.tsx'
+import { DescriptionFilterForm } from './DescriptionFilterForm.tsx'
+import { descriptionMatches } from './descriptionMatches.ts'
 import styles from './TransactionsTable.module.css'
 
 type TableData = {
@@ -57,6 +59,13 @@ const applyReferenceFilter = (rows: ViewRow[], filter: Set<string>, key: (row: V
     return rows
   }
   return rows.filter((row) => filter.has(key(row)))
+}
+
+const applyDescriptionFilter = (rows: ViewRow[], pattern: string) => {
+  if (pattern === '') {
+    return rows
+  }
+  return rows.filter((row) => descriptionMatches(row.description, pattern))
 }
 
 const features = tableFeatures({
@@ -117,6 +126,8 @@ const TransactionsTable = () => {
   const [isCategoryFilterOpen, setIsCategoryFilterOpen] = useState(false)
   const [accountFilter, setAccountFilter] = useState<Set<string>>(new Set())
   const [isAccountFilterOpen, setIsAccountFilterOpen] = useState(false)
+  const [descriptionFilter, setDescriptionFilter] = useState('')
+  const [isDescriptionFilterOpen, setIsDescriptionFilterOpen] = useState(false)
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -154,14 +165,12 @@ const TransactionsTable = () => {
       importedAt: new Date(transaction.importedAt).toLocaleString(),
     }))
 
-    return applyReferenceFilter(
-      applyReferenceFilter(applyAmountFilter(viewRows, amountFilter), categoryFilter, (row) =>
-        keyForReference(row.categoryId),
-      ),
-      accountFilter,
-      (row) => keyForReference(row.accountId),
-    )
-  }, [data, amountFilter, categoryFilter, accountFilter])
+    let filtered = applyAmountFilter(viewRows, amountFilter)
+    filtered = applyDescriptionFilter(filtered, descriptionFilter)
+    filtered = applyReferenceFilter(filtered, categoryFilter, (row) => keyForReference(row.categoryId))
+    filtered = applyReferenceFilter(filtered, accountFilter, (row) => keyForReference(row.accountId))
+    return filtered
+  }, [data, amountFilter, descriptionFilter, categoryFilter, accountFilter])
 
   const table = useTable({
     features,
@@ -226,6 +235,14 @@ const TransactionsTable = () => {
                             desc: ' ▼',
                           }[header.column.getIsSorted() as string] ?? ''}
                         </button>
+                        {header.column.id === 'description' ? (
+                          <FilterButton
+                            active={descriptionFilter !== ''}
+                            label="Filter"
+                            title="Filter by description"
+                            onClick={() => setIsDescriptionFilterOpen(true)}
+                          />
+                        ) : null}
                         {header.column.id === 'amount' ? (
                           <FilterButton
                             active={amountFilterActive(amountFilter)}
@@ -287,6 +304,15 @@ const TransactionsTable = () => {
           </table>
         )}
       </div>
+      {isDescriptionFilterOpen ? (
+        <Modal title="Filter by description" onClose={() => setIsDescriptionFilterOpen(false)}>
+          <DescriptionFilterForm
+            value={descriptionFilter}
+            onApply={setDescriptionFilter}
+            onClose={() => setIsDescriptionFilterOpen(false)}
+          />
+        </Modal>
+      ) : null}
       {isAmountFilterOpen ? (
         <Modal title="Filter by amount" onClose={() => setIsAmountFilterOpen(false)}>
           <AmountFilterForm

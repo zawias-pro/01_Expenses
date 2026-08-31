@@ -82,6 +82,24 @@ describe('TransactionsTable', () => {
     expect(screen.queryByText('with')).not.toBeInTheDocument()
   })
 
+  it('filters by description with a keyword and with a glob', async () => {
+    const user = userEvent.setup()
+    await db.transactions.add({ id: 1, amount: 10, description: 'TEST-0001', categoryId: null, accountId: null, importedAt: 0 })
+    await db.transactions.add({ id: 2, amount: 20, description: 'TEST-0002', categoryId: null, accountId: null, importedAt: 0 })
+    await db.transactions.add({ id: 3, amount: 30, description: 'Coffee', categoryId: null, accountId: null, importedAt: 0 })
+
+    render(<TransactionsTable />)
+    expect(await screen.findByText('TEST-0001')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Filter by description' }))
+    await screen.findByRole('dialog')
+    await user.type(screen.getByPlaceholderText('e.g. TEST-*'), 'TEST-*')
+    await user.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(await screen.findByText('TEST-0002')).toBeInTheDocument()
+    expect(screen.queryByText('Coffee')).not.toBeInTheDocument()
+  })
+
   it('shows an empty state when there are no transactions', async () => {
     render(<TransactionsTable />)
 
