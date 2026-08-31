@@ -1,3 +1,3 @@
-type View = 'table' | 'add'
+type View = 'table' | 'add' | 'accounts'
 
 export type { View }

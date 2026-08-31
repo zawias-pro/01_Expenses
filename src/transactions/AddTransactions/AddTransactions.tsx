@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLiveQuery } from 'dexie-react-hooks'
 import { Modal } from '../../components/Modal/Modal.tsx'
 import { db } from '../../db.ts'
 import { parseCsv, type ParsedRow } from './parseCsv.ts'
@@ -19,13 +20,14 @@ const hasInvalidRows = (preview: ParsedRow[]) => {
   return false
 }
 
-const importRows = async (rows: ParsedRow[]) => {
+const importRows = async (rows: ParsedRow[], accountId: number | null) => {
   const importedAt = Date.now()
   await db.transactions.bulkAdd(
     rows.map((row) => ({
       description: row.description,
       amount: row.amount as number,
       categoryId: null,
+      accountId,
       importedAt,
     })),
   )
@@ -36,9 +38,11 @@ const AddTransactions = () => {
   const [separator, setSeparator] = useState(';')
   const [descriptionColumn, setDescriptionColumn] = useState(1)
   const [amountColumn, setAmountColumn] = useState(2)
+  const [accountId, setAccountId] = useState<number | null>(null)
   const [importDecision, setImportDecision] = useState<{ rows: ParsedRow[]; duplicates: ParsedRow[] } | null>(null)
 
   const preview = parseCsv(source, { delimiter: separator, descriptionColumn, amountColumn })
+  const accounts = useLiveQuery(() => db.accounts.toArray(), [], [])
 
   const handleImport = async () => {
     if (hasInvalidRows(preview)) {
@@ -51,7 +55,7 @@ const AddTransactions = () => {
       return
     }
 
-    await importRows(preview)
+    await importRows(preview, accountId)
     setSource('')
   }
 
@@ -59,7 +63,7 @@ const AddTransactions = () => {
     if (!importDecision) {
       return
     }
-    await importRows(importDecision.rows)
+    await importRows(importDecision.rows, accountId)
     setImportDecision(null)
     setSource('')
   }
@@ -70,7 +74,10 @@ const AddTransactions = () => {
     }
     const duplicateKeys = new Set(importDecision.duplicates.map((row) => `${row.amount}\u0000${row.description}`))
     const remainingSource = importDecision.duplicates.map((row) => row.line).join('\n')
-    await importRows(importDecision.rows.filter((row) => !duplicateKeys.has(`${row.amount}\u0000${row.description}`)))
+    await importRows(
+      importDecision.rows.filter((row) => !duplicateKeys.has(`${row.amount}\u0000${row.description}`)),
+      accountId,
+    )
     setImportDecision(null)
     setSource(remainingSource)
   }
@@ -142,7 +149,7 @@ const AddTransactions = () => {
                     No rows
                   </td>
                 </tr>
-) : (
+              ) : (
                 preview.map((row, index) => (
                   <tr
                     key={index}
@@ -156,6 +163,20 @@ const AddTransactions = () => {
             </tbody>
           </table>
         </div>
+        <label className={styles.accountRow}>
+          <span>Account</span>
+          <select
+            value={accountId ?? ''}
+            onChange={(event) => setAccountId(event.target.value === '' ? null : Number(event.target.value))}
+          >
+            <option value="">No account</option>
+            {accounts.map((account) => (
+              <option key={account.id} value={account.id}>
+                {account.name}
+              </option>
+            ))}
+          </select>
+        </label>
         <button type="button" className={styles.importButton} onClick={handleImport}>
           Import
         </button>

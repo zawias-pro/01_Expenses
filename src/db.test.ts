@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
+import Dexie from 'dexie'
 import { db } from './db.ts'
+import { backfillAccountId } from './dbMigrations/backfillAccountId.ts'
 
 describe('db', () => {
   beforeEach(async () => {
@@ -15,9 +17,33 @@ describe('db', () => {
   })
 
   it('stores transactions', async () => {
-    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, importedAt: 100 })
+    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, importedAt: 100, accountId: null })
     const transactions = await db.transactions.toArray()
     expect(transactions).toHaveLength(1)
-    expect(transactions[0]).toMatchObject({ amount: 25, description: 'lunch', categoryId: null, importedAt: 100 })
+    expect(transactions[0]).toMatchObject({ amount: 25, description: 'lunch', categoryId: null, importedAt: 100, accountId: null })
+  })
+
+  it('backfills accountId null on legacy transactions during upgrade', async () => {
+    const name = `migration-test-${Date.now()}`
+    await indexedDB.deleteDatabase(name)
+
+    const legacy = new Dexie(name)
+    legacy.version(1).stores({ categories: '++id', transactions: '++id' })
+    await legacy.table('transactions').add({ id: 1, amount: 25, description: 'lunch', categoryId: null, importedAt: 100 })
+    legacy.close()
+
+    const migrated = new Dexie(name)
+    migrated.version(1).stores({ categories: '++id', transactions: '++id' })
+    migrated.version(2).stores({ accounts: '++id', categories: '++id', transactions: '++id, accountId' })
+    migrated.version(3)
+      .stores({ accounts: '++id', categories: '++id', transactions: '++id, accountId' })
+      .upgrade(backfillAccountId)
+
+    const rows = await migrated.table('transactions').toArray()
+    expect(rows).toHaveLength(1)
+    expect(rows[0]).toEqual({ id: 1, amount: 25, description: 'lunch', categoryId: null, accountId: null, importedAt: 100 })
+
+    migrated.close()
+    await indexedDB.deleteDatabase(name)
   })
 })

@@ -14,6 +14,7 @@ describe('AddTransactions', () => {
     vi.restoreAllMocks()
     await db.transactions.clear()
     await db.categories.clear()
+    await db.accounts.clear()
     vi.spyOn(window, 'alert').mockImplementation(() => {})
   })
 
@@ -70,6 +71,36 @@ describe('AddTransactions', () => {
     expect(screen.getByRole('button', { name: 'Import' })).toBeInTheDocument()
   })
 
+  it('defaults to no account and imports with null accountId', async () => {
+    pasteCsv('lunch;25')
+
+    expect(screen.getByLabelText('Account')).toHaveValue('')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }))
+
+    await waitFor(async () => {
+      const transactions = await db.transactions.toArray()
+      expect(transactions).toHaveLength(1)
+      expect(transactions[0].accountId).toBeNull()
+    })
+  })
+
+  it('imports with the selected account', async () => {
+    const accountId = await db.accounts.add({ name: 'Revolut' })
+    pasteCsv('lunch;25')
+
+    await screen.findByRole('option', { name: 'Revolut' })
+    fireEvent.change(screen.getByLabelText('Account'), { target: { value: String(accountId) } })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }))
+
+    await waitFor(async () => {
+      const transactions = await db.transactions.toArray()
+      expect(transactions).toHaveLength(1)
+      expect(transactions[0].accountId).toBe(accountId)
+    })
+  })
+
   it('imports valid rows with a shared importedAt timestamp', async () => {
     pasteCsv('lunch;25\ncoffee;10')
 
@@ -104,7 +135,7 @@ describe('AddTransactions', () => {
   })
 
   it('shows a modal listing duplicates and imports all when chosen', async () => {
-    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, importedAt: 0 })
+    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, importedAt: 0, accountId: null })
     pasteCsv('lunch;25')
 
     fireEvent.click(screen.getByRole('button', { name: 'Import' }))
@@ -121,7 +152,7 @@ describe('AddTransactions', () => {
   })
 
   it('skips duplicates and imports the rest when chosen', async () => {
-    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, importedAt: 0 })
+    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, importedAt: 0, accountId: null })
     pasteCsv('lunch;25\ncoffee;10')
 
     fireEvent.click(screen.getByRole('button', { name: 'Import' }))
@@ -141,7 +172,7 @@ describe('AddTransactions', () => {
   })
 
   it('aborts the import when the modal is closed', async () => {
-    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, importedAt: 0 })
+    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, importedAt: 0, accountId: null })
     pasteCsv('lunch;25')
 
     fireEvent.click(screen.getByRole('button', { name: 'Import' }))
