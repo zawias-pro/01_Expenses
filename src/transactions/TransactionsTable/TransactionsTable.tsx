@@ -1,7 +1,15 @@
 import { useMemo, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { createColumnHelper, rowSelectionFeature, tableFeatures, useTable } from '@tanstack/react-table'
-import type { ColumnDef } from '@tanstack/table-core'
+import {
+  createColumnHelper,
+  createSortedRowModel,
+  rowSelectionFeature,
+  rowSortingFeature,
+  tableFeatures,
+  useTable,
+} from '@tanstack/react-table'
+import { sortFn_alphanumeric, sortFn_basic, sortFn_datetime, sortFn_text } from '@tanstack/table-core'
+import type { ColumnDef, SortingState } from '@tanstack/table-core'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { db } from '../../db.ts'
 import type { Account } from '../../accounts/Account.ts'
@@ -28,6 +36,14 @@ const defaultData: TableData = { transactions: [], categories: [], accounts: [] 
 
 const features = tableFeatures({
   rowSelectionFeature,
+  rowSortingFeature,
+  sortedRowModel: createSortedRowModel(),
+  sortFns: {
+    alphanumeric: sortFn_alphanumeric,
+    basic: sortFn_basic,
+    datetime: sortFn_datetime,
+    text: sortFn_text,
+  },
 })
 const columnHelper = createColumnHelper<typeof features, ViewRow>()
 
@@ -50,12 +66,12 @@ const columns: ColumnDef<typeof features, ViewRow, any>[] = [
       />
     ),
   }),
-  columnHelper.accessor('id', { header: 'ID' }),
-  columnHelper.accessor('amount', { header: 'Amount' }),
-  columnHelper.accessor('description', { header: 'Description' }),
-  columnHelper.accessor('category', { header: 'Category' }),
-  columnHelper.accessor('account', { header: 'Account' }),
-  columnHelper.accessor('importedAt', { header: 'Imported' }),
+  columnHelper.accessor('id', { id: 'id', header: 'ID' }),
+  columnHelper.accessor('amount', { id: 'amount', header: 'Amount' }),
+  columnHelper.accessor('description', { id: 'description', header: 'Description' }),
+  columnHelper.accessor('category', { id: 'category', header: 'Category' }),
+  columnHelper.accessor('account', { id: 'account', header: 'Account' }),
+  columnHelper.accessor('importedAt', { id: 'importedAt', header: 'Imported', sortFn: 'datetime' }),
 ]
 
 const TransactionsTable = () => {
@@ -69,6 +85,7 @@ const TransactionsTable = () => {
   }, [], defaultData)
 
   const [rowSelection, setRowSelection] = useState({})
+  const [sorting, setSorting] = useState<SortingState>([])
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -111,8 +128,10 @@ const TransactionsTable = () => {
     data: rows,
     state: {
       rowSelection,
+      sorting,
     },
     onRowSelectionChange: setRowSelection,
+    onSortingChange: setSorting,
     getRowId: (row) => String(row.id),
   })
 
@@ -138,9 +157,23 @@ const TransactionsTable = () => {
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                <th key={header.id}>
-                  <table.FlexRender header={header} />
-                </th>
+                  <th key={header.id}>
+                    {header.column.id === 'select' ? (
+                      <table.FlexRender header={header} />
+                    ) : (
+                      <button
+                        type="button"
+                        className={styles.sortButton}
+                        onClick={header.column.getToggleSortingHandler()}
+                      >
+                        <table.FlexRender header={header} />
+                        {{
+                          asc: ' ▲',
+                          desc: ' ▼',
+                        }[header.column.getIsSorted() as string] ?? ''}
+                      </button>
+                    )}
+                  </th>
                 ))}
               </tr>
             ))}
