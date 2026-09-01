@@ -25,6 +25,8 @@ type AppState = {
   setChangedFilter: (filter: Set<string>) => void
   resetTableFilters: () => void
   focusImport: (importId: number) => void
+  focusCategory: (categoryId: number) => void
+  focusAccount: (accountId: number) => void
 }
 
 const useAppStore = create<AppState>((set) => ({
@@ -63,6 +65,30 @@ const useAppStore = create<AppState>((set) => ({
       descriptionFilter: '',
       dateFilter: emptyDateFilter,
       importFilter: new Set([String(importId)]),
+      changedFilter: new Set(),
+    })
+  },
+  focusCategory: (categoryId) => {
+    set({
+      view: 'table',
+      amountFilter: emptyAmountFilter,
+      categoryFilter: new Set([String(categoryId)]),
+      accountFilter: new Set(),
+      descriptionFilter: '',
+      dateFilter: emptyDateFilter,
+      importFilter: new Set(),
+      changedFilter: new Set(),
+    })
+  },
+  focusAccount: (accountId) => {
+    set({
+      view: 'table',
+      amountFilter: emptyAmountFilter,
+      categoryFilter: new Set(),
+      accountFilter: new Set([String(accountId)]),
+      descriptionFilter: '',
+      dateFilter: emptyDateFilter,
+      importFilter: new Set(),
       changedFilter: new Set(),
     })
   },

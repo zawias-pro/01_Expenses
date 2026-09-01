@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
+import { useAppStore } from '../../appStore.ts'
 import { Modal } from '../../components/Modal/Modal.tsx'
 import { db } from '../../db.ts'
 import type { Account } from '../Account.ts'
@@ -33,6 +34,7 @@ const Accounts = () => {
   const [addError, setAddError] = useState('')
   const [editing, setEditing] = useState<Account | null>(null)
   const [confirmingDelete, setConfirmingDelete] = useState<Account | null>(null)
+  const focusAccount = useAppStore((state) => state.focusAccount)
 
   const importCounts = new Map<number, number>()
   for (const importRecord of data.imports) {
@@ -99,6 +101,9 @@ const Accounts = () => {
                 <td>{account.name}</td>
                 <td>{importCounts.get(account.id) ?? 0}</td>
                 <td className={styles.actions}>
+                  <button type="button" onClick={() => focusAccount(account.id)}>
+                    Focus
+                  </button>
                   <button type="button" onClick={() => setEditing(account)}>
                     Edit
                   </button>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
+import { useAppStore } from '../../appStore.ts'
 import { Modal } from '../../components/Modal/Modal.tsx'
 import { db } from '../../db.ts'
 import type { Category } from '../Category.ts'
@@ -33,6 +34,7 @@ const Categories = () => {
   const [addError, setAddError] = useState('')
   const [editing, setEditing] = useState<Category | null>(null)
   const [confirmingDelete, setConfirmingDelete] = useState<Category | null>(null)
+  const focusCategory = useAppStore((state) => state.focusCategory)
 
   const txCounts = new Map<number, number>()
   for (const transaction of data.transactions) {
@@ -108,6 +110,9 @@ const Categories = () => {
                 <td>{txCounts.get(category.id) ?? 0}</td>
                 <td className={styles.patterns}>{category.matcher.split(';').map((pattern) => pattern.trim()).filter(Boolean).join(', ')}</td>
                 <td className={styles.actions}>
+                  <button type="button" onClick={() => focusCategory(category.id)}>
+                    Focus
+                  </button>
                   <button type="button" onClick={() => setEditing(category)}>
                     Edit
                   </button>
