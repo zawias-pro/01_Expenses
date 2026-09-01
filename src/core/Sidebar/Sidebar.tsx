@@ -7,6 +7,7 @@ const items: { view: View; label: string }[] = [
   { view: 'table', label: 'Table' },
   { view: 'add', label: 'Add transactions' },
   { view: 'imports', label: 'Imports' },
+  { view: 'categories', label: 'Categories' },
   { view: 'accounts', label: 'Accounts' },
 ]
 

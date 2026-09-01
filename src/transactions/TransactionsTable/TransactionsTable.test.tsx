@@ -57,7 +57,7 @@ describe('TransactionsTable', () => {
   })
 
   it('renders transactions with category and account names', async () => {
-    await db.categories.add({ id: 1, name: 'food' })
+    await db.categories.add({ id: 1, name: 'food', matcher: 'coffee' })
     await db.accounts.add({ id: 1, name: 'Revolut' })
     const importId = await db.imports.add({ importedAt: 0, name: 'import-1', accountId: 1 })
     await seedTx(1, 10, 'coffee', { categoryId: 1, importId })
@@ -91,8 +91,8 @@ describe('TransactionsTable', () => {
 
   it('filters by category via checkboxes', async () => {
     const user = userEvent.setup()
-    await db.categories.add({ id: 1, name: 'food' })
-    await db.categories.add({ id: 2, name: 'transport' })
+    await db.categories.add({ id: 1, name: 'food', matcher: 'coffee' })
+    await db.categories.add({ id: 2, name: 'transport', matcher: 'bus' })
     await seedTx(1, 10, 'lunch', { categoryId: 1 })
     await seedTx(2, 20, 'bus', { categoryId: 2 })
     await seedTx(3, 30, 'none')

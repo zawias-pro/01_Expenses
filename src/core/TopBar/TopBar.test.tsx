@@ -13,7 +13,7 @@ describe('TopBar', () => {
   it('shows transaction and category counts', async () => {
     const importId = await db.imports.add({ importedAt: 0, name: null, accountId: null })
     await db.transactions.add({ amount: 10, description: 'coffee', categoryId: null, date: '1970-01-01', importId })
-    await db.categories.add({ name: 'food' })
+    await db.categories.add({ name: 'food', matcher: 'coffee' })
 
     render(<TopBar />)
 

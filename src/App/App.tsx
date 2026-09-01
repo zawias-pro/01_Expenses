@@ -5,6 +5,7 @@ import { TransactionsTable } from '../transactions/TransactionsTable/Transaction
 import { AddTransactions } from '../transactions/AddTransactions/AddTransactions.tsx'
 import { Imports } from '../imports/Imports/Imports.tsx'
 import { Accounts } from '../accounts/Accounts/Accounts.tsx'
+import { Categories } from '../categories/Categories/Categories.tsx'
 import styles from './App.module.css'
 
 const App = () => {
@@ -20,6 +21,7 @@ const App = () => {
           {view === 'add' ? <AddTransactions /> : null}
           {view === 'accounts' ? <Accounts /> : null}
           {view === 'imports' ? <Imports /> : null}
+          {view === 'categories' ? <Categories /> : null}
         </main>
       </div>
     </div>

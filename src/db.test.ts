@@ -7,6 +7,7 @@ import { backfillDate } from './dbMigrations/backfillDate.ts'
 import { backfillDateIso } from './dbMigrations/backfillDateIso.ts'
 import { backfillDateOnly } from './dbMigrations/backfillDateOnly.ts'
 import { createImports } from './dbMigrations/createImports.ts'
+import { backfillMatcher } from './dbMigrations/backfillMatcher.ts'
 
 describe('db', () => {
   beforeEach(async () => {
@@ -16,7 +17,7 @@ describe('db', () => {
   })
 
   it('stores categories', async () => {
-    await db.categories.add({ name: 'food' })
+    await db.categories.add({ name: 'food', matcher: 'coffee' })
     const categories = await db.categories.toArray()
     expect(categories).toHaveLength(1)
     expect(categories[0]).toMatchObject({ name: 'food' })
@@ -130,6 +131,34 @@ describe('db', () => {
     const importRows = await migrated.table('imports').toArray()
     expect(importRows).toHaveLength(1)
     expect(importRows[0]).toMatchObject({ importedAt: 100, name: null, accountId: null })
+
+    migrated.close()
+    await indexedDB.deleteDatabase(name)
+  })
+
+  it('backfills matcher empty string on legacy categories during upgrade', async () => {
+    const name = `migration-matcher-${Date.now()}`
+    await indexedDB.deleteDatabase(name)
+
+    const legacy = new Dexie(name)
+    legacy.version(1).stores({ categories: '++id', transactions: '++id' })
+    await legacy.table('categories').add({ id: 1, name: 'Food' })
+    legacy.close()
+
+    const migrated = new Dexie(name)
+    migrated.version(1).stores({ categories: '++id', transactions: '++id' })
+    migrated.version(9)
+      .stores({
+        accounts: '++id',
+        categories: '++id',
+        imports: '++id, importedAt',
+        transactions: '++id, importId',
+      })
+      .upgrade(backfillMatcher)
+
+    const rows = await migrated.table('categories').toArray()
+    expect(rows).toHaveLength(1)
+    expect(rows[0]).toEqual({ id: 1, name: 'Food', matcher: '' })
 
     migrated.close()
     await indexedDB.deleteDatabase(name)
