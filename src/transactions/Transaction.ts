@@ -5,6 +5,9 @@ type Transaction = {
   categoryId: number | null
   date: string
   importId: number
+  customDate?: string | null
+  customCategoryId?: number | null
+  comment?: string | null
 }
 
 export type { Transaction }

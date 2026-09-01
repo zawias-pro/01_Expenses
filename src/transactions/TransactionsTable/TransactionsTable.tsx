@@ -29,6 +29,7 @@ import { DescriptionFilterForm } from './DescriptionFilterForm.tsx'
 import { descriptionMatches } from './descriptionMatches.ts'
 import { DescriptionMatcherForm } from './DescriptionMatcherForm/DescriptionMatcherForm.tsx'
 import { TableBottomBar } from './TableBottomBar.tsx'
+import { TransactionEditForm } from './TransactionEditForm.tsx'
 import styles from './TransactionsTable.module.css'
 
 type TableData = {
@@ -50,6 +51,11 @@ type ViewRow = {
   accountId: number | null
   importId: number
   importLabel: string
+  comment: string
+  commentRaw: string | null
+  changed: string
+  customDate: string | null
+  customCategoryId: number | null
 }
 
 const defaultData: TableData = { transactions: [], categories: [], accounts: [], imports: [] }
@@ -122,12 +128,14 @@ const TransactionsTable = () => {
   const descriptionFilter = useAppStore((state) => state.descriptionFilter)
   const dateFilter = useAppStore((state) => state.dateFilter)
   const importFilter = useAppStore((state) => state.importFilter)
+  const changedFilter = useAppStore((state) => state.changedFilter)
   const setAmountFilter = useAppStore((state) => state.setAmountFilter)
   const setCategoryFilter = useAppStore((state) => state.setCategoryFilter)
   const setAccountFilter = useAppStore((state) => state.setAccountFilter)
   const setDescriptionFilter = useAppStore((state) => state.setDescriptionFilter)
   const setDateFilter = useAppStore((state) => state.setDateFilter)
   const setImportFilter = useAppStore((state) => state.setImportFilter)
+  const setChangedFilter = useAppStore((state) => state.setChangedFilter)
 
   const [isAmountFilterOpen, setIsAmountFilterOpen] = useState(false)
   const [isCategoryFilterOpen, setIsCategoryFilterOpen] = useState(false)
@@ -135,6 +143,8 @@ const TransactionsTable = () => {
   const [isDescriptionFilterOpen, setIsDescriptionFilterOpen] = useState(false)
   const [isDateFilterOpen, setIsDateFilterOpen] = useState(false)
   const [isImportFilterOpen, setIsImportFilterOpen] = useState(false)
+  const [isChangedFilterOpen, setIsChangedFilterOpen] = useState(false)
+  const [editingId, setEditingId] = useState<number | null>(null)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [matcherDraft, setMatcherDraft] = useState<{ pattern: string; categoryName: string } | null>(null)
 
@@ -194,6 +204,19 @@ const TransactionsTable = () => {
       columnHelper.accessor('category', { id: 'category', header: 'Category', size: 110 }),
       columnHelper.accessor('account', { id: 'account', header: 'Account', size: 130 }),
       columnHelper.accessor('importLabel', { id: 'importId', header: 'Import', size: 140 }),
+      columnHelper.accessor('changed', { id: 'changed', header: 'Changed', size: 80 }),
+      columnHelper.accessor('comment', { id: 'comment', header: 'Comment', size: 160 }),
+      columnHelper.display({
+        id: 'actions',
+        header: 'Actions',
+        size: 80,
+        enableSorting: false,
+        cell: ({ row }) => (
+          <button type="button" onClick={() => setEditingId(row.original.id)}>
+            Edit
+          </button>
+        ),
+      }),
     ],
     [],
   )
@@ -228,18 +251,31 @@ const TransactionsTable = () => {
       if (!importRecord) {
         throw new Error(`Transaction references unknown import ${transaction.importId}`)
       }
+      const customDate = transaction.customDate ?? null
+      const customCategoryId = transaction.customCategoryId ?? null
+      const commentRaw = transaction.comment ?? null
+      const effectiveDateValue = customDate ?? transaction.date
+      const effectiveCategoryId = customCategoryId !== null ? customCategoryId : transaction.categoryId
+      const changed = customDate !== null || customCategoryId !== null || commentRaw !== null ? 'yes' : 'no'
+      const isDateOverridden = customDate !== null
+      const isCategoryOverridden = customCategoryId !== null
       return {
         id: transaction.id,
         amount: transaction.amount,
         description: transaction.description,
-        date: formatDate(transaction.date),
-        dateValue: transaction.date,
-        category: categoryName(transaction.categoryId),
-        categoryId: transaction.categoryId,
+        date: formatDate(effectiveDateValue) + (isDateOverridden ? ' *' : ''),
+        dateValue: effectiveDateValue,
+        category: categoryName(effectiveCategoryId) + (isCategoryOverridden ? ' *' : ''),
+        categoryId: effectiveCategoryId,
         account: accountName(importRecord.accountId),
         accountId: importRecord.accountId,
         importId: importRecord.id,
         importLabel: importRecord.name ? `${importRecord.name} (${importRecord.id})` : String(importRecord.id),
+        comment: commentRaw ?? '',
+        commentRaw,
+        changed,
+        customDate,
+        customCategoryId,
       }
     })
 
@@ -249,8 +285,9 @@ const TransactionsTable = () => {
     filtered = applyReferenceFilter(filtered, categoryFilter, (row) => keyForReference(row.categoryId))
     filtered = applyReferenceFilter(filtered, accountFilter, (row) => keyForReference(row.accountId))
     filtered = applyReferenceFilter(filtered, importFilter, (row) => String(row.importId))
+    filtered = applyReferenceFilter(filtered, changedFilter, (row) => row.changed)
     return filtered
-  }, [data, amountFilter, descriptionFilter, dateFilter, categoryFilter, accountFilter, importFilter])
+  }, [data, amountFilter, descriptionFilter, dateFilter, categoryFilter, accountFilter, importFilter, changedFilter])
 
   const table = useTable({
     features,
@@ -306,6 +343,14 @@ const TransactionsTable = () => {
       }))
       .sort((a, b) => Number(a.value) - Number(b.value))
   }, [data])
+
+  const changedOptions = useMemo(
+    () => [
+      { value: 'yes', label: 'yes' },
+      { value: 'no', label: 'no' },
+    ],
+    [],
+  )
 
   const selectedIds = Object.keys(rowSelection).map(Number)
 
@@ -433,6 +478,14 @@ const TransactionsTable = () => {
                         label="Filter"
                         title="Filter by import"
                         onClick={() => setIsImportFilterOpen(true)}
+                      />
+                    ) : null}
+                    {header.column.id === 'changed' ? (
+                      <FilterButton
+                        active={changedFilter.size === 1}
+                        label="Filter"
+                        title="Filter by changed"
+                        onClick={() => setIsChangedFilterOpen(true)}
                       />
                     ) : null}
                   </div>
@@ -587,6 +640,27 @@ const TransactionsTable = () => {
           />
         </Modal>
       ) : null}
+      {isChangedFilterOpen ? (
+        <Modal title="Filter by changed" onClose={() => setIsChangedFilterOpen(false)}>
+          <MultiSelectFilterForm
+            options={changedOptions}
+            selection={changedFilter}
+            onApply={setChangedFilter}
+            onClose={() => setIsChangedFilterOpen(false)}
+          />
+        </Modal>
+      ) : null}
+      {editingId !== null
+        ? (() => {
+            const tx = data.transactions.find((t) => t.id === editingId)
+            if (!tx) return null
+            return (
+              <Modal title="Edit transaction" onClose={() => setEditingId(null)}>
+                <TransactionEditForm transaction={tx} categories={data.categories} onClose={() => setEditingId(null)} />
+              </Modal>
+            )
+          })()
+        : null}
       {matcherDraft ? (
         <Modal title="Create matcher" onClose={() => setMatcherDraft(null)}>
           <DescriptionMatcherForm

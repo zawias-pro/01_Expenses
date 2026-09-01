@@ -21,6 +21,8 @@ type AppState = {
   setDateFilter: (filter: DateFilter) => void
   importFilter: Set<string>
   setImportFilter: (filter: Set<string>) => void
+  changedFilter: Set<string>
+  setChangedFilter: (filter: Set<string>) => void
   resetTableFilters: () => void
   focusImport: (importId: number) => void
 }
@@ -40,6 +42,8 @@ const useAppStore = create<AppState>((set) => ({
   setDateFilter: (dateFilter) => set({ dateFilter }),
   importFilter: new Set(),
   setImportFilter: (importFilter) => set({ importFilter }),
+  changedFilter: new Set(),
+  setChangedFilter: (changedFilter) => set({ changedFilter }),
   resetTableFilters: () =>
     set({
       amountFilter: emptyAmountFilter,
@@ -48,6 +52,7 @@ const useAppStore = create<AppState>((set) => ({
       descriptionFilter: '',
       dateFilter: emptyDateFilter,
       importFilter: new Set(),
+      changedFilter: new Set(),
     }),
   focusImport: (importId) => {
     set({
@@ -58,6 +63,7 @@ const useAppStore = create<AppState>((set) => ({
       descriptionFilter: '',
       dateFilter: emptyDateFilter,
       importFilter: new Set([String(importId)]),
+      changedFilter: new Set(),
     })
   },
 }))

@@ -10,6 +10,8 @@ import { backfillDateIso } from './dbMigrations/backfillDateIso.ts'
 import { backfillDateOnly } from './dbMigrations/backfillDateOnly.ts'
 import { createImports } from './dbMigrations/createImports.ts'
 import { backfillMatcher } from './dbMigrations/backfillMatcher.ts'
+import { backfillCustomFields } from './dbMigrations/backfillCustomFields.ts'
+import { revertCustomCategory } from './dbMigrations/revertCustomCategory.ts'
 
 class ExpensesDB extends Dexie {
   accounts!: EntityTable<Account, 'id'>
@@ -79,6 +81,22 @@ class ExpensesDB extends Dexie {
         transactions: '++id, importId',
       })
       .upgrade(backfillMatcher)
+    this.version(10)
+      .stores({
+        accounts: '++id',
+        categories: '++id',
+        imports: '++id, importedAt',
+        transactions: '++id, importId',
+      })
+      .upgrade(backfillCustomFields)
+    this.version(11)
+      .stores({
+        accounts: '++id',
+        categories: '++id',
+        imports: '++id, importedAt',
+        transactions: '++id, importId',
+      })
+      .upgrade(revertCustomCategory)
   }
 }
 

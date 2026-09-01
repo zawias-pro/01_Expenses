@@ -43,6 +43,9 @@ const importRows = async (rows: ParsedRow[], accountId: number | null, importNam
       categoryId: null,
       date: row.date as string,
       importId,
+      customDate: null,
+      customCategoryId: null,
+      comment: null,
     })),
   )
 }
