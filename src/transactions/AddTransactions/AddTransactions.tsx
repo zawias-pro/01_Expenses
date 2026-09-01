@@ -25,17 +25,9 @@ const hasInvalidRows = (preview: ParsedRow[]) => {
   return false
 }
 
-const importNameExists = async (importName: string) => {
-  const normalized = importName.trim().toLowerCase()
-  const existing = await db.imports.toArray()
-  return existing.some(
-    (importRecord) => importRecord.name !== null && importRecord.name.trim().toLowerCase() === normalized,
-  )
-}
-
-const importRows = async (rows: ParsedRow[], accountId: number | null, importName: string | null) => {
+const importRows = async (rows: ParsedRow[], accountId: number | null) => {
   const importedAt = Date.now()
-  const importId = await db.imports.add({ importedAt, name: importName, accountId })
+  const importId = await db.imports.add({ importedAt, name: null, accountId })
   await db.transactions.bulkAdd(
     rows.map((row) => ({
       description: row.description,
@@ -58,9 +50,7 @@ const AddTransactions = () => {
   const [dateColumn, setDateColumn] = useState(3)
   const [invertAmount, setInvertAmount] = useState(false)
   const [accountId, setAccountId] = useState<number | null>(null)
-  const [importName, setImportName] = useState('')
   const [importDecision, setImportDecision] = useState<{ rows: ParsedRow[]; duplicates: ParsedRow[] } | null>(null)
-  const [nameError, setNameError] = useState('')
 
   const rawPreview = parseCsv(source, { delimiter: separator, descriptionColumn, amountColumn, dateColumn })
   const preview = invertAmount
@@ -73,18 +63,13 @@ const AddTransactions = () => {
       return
     }
 
-    if (importName.trim() !== '' && (await importNameExists(importName))) {
-      setNameError(`Import name "${importName.trim()}" already exists`)
-      return
-    }
-
     const duplicates = await getDuplicateRows(preview)
     if (duplicates.length > 0) {
       setImportDecision({ rows: preview, duplicates })
       return
     }
 
-    await importRows(preview, accountId, importName === '' ? null : importName)
+    await importRows(preview, accountId)
     setSource('')
   }
 
@@ -92,7 +77,7 @@ const AddTransactions = () => {
     if (!importDecision) {
       return
     }
-    await importRows(importDecision.rows, accountId, importName === '' ? null : importName)
+    await importRows(importDecision.rows, accountId)
     setImportDecision(null)
     setSource('')
   }
@@ -108,7 +93,6 @@ const AddTransactions = () => {
     await importRows(
       importDecision.rows.filter((row) => !duplicateKeys.has(`${row.amount}\u0000${row.description}\u0000${row.date}`)),
       accountId,
-      importName === '' ? null : importName,
     )
     setImportDecision(null)
     setSource(remainingSource)
@@ -187,9 +171,9 @@ const AddTransactions = () => {
           <table className={styles.table}>
             <thead>
               <tr>
-                <th>Description</th>
-                <th>Amount</th>
                 <th>Date</th>
+                <th>Amount</th>
+                <th>Description</th>
               </tr>
             </thead>
             <tbody>
@@ -205,9 +189,9 @@ const AddTransactions = () => {
                     key={index}
                     className={row.error ? styles.invalidRow : undefined}
                   >
-                    <td>{row.description}</td>
-                    <td>{row.amount}</td>
                     <td>{row.date !== null ? formatDate(row.date) : ''}</td>
+                    <td>{row.amount}</td>
+                    <td>{row.description}</td>
                   </tr>
                 ))
               )}
@@ -227,16 +211,6 @@ const AddTransactions = () => {
               </option>
             ))}
           </select>
-        </label>
-        <label className={styles.accountRow}>
-          <span>Import name</span>
-          <input
-            type="text"
-            maxLength={1000}
-            value={importName}
-            onChange={(event) => setImportName(event.target.value)}
-            placeholder="Optional"
-          />
         </label>
         <button type="button" className={styles.importButton} onClick={handleImport}>
           Import
@@ -269,11 +243,6 @@ const AddTransactions = () => {
               Import all
             </button>
           </div>
-        </Modal>
-      ) : null}
-      {nameError ? (
-        <Modal title="Cannot import" onClose={() => setNameError('')}>
-          <p>{nameError}</p>
         </Modal>
       ) : null}
     </div>

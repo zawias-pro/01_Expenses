@@ -163,4 +163,30 @@ describe('db', () => {
     migrated.close()
     await indexedDB.deleteDatabase(name)
   })
+
+  it('repairs broken customCategory references (regression)', async () => {
+    const { repairBrokenCategories } = await import('./dbMigrations/repairBrokenCategories.ts')
+    const name = `migration-repair-${Date.now()}`
+    await indexedDB.deleteDatabase(name)
+
+    const db1 = new Dexie(name)
+    db1.version(1).stores({ categories: '++id', transactions: '++id' })
+    await db1.table('categories').add({ id: 1, name: 'Food', matcher: '' })
+    await db1.table('transactions').add({ id: 10, amount: 10, description: 'lunch', categoryId: null, date: '2026-01-01', importId: 1, customCategoryId: 1, customDate: null, comment: null })
+    await db1.table('transactions').add({ id: 11, amount: 20, description: 'other', categoryId: 1, date: '2026-01-02', importId: 1, customCategoryId: null, customDate: null, comment: null })
+    // delete category 1 to make both transactions broken (one via custom, one via original)
+    await db1.table('categories').delete(1)
+    db1.close()
+
+    const db2 = new Dexie(name)
+    db2.version(1).stores({ categories: '++id', transactions: '++id' })
+    db2.version(2).stores({ categories: '++id', transactions: '++id' }).upgrade(repairBrokenCategories)
+    await db2.open()
+    const txs = await db2.table('transactions').toArray()
+    // both should be repaired to null (no category)
+    expect(txs.find((t) => t.id === 10)?.customCategoryId).toBeNull()
+    expect(txs.find((t) => t.id === 11)?.categoryId).toBeNull()
+    db2.close()
+    await indexedDB.deleteDatabase(name)
+  })
 })

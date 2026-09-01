@@ -125,4 +125,27 @@ describe('Categories', () => {
 
     expect(await screen.findByText('No categories')).toBeInTheDocument()
   })
+
+  it('counts transactions with customCategory (regression for deleted category with effective count)', async () => {
+    const importId = await db.imports.add({ importedAt: 0, name: null, accountId: null })
+    const catId = await db.categories.add({ name: 'Food', matcher: 'food' })
+    // transaction with no original category but custom override to Food
+    await db.transactions.add({
+      id: 20,
+      amount: 10,
+      description: 'lunch',
+      categoryId: null,
+      date: '2026-01-01',
+      importId,
+      customCategoryId: catId,
+      customDate: null,
+      comment: null,
+    })
+
+    render(<Categories />)
+    const row = (await screen.findByText('Food')).closest('tr')!
+    // should count 1 via effective, delete must be disabled
+    expect(within(row).getByText('1')).toBeInTheDocument()
+    expect(within(row).getByRole('button', { name: 'Delete' })).toBeDisabled()
+  })
 })
