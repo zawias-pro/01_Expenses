@@ -13,6 +13,7 @@ import { backfillMatcher } from './dbMigrations/backfillMatcher.ts'
 import { backfillCustomFields } from './dbMigrations/backfillCustomFields.ts'
 import { revertCustomCategory } from './dbMigrations/revertCustomCategory.ts'
 import { repairBrokenCategories } from './dbMigrations/repairBrokenCategories.ts'
+import { normalizeDescriptionSpaces } from './dbMigrations/normalizeDescriptionSpaces.ts'
 
 class ExpensesDB extends Dexie {
   accounts!: EntityTable<Account, 'id'>
@@ -106,6 +107,22 @@ class ExpensesDB extends Dexie {
         transactions: '++id, importId',
       })
       .upgrade(repairBrokenCategories)
+    this.version(13)
+      .stores({
+        accounts: '++id',
+        categories: '++id',
+        imports: '++id, importedAt',
+        transactions: '++id, importId',
+      })
+      .upgrade(normalizeDescriptionSpaces)
+    this.version(14)
+      .stores({
+        accounts: '++id',
+        categories: '++id',
+        imports: '++id, importedAt',
+        transactions: '++id, importId',
+      })
+      .upgrade(normalizeDescriptionSpaces)
   }
 }
 

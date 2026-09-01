@@ -61,7 +61,7 @@ const parseCsv = (source: string, { delimiter, descriptionColumn, amountColumn, 
   try {
     const result = Papa.parse<string[]>(trimmed, {
       delimiter: delimiter.length === 1 ? delimiter : undefined,
-      quoteChar: '',
+      quoteChar: '"',
       skipEmptyLines: 'greedy',
     })
     rows = result.data
@@ -76,7 +76,7 @@ const parseCsv = (source: string, { delimiter, descriptionColumn, amountColumn, 
 
   return rows
     .map((row, index) => {
-      const description = (row[descriptionIndex] ?? '').trim()
+      const description = (row[descriptionIndex] ?? '').trim().replace(/\s+/g, ' ')
       const amountText = (row[amountIndex] ?? '').trim()
       const dateText = (row[dateIndex] ?? '').trim()
 
