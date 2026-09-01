@@ -27,7 +27,7 @@ describe('Modal', () => {
     expect(onClose).toHaveBeenCalled()
   })
 
-  it('calls onClose when the overlay is clicked', () => {
+  it('does not call onClose when the overlay is clicked', () => {
     const onClose = vi.fn()
     render(
       <Modal title="T" onClose={onClose}>
@@ -37,7 +37,7 @@ describe('Modal', () => {
 
     fireEvent.click(screen.getByRole('dialog').parentElement!)
 
-    expect(onClose).toHaveBeenCalled()
+    expect(onClose).not.toHaveBeenCalled()
   })
 
   it('does not call onClose when clicking inside the dialog', () => {

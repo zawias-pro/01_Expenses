@@ -22,6 +22,7 @@ import type { Account } from '../../accounts/Account.ts'
 import type { Category } from '../../categories/Category.ts'
 import type { Transaction } from '../Transaction.ts'
 import { AmountFilterForm, type AmountFilter } from './AmountFilterForm.tsx'
+import { DateFilterForm, type DateFilter } from './DateFilterForm.tsx'
 import { DescriptionFilterForm } from './DescriptionFilterForm.tsx'
 import { descriptionMatches } from './descriptionMatches.ts'
 import { ImportedAtFilterForm, type ImportedAtFilter } from './ImportedAtFilterForm.tsx'
@@ -70,6 +71,16 @@ const applyImportedAtFilter = (rows: ViewRow[], filter: ImportedAtFilter) => {
   const to = filter.to === '' ? Number.POSITIVE_INFINITY : datetimeLocalToMs(filter.to)
   const effectiveTo = filter.from !== '' && filter.to !== '' && filter.from === filter.to ? to + 59_999 : to
   return rows.filter((row) => row.importedAtMs >= from && row.importedAtMs <= effectiveTo)
+}
+
+const applyDateFilter = (rows: ViewRow[], filter: DateFilter) => {
+  const from = filter.from === '' ? '' : filter.from
+  const to = filter.to === '' ? '' : filter.to
+  return rows.filter((row) => {
+    const okFrom = from === '' || row.dateValue >= from
+    const okTo = to === '' || row.dateValue <= to
+    return okFrom && okTo
+  })
 }
 
 const keyForReference = (id: number | null) => (id === null ? 'none' : String(id))
@@ -156,12 +167,14 @@ const TransactionsTable = () => {
   const accountFilter = useAppStore((state) => state.accountFilter)
   const descriptionFilter = useAppStore((state) => state.descriptionFilter)
   const importedAtFilter = useAppStore((state) => state.importedAtFilter)
+  const dateFilter = useAppStore((state) => state.dateFilter)
   const importNameFilter = useAppStore((state) => state.importNameFilter)
   const setAmountFilter = useAppStore((state) => state.setAmountFilter)
   const setCategoryFilter = useAppStore((state) => state.setCategoryFilter)
   const setAccountFilter = useAppStore((state) => state.setAccountFilter)
   const setDescriptionFilter = useAppStore((state) => state.setDescriptionFilter)
   const setImportedAtFilter = useAppStore((state) => state.setImportedAtFilter)
+  const setDateFilter = useAppStore((state) => state.setDateFilter)
   const setImportNameFilter = useAppStore((state) => state.setImportNameFilter)
 
   const [isAmountFilterOpen, setIsAmountFilterOpen] = useState(false)
@@ -169,6 +182,7 @@ const TransactionsTable = () => {
   const [isAccountFilterOpen, setIsAccountFilterOpen] = useState(false)
   const [isDescriptionFilterOpen, setIsDescriptionFilterOpen] = useState(false)
   const [isImportedAtFilterOpen, setIsImportedAtFilterOpen] = useState(false)
+  const [isDateFilterOpen, setIsDateFilterOpen] = useState(false)
   const [isImportNameFilterOpen, setIsImportNameFilterOpen] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [isSetAccountOpen, setIsSetAccountOpen] = useState(false)
@@ -217,11 +231,12 @@ const TransactionsTable = () => {
     let filtered = applyAmountFilter(viewRows, amountFilter)
     filtered = applyDescriptionFilter(filtered, descriptionFilter)
     filtered = applyImportedAtFilter(filtered, importedAtFilter)
+    filtered = applyDateFilter(filtered, dateFilter)
     filtered = applyReferenceFilter(filtered, categoryFilter, (row) => keyForReference(row.categoryId))
     filtered = applyReferenceFilter(filtered, accountFilter, (row) => keyForReference(row.accountId))
     filtered = applyReferenceFilter(filtered, importNameFilter, (row) => row.importNameRaw ?? 'none')
     return filtered
-  }, [data, amountFilter, descriptionFilter, importedAtFilter, categoryFilter, accountFilter, importNameFilter])
+  }, [data, amountFilter, descriptionFilter, importedAtFilter, dateFilter, categoryFilter, accountFilter, importNameFilter])
 
   const table = useTable({
     features,
@@ -336,6 +351,14 @@ const TransactionsTable = () => {
                             label="Filter"
                             title="Filter by amount"
                             onClick={() => setIsAmountFilterOpen(true)}
+                          />
+                        ) : null}
+                        {header.column.id === 'date' ? (
+                          <FilterButton
+                            active={dateFilter.from !== '' || dateFilter.to !== ''}
+                            label="Filter"
+                            title="Filter by date"
+                            onClick={() => setIsDateFilterOpen(true)}
                           />
                         ) : null}
                         {header.column.id === 'category' ? (
@@ -479,6 +502,15 @@ const TransactionsTable = () => {
             filter={importedAtFilter}
             onApply={setImportedAtFilter}
             onClose={() => setIsImportedAtFilterOpen(false)}
+          />
+        </Modal>
+      ) : null}
+      {isDateFilterOpen ? (
+        <Modal title="Filter by date" onClose={() => setIsDateFilterOpen(false)}>
+          <DateFilterForm
+            filter={dateFilter}
+            onApply={setDateFilter}
+            onClose={() => setIsDateFilterOpen(false)}
           />
         </Modal>
       ) : null}

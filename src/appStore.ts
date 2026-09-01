@@ -1,10 +1,12 @@
 import { create } from 'zustand'
 import type { View } from './core/view.ts'
 import type { AmountFilter } from './transactions/TransactionsTable/AmountFilterForm.tsx'
+import type { DateFilter } from './transactions/TransactionsTable/DateFilterForm.tsx'
 import type { ImportedAtFilter } from './transactions/TransactionsTable/ImportedAtFilterForm.tsx'
 
 const emptyAmountFilter: AmountFilter = { min: '', max: '' }
 const emptyImportedAtFilter: ImportedAtFilter = { from: '', to: '' }
+const emptyDateFilter: DateFilter = { from: '', to: '' }
 
 const toLocalInputValue = (ms: number) => {
   const date = new Date(ms)
@@ -25,6 +27,8 @@ type AppState = {
   setDescriptionFilter: (filter: string) => void
   importedAtFilter: ImportedAtFilter
   setImportedAtFilter: (filter: ImportedAtFilter) => void
+  dateFilter: DateFilter
+  setDateFilter: (filter: DateFilter) => void
   importNameFilter: Set<string>
   setImportNameFilter: (filter: Set<string>) => void
   resetTableFilters: () => void
@@ -44,6 +48,8 @@ const useAppStore = create<AppState>((set) => ({
   setDescriptionFilter: (descriptionFilter) => set({ descriptionFilter }),
   importedAtFilter: emptyImportedAtFilter,
   setImportedAtFilter: (importedAtFilter) => set({ importedAtFilter }),
+  dateFilter: emptyDateFilter,
+  setDateFilter: (dateFilter) => set({ dateFilter }),
   importNameFilter: new Set(),
   setImportNameFilter: (importNameFilter) => set({ importNameFilter }),
   resetTableFilters: () =>
@@ -53,6 +59,7 @@ const useAppStore = create<AppState>((set) => ({
       accountFilter: new Set(),
       descriptionFilter: '',
       importedAtFilter: emptyImportedAtFilter,
+      dateFilter: emptyDateFilter,
       importNameFilter: new Set(),
     }),
   focusImport: (importedAt) => {
@@ -63,6 +70,7 @@ const useAppStore = create<AppState>((set) => ({
       categoryFilter: new Set(),
       accountFilter: new Set(),
       descriptionFilter: '',
+      dateFilter: emptyDateFilter,
       importNameFilter: new Set(),
       importedAtFilter: { from: value, to: value },
     })

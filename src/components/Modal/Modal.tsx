@@ -18,13 +18,12 @@ const Modal = ({ title, onClose, children }: {
   }, [onClose])
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
+    <div className={styles.overlay}>
       <div
         className={styles.dialog}
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        onClick={(event) => event.stopPropagation()}
       >
         <header className={styles.header}>
           <h2>{title}</h2>

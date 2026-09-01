@@ -12,6 +12,7 @@ const resetFilters = () => {
     accountFilter: new Set(),
     descriptionFilter: '',
     importedAtFilter: { from: '', to: '' },
+    dateFilter: { from: '', to: '' },
     importNameFilter: new Set(),
   })
 }
@@ -141,6 +142,23 @@ describe('TransactionsTable', () => {
 
     expect(await screen.findByText('sel')).toBeInTheDocument()
     expect(screen.queryByText('oth')).not.toBeInTheDocument()
+  })
+
+  it('filters by date via the modal', async () => {
+    const user = userEvent.setup()
+    await db.transactions.add({ id: 1, amount: 10, description: 'jan', categoryId: null, accountId: null, date: '2026-01-01', importedAt: 0, importName: null })
+    await db.transactions.add({ id: 2, amount: 20, description: 'feb', categoryId: null, accountId: null, date: '2026-02-01', importedAt: 0, importName: null })
+
+    render(<TransactionsTable />)
+    expect(await screen.findByText('jan')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Filter by date' }))
+    await screen.findByRole('dialog')
+    await user.type(screen.getByLabelText('From'), '2026-02-01')
+    await user.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(await screen.findByText('feb')).toBeInTheDocument()
+    expect(screen.queryByText('jan')).not.toBeInTheDocument()
   })
 
   it('shows an empty state when there are no transactions', async () => {
