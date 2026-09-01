@@ -10,12 +10,29 @@ const pasteCsv = (value: string) => {
   fireEvent.change(textarea, { target: { value } })
 }
 
+const seedImportTx = async (importOverrides: { name?: string | null; importedAt?: number; accountId?: number | null } = {}) => {
+  const importedAt = importOverrides.importedAt ?? Date.now()
+  const importId = await db.imports.add({
+    importedAt,
+    name: importOverrides.name ?? 'seed',
+    accountId: importOverrides.accountId ?? null,
+  })
+  return db.transactions.add({
+    amount: 25,
+    description: 'lunch',
+    categoryId: null,
+    date: '2026-01-01',
+    importId,
+  })
+}
+
 describe('AddTransactions', () => {
   beforeEach(async () => {
     vi.restoreAllMocks()
     await db.transactions.clear()
     await db.categories.clear()
     await db.accounts.clear()
+    await db.imports.clear()
     vi.spyOn(window, 'alert').mockImplementation(() => {})
   })
 
@@ -74,7 +91,7 @@ describe('AddTransactions', () => {
     expect(screen.getByRole('button', { name: 'Import' })).toBeInTheDocument()
   })
 
-  it('defaults to no account and imports with null accountId', async () => {
+  it('defaults to no account and imports with null accountId on the import', async () => {
     pasteCsv('lunch;25;2026-01-01')
 
     expect(screen.getByLabelText('Account')).toHaveValue('')
@@ -84,7 +101,9 @@ describe('AddTransactions', () => {
     await waitFor(async () => {
       const transactions = await db.transactions.toArray()
       expect(transactions).toHaveLength(1)
-      expect(transactions[0].accountId).toBeNull()
+      expect(transactions[0].importId).toBeGreaterThan(0)
+      const importRecord = await db.imports.get(transactions[0].importId)
+      expect(importRecord?.accountId).toBeNull()
     })
   })
 
@@ -100,11 +119,12 @@ describe('AddTransactions', () => {
     await waitFor(async () => {
       const transactions = await db.transactions.toArray()
       expect(transactions).toHaveLength(1)
-      expect(transactions[0].accountId).toBe(accountId)
+      const importRecord = await db.imports.get(transactions[0].importId)
+      expect(importRecord?.accountId).toBe(accountId)
     })
   })
 
-  it('imports valid rows with a shared importedAt timestamp', async () => {
+  it('imports rows into one import with a shared timestamp and importId', async () => {
     pasteCsv('lunch;25;2026-01-01\ncoffee;10;2026-01-02')
 
     fireEvent.click(screen.getByRole('button', { name: 'Import' }))
@@ -113,7 +133,10 @@ describe('AddTransactions', () => {
       const transactions = await db.transactions.toArray()
       expect(transactions).toHaveLength(2)
       expect(transactions[0].categoryId).toBeNull()
-      expect(transactions[0].importedAt).toEqual(transactions[1].importedAt)
+      expect(transactions[0].importId).toEqual(transactions[1].importId)
+      const importRecord = await db.imports.get(transactions[0].importId)
+      expect(importRecord?.name).toBeNull()
+      expect(importRecord?.importedAt).toBeGreaterThan(0)
     })
   })
 
@@ -138,7 +161,7 @@ describe('AddTransactions', () => {
   })
 
   it('shows a modal listing duplicates and imports all when chosen', async () => {
-    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, date: '2026-01-01', importedAt: 0, accountId: null, importName: null })
+    await seedImportTx()
     pasteCsv('lunch;25;2026-01-01')
 
     fireEvent.click(screen.getByRole('button', { name: 'Import' }))
@@ -155,7 +178,7 @@ describe('AddTransactions', () => {
   })
 
   it('skips duplicates and imports the rest when chosen', async () => {
-    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, date: '2026-01-01', importedAt: 0, accountId: null, importName: null })
+    await seedImportTx()
     pasteCsv('lunch;25;2026-01-01\ncoffee;10;2026-01-02')
 
     fireEvent.click(screen.getByRole('button', { name: 'Import' }))
@@ -175,7 +198,7 @@ describe('AddTransactions', () => {
   })
 
   it('aborts the import when the modal is closed', async () => {
-    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, date: '2026-01-01', importedAt: 0, accountId: null, importName: null })
+    await seedImportTx()
     pasteCsv('lunch;25;2026-01-01')
 
     fireEvent.click(screen.getByRole('button', { name: 'Import' }))
@@ -207,11 +230,12 @@ describe('AddTransactions', () => {
     await waitFor(async () => {
       const transactions = await db.transactions.toArray()
       expect(transactions).toHaveLength(1)
-      expect(transactions[0].importName).toBeNull()
+      const importRecord = await db.imports.get(transactions[0].importId)
+      expect(importRecord?.name).toBeNull()
     })
   })
 
-  it('stores the typed import name', async () => {
+  it('stores the typed import name on the import', async () => {
     pasteCsv('lunch;25;2026-01-01')
 
     fireEvent.change(screen.getByLabelText('Import name'), { target: { value: 'january salaries' } })
@@ -220,12 +244,13 @@ describe('AddTransactions', () => {
     await waitFor(async () => {
       const transactions = await db.transactions.toArray()
       expect(transactions).toHaveLength(1)
-      expect(transactions[0].importName).toBe('january salaries')
+      const importRecord = await db.imports.get(transactions[0].importId)
+      expect(importRecord?.name).toBe('january salaries')
     })
   })
 
   it('rejects a duplicate import name case-insensitively', async () => {
-    await db.transactions.add({ id: 1, amount: 5, description: 'old', categoryId: null, accountId: null, importName: 'January', date: new Date(0).toISOString(), importedAt: 0 })
+    await db.imports.add({ importedAt: 0, name: 'January', accountId: null })
     pasteCsv('lunch;25;2026-01-01')
 
     fireEvent.change(screen.getByLabelText('Import name'), { target: { value: 'january' } })
@@ -233,7 +258,8 @@ describe('AddTransactions', () => {
 
     const dialog = await screen.findByRole('dialog')
     expect(within(dialog).getByText(/already exists/)).toBeInTheDocument()
-    expect(await db.transactions.count()).toBe(1)
+    expect(await db.imports.count()).toBe(1)
+    expect(await db.transactions.count()).toBe(0)
   })
 
   it('allows the same import name when it differs only by case from an unnamed import', async () => {

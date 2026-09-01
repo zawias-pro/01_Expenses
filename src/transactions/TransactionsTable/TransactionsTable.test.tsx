@@ -17,18 +17,50 @@ const resetFilters = () => {
   })
 }
 
+let importSeq = 0
+
+const seedImport = async (overrides: { name?: string | null; importedAt?: number; accountId?: number | null } = {}) => {
+  importSeq += 1
+  const importedAt = overrides.importedAt ?? importSeq * 1000
+  const name = 'name' in overrides ? (overrides.name as string | null) : `import-${importSeq}`
+  return db.imports.add({
+    importedAt,
+    name,
+    accountId: overrides.accountId ?? null,
+  })
+}
+
+const seedTx = async (id: number, amount: number, description: string, extra: {
+  categoryId?: number | null
+  date?: string
+  importId?: number
+} = {}) => {
+  const importId = extra.importId ?? (await seedImport())
+  return db.transactions.add({
+    id,
+    amount,
+    description,
+    categoryId: extra.categoryId ?? null,
+    date: extra.date ?? '1970-01-01',
+    importId,
+  })
+}
+
 describe('TransactionsTable', () => {
   beforeEach(async () => {
     resetFilters()
     await db.transactions.clear()
     await db.categories.clear()
     await db.accounts.clear()
+    await db.imports.clear()
+    importSeq = 0
   })
 
   it('renders transactions with category and account names', async () => {
     await db.categories.add({ id: 1, name: 'food' })
     await db.accounts.add({ id: 1, name: 'Revolut' })
-    await db.transactions.add({ id: 1, amount: 10, description: 'coffee', categoryId: 1, accountId: 1, date: new Date(0).toISOString(), importedAt: 0, importName: null })
+    const importId = await db.imports.add({ importedAt: 0, name: 'import-1', accountId: 1 })
+    await seedTx(1, 10, 'coffee', { categoryId: 1, importId })
 
     render(<TransactionsTable />)
 
@@ -40,9 +72,9 @@ describe('TransactionsTable', () => {
 
   it('filters by amount via the modal', async () => {
     const user = userEvent.setup()
-    await db.transactions.add({ id: 1, amount: 10, description: 'low', categoryId: null, accountId: null, date: new Date(0).toISOString(), importedAt: 0, importName: null })
-    await db.transactions.add({ id: 2, amount: 50, description: 'mid', categoryId: null, accountId: null, date: new Date(0).toISOString(), importedAt: 0, importName: null })
-    await db.transactions.add({ id: 3, amount: 90, description: 'high', categoryId: null, accountId: null, date: new Date(0).toISOString(), importedAt: 0, importName: null })
+    await seedTx(1, 10, 'low')
+    await seedTx(2, 50, 'mid')
+    await seedTx(3, 90, 'high')
 
     render(<TransactionsTable />)
     expect(await screen.findByText('low')).toBeInTheDocument()
@@ -61,9 +93,9 @@ describe('TransactionsTable', () => {
     const user = userEvent.setup()
     await db.categories.add({ id: 1, name: 'food' })
     await db.categories.add({ id: 2, name: 'transport' })
-    await db.transactions.add({ id: 1, amount: 10, description: 'lunch', categoryId: 1, accountId: null, date: new Date(0).toISOString(), importedAt: 0, importName: null })
-    await db.transactions.add({ id: 2, amount: 20, description: 'bus', categoryId: 2, accountId: null, date: new Date(0).toISOString(), importedAt: 0, importName: null })
-    await db.transactions.add({ id: 3, amount: 30, description: 'none', categoryId: null, accountId: null, date: new Date(0).toISOString(), importedAt: 0, importName: null })
+    await seedTx(1, 10, 'lunch', { categoryId: 1 })
+    await seedTx(2, 20, 'bus', { categoryId: 2 })
+    await seedTx(3, 30, 'none')
 
     render(<TransactionsTable />)
     expect(await screen.findByText('lunch')).toBeInTheDocument()
@@ -81,8 +113,10 @@ describe('TransactionsTable', () => {
   it('filters by account including the no-account option', async () => {
     const user = userEvent.setup()
     await db.accounts.add({ id: 1, name: 'Revolut' })
-    await db.transactions.add({ id: 1, amount: 10, description: 'with', categoryId: null, accountId: 1, date: new Date(0).toISOString(), importedAt: 0, importName: null })
-    await db.transactions.add({ id: 2, amount: 20, description: 'without', categoryId: null, accountId: null, date: new Date(0).toISOString(), importedAt: 0, importName: null })
+    const withAccountImportId = await db.imports.add({ importedAt: 1000, name: 'with-import', accountId: 1 })
+    const noAccountImportId = await db.imports.add({ importedAt: 2000, name: 'without-import', accountId: null })
+    await seedTx(1, 10, 'with', { importId: withAccountImportId })
+    await seedTx(2, 20, 'without', { importId: noAccountImportId })
 
     render(<TransactionsTable />)
     expect(await screen.findByText('with')).toBeInTheDocument()
@@ -98,9 +132,9 @@ describe('TransactionsTable', () => {
 
   it('filters by description with a keyword and with a glob', async () => {
     const user = userEvent.setup()
-    await db.transactions.add({ id: 1, amount: 10, description: 'TEST-0001', categoryId: null, accountId: null, date: new Date(0).toISOString(), importedAt: 0, importName: null })
-    await db.transactions.add({ id: 2, amount: 20, description: 'TEST-0002', categoryId: null, accountId: null, date: new Date(0).toISOString(), importedAt: 0, importName: null })
-    await db.transactions.add({ id: 3, amount: 30, description: 'Coffee', categoryId: null, accountId: null, date: new Date(0).toISOString(), importedAt: 0, importName: null })
+    await seedTx(1, 10, 'TEST-0001')
+    await seedTx(2, 20, 'TEST-0002')
+    await seedTx(3, 30, 'Coffee')
 
     render(<TransactionsTable />)
     expect(await screen.findByText('TEST-0001')).toBeInTheDocument()
@@ -116,8 +150,10 @@ describe('TransactionsTable', () => {
 
   it('filters by import name including unnamed', async () => {
     const user = userEvent.setup()
-    await db.transactions.add({ id: 1, amount: 10, description: 'jan', categoryId: null, accountId: null, importName: 'January', date: new Date(0).toISOString(), importedAt: 1000 })
-    await db.transactions.add({ id: 2, amount: 20, description: 'unnamed', categoryId: null, accountId: null, importName: null, date: new Date(0).toISOString(), importedAt: 2000 })
+    const namedImportId = await seedImport({ name: 'January', importedAt: 1000 })
+    const unnamedImportId = await seedImport({ name: null, importedAt: 2000 })
+    await seedTx(1, 10, 'jan', { importId: namedImportId })
+    await seedTx(2, 20, 'unnamed', { importId: unnamedImportId })
 
     render(<TransactionsTable />)
     expect(await screen.findByText('jan')).toBeInTheDocument()
@@ -134,8 +170,10 @@ describe('TransactionsTable', () => {
   it('filters by imported at via the store (focus)', async () => {
     const importedAt = new Date(2026, 0, 5, 10, 30, 12, 500).getTime()
     const otherImportedAt = new Date(2026, 1, 5, 10, 30).getTime()
-    await db.transactions.add({ id: 1, amount: 10, description: 'sel', categoryId: null, accountId: null, importName: 'January', date: new Date(0).toISOString(), importedAt })
-    await db.transactions.add({ id: 2, amount: 20, description: 'oth', categoryId: null, accountId: null, importName: 'February', date: new Date(0).toISOString(), importedAt: otherImportedAt })
+    const janImportId = await seedImport({ name: 'January', importedAt })
+    const febImportId = await seedImport({ name: 'February', importedAt: otherImportedAt })
+    await seedTx(1, 10, 'sel', { importId: janImportId })
+    await seedTx(2, 20, 'oth', { importId: febImportId })
 
     useAppStore.getState().focusImport(importedAt)
     render(<TransactionsTable />)
@@ -146,8 +184,8 @@ describe('TransactionsTable', () => {
 
   it('filters by date via the modal', async () => {
     const user = userEvent.setup()
-    await db.transactions.add({ id: 1, amount: 10, description: 'jan', categoryId: null, accountId: null, date: '2026-01-01', importedAt: 0, importName: null })
-    await db.transactions.add({ id: 2, amount: 20, description: 'feb', categoryId: null, accountId: null, date: '2026-02-01', importedAt: 0, importName: null })
+    await seedTx(1, 10, 'jan', { date: '2026-01-01' })
+    await seedTx(2, 20, 'feb', { date: '2026-02-01' })
 
     render(<TransactionsTable />)
     expect(await screen.findByText('jan')).toBeInTheDocument()
@@ -169,8 +207,8 @@ describe('TransactionsTable', () => {
 
   it('deletes selected transactions after confirmation', async () => {
     const user = userEvent.setup()
-    await db.transactions.add({ id: 1, amount: 10, description: 'a', categoryId: null, accountId: null, date: new Date(0).toISOString(), importedAt: 0, importName: null })
-    await db.transactions.add({ id: 2, amount: 20, description: 'b', categoryId: null, accountId: null, date: new Date(0).toISOString(), importedAt: 0, importName: null })
+    await seedTx(1, 10, 'a')
+    await seedTx(2, 20, 'b')
 
     render(<TransactionsTable />)
     await screen.findByText('a')
@@ -190,7 +228,7 @@ describe('TransactionsTable', () => {
 
   it('keeps selection when delete is cancelled', async () => {
     const user = userEvent.setup()
-    await db.transactions.add({ id: 1, amount: 10, description: 'a', categoryId: null, accountId: null, date: new Date(0).toISOString(), importedAt: 0, importName: null })
+    await seedTx(1, 10, 'a')
 
     render(<TransactionsTable />)
     await screen.findByText('a')
@@ -203,27 +241,5 @@ describe('TransactionsTable', () => {
 
     expect(screen.getByText('1 selected')).toBeInTheDocument()
     expect(await db.transactions.count()).toBe(1)
-  })
-
-  it('sets account on selected transactions after confirmation', async () => {
-    const user = userEvent.setup()
-    await db.accounts.add({ id: 1, name: 'Revolut' })
-    await db.transactions.add({ id: 1, amount: 10, description: 'a', categoryId: null, accountId: null, date: new Date(0).toISOString(), importedAt: 0, importName: null })
-    await db.transactions.add({ id: 2, amount: 20, description: 'b', categoryId: null, accountId: null, date: new Date(0).toISOString(), importedAt: 0, importName: null })
-
-    render(<TransactionsTable />)
-    await screen.findByText('a')
-
-    const firstRowCheckbox = screen.getAllByRole('row')[1].querySelector('input[type=checkbox]') as Element
-    await user.click(firstRowCheckbox)
-
-    await user.click(screen.getByRole('button', { name: 'Set account' }))
-    await screen.findByRole('dialog')
-    await user.selectOptions(screen.getByLabelText('Account'), '1')
-    await user.click(screen.getByRole('button', { name: 'Apply' }))
-
-    const rows = await db.transactions.toArray()
-    expect(rows.find((row) => row.id === 1)!.accountId).toBe(1)
-    expect(rows.find((row) => row.id === 2)!.accountId).toBeNull()
   })
 })

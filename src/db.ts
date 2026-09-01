@@ -1,16 +1,19 @@
 import Dexie, { type EntityTable } from 'dexie'
 import type { Account } from './accounts/Account.ts'
 import type { Category } from './categories/Category.ts'
+import type { ImportRecord } from './imports/Import.ts'
 import type { Transaction } from './transactions/Transaction.ts'
 import { backfillAccountId } from './dbMigrations/backfillAccountId.ts'
 import { backfillImportName } from './dbMigrations/backfillImportName.ts'
 import { backfillDate } from './dbMigrations/backfillDate.ts'
 import { backfillDateIso } from './dbMigrations/backfillDateIso.ts'
 import { backfillDateOnly } from './dbMigrations/backfillDateOnly.ts'
+import { createImports } from './dbMigrations/createImports.ts'
 
 class ExpensesDB extends Dexie {
   accounts!: EntityTable<Account, 'id'>
   categories!: EntityTable<Category, 'id'>
+  imports!: EntityTable<ImportRecord, 'id'>
   transactions!: EntityTable<Transaction, 'id'>
 
   constructor() {
@@ -59,6 +62,14 @@ class ExpensesDB extends Dexie {
         transactions: '++id, accountId',
       })
       .upgrade(backfillDateOnly)
+    this.version(8)
+      .stores({
+        accounts: '++id',
+        categories: '++id',
+        imports: '++id, importedAt',
+        transactions: '++id, importId',
+      })
+      .upgrade(createImports)
   }
 }
 

@@ -27,23 +27,22 @@ const hasInvalidRows = (preview: ParsedRow[]) => {
 
 const importNameExists = async (importName: string) => {
   const normalized = importName.trim().toLowerCase()
-  const existing = await db.transactions.toArray()
+  const existing = await db.imports.toArray()
   return existing.some(
-    (transaction) => transaction.importName !== null && transaction.importName.trim().toLowerCase() === normalized,
+    (importRecord) => importRecord.name !== null && importRecord.name.trim().toLowerCase() === normalized,
   )
 }
 
 const importRows = async (rows: ParsedRow[], accountId: number | null, importName: string | null) => {
   const importedAt = Date.now()
+  const importId = await db.imports.add({ importedAt, name: importName, accountId })
   await db.transactions.bulkAdd(
     rows.map((row) => ({
       description: row.description,
       amount: row.amount as number,
       categoryId: null,
-      accountId,
       date: row.date as string,
-      importName,
-      importedAt,
+      importId,
     })),
   )
 }

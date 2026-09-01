@@ -6,11 +6,13 @@ import { backfillImportName } from './dbMigrations/backfillImportName.ts'
 import { backfillDate } from './dbMigrations/backfillDate.ts'
 import { backfillDateIso } from './dbMigrations/backfillDateIso.ts'
 import { backfillDateOnly } from './dbMigrations/backfillDateOnly.ts'
+import { createImports } from './dbMigrations/createImports.ts'
 
 describe('db', () => {
   beforeEach(async () => {
     await db.transactions.clear()
     await db.categories.clear()
+    await db.imports.clear()
   })
 
   it('stores categories', async () => {
@@ -20,11 +22,14 @@ describe('db', () => {
     expect(categories[0]).toMatchObject({ name: 'food' })
   })
 
-  it('stores transactions', async () => {
-    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, date: new Date(50).toISOString(), importedAt: 100, accountId: null, importName: null })
+  it('stores imports and transactions', async () => {
+    const importId = await db.imports.add({ importedAt: 100, name: 'January', accountId: null })
+    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, date: '2026-01-01', importId })
     const transactions = await db.transactions.toArray()
     expect(transactions).toHaveLength(1)
-    expect(transactions[0]).toMatchObject({ amount: 25, description: 'lunch', categoryId: null, date: new Date(50).toISOString(), importedAt: 100, accountId: null, importName: null })
+    expect(transactions[0]).toMatchObject({ amount: 25, description: 'lunch', categoryId: null, date: '2026-01-01', importId })
+    const importRecord = await db.imports.get(importId)
+    expect(importRecord).toMatchObject({ importedAt: 100, name: 'January', accountId: null })
   })
 
   it('backfills accountId null on legacy transactions during upgrade', async () => {
@@ -105,10 +110,26 @@ describe('db', () => {
     migrated.version(7)
       .stores({ accounts: '++id', categories: '++id', transactions: '++id, accountId' })
       .upgrade(backfillDateOnly)
+    migrated.version(8)
+      .stores({
+        accounts: '++id',
+        categories: '++id',
+        imports: '++id, importedAt',
+        transactions: '++id, importId',
+      })
+      .upgrade(createImports)
 
     const rows = await migrated.table('transactions').toArray()
     expect(rows).toHaveLength(1)
     expect(rows[0].date).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    expect(rows[0].importId).toBeGreaterThan(0)
+    expect(rows[0].importedAt).toBeUndefined()
+    expect(rows[0].importName).toBeUndefined()
+    expect(rows[0].accountId).toBeUndefined()
+
+    const importRows = await migrated.table('imports').toArray()
+    expect(importRows).toHaveLength(1)
+    expect(importRows[0]).toMatchObject({ importedAt: 100, name: null, accountId: null })
 
     migrated.close()
     await indexedDB.deleteDatabase(name)

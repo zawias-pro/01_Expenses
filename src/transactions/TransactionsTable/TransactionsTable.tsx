@@ -20,13 +20,13 @@ import { MultiSelectFilterForm } from '../../components/MultiSelectFilterForm/Mu
 import { db } from '../../db.ts'
 import type { Account } from '../../accounts/Account.ts'
 import type { Category } from '../../categories/Category.ts'
+import type { ImportRecord } from '../../imports/Import.ts'
 import type { Transaction } from '../Transaction.ts'
 import { AmountFilterForm, type AmountFilter } from './AmountFilterForm.tsx'
 import { DateFilterForm, type DateFilter } from './DateFilterForm.tsx'
 import { DescriptionFilterForm } from './DescriptionFilterForm.tsx'
 import { descriptionMatches } from './descriptionMatches.ts'
 import { ImportedAtFilterForm, type ImportedAtFilter } from './ImportedAtFilterForm.tsx'
-import { SetAccountForm } from './SetAccountForm.tsx'
 import { TableBottomBar } from './TableBottomBar.tsx'
 import styles from './TransactionsTable.module.css'
 
@@ -34,6 +34,7 @@ type TableData = {
   transactions: Transaction[]
   categories: Category[]
   accounts: Account[]
+  imports: ImportRecord[]
 }
 
 type ViewRow = {
@@ -50,9 +51,10 @@ type ViewRow = {
   importedAtMs: number
   importName: string
   importNameRaw: string | null
+  importId: number
 }
 
-const defaultData: TableData = { transactions: [], categories: [], accounts: [] }
+const defaultData: TableData = { transactions: [], categories: [], accounts: [], imports: [] }
 
 const amountFilterActive = (filter: AmountFilter) => filter.min !== '' || filter.max !== ''
 
@@ -148,16 +150,18 @@ const columns: ColumnDef<typeof features, ViewRow, any>[] = [
     cell: (info) => info.row.original.importedAt,
   }),
   columnHelper.accessor('importName', { id: 'importName', header: 'Import name' }),
+  columnHelper.accessor('importId', { id: 'importId', header: 'Import' }),
 ]
 
 const TransactionsTable = () => {
   const data = useLiveQuery(async () => {
-    const [transactions, categories, accounts] = await Promise.all([
+    const [transactions, categories, accounts, imports] = await Promise.all([
       db.transactions.toArray(),
       db.categories.toArray(),
       db.accounts.toArray(),
+      db.imports.toArray(),
     ])
-    return { transactions, categories, accounts }
+    return { transactions, categories, accounts, imports }
   }, [], defaultData)
 
   const [rowSelection, setRowSelection] = useState({})
@@ -185,7 +189,6 @@ const TransactionsTable = () => {
   const [isDateFilterOpen, setIsDateFilterOpen] = useState(false)
   const [isImportNameFilterOpen, setIsImportNameFilterOpen] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
-  const [isSetAccountOpen, setIsSetAccountOpen] = useState(false)
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -212,21 +215,28 @@ const TransactionsTable = () => {
       return account.name
     }
 
-    const viewRows = data.transactions.map((transaction) => ({
-      id: transaction.id,
-      amount: transaction.amount,
-      description: transaction.description,
-      date: formatDate(transaction.date),
-      dateValue: transaction.date,
-      category: categoryName(transaction.categoryId),
-      categoryId: transaction.categoryId,
-      account: accountName(transaction.accountId),
-      accountId: transaction.accountId,
-      importedAt: formatDateTime(transaction.importedAt),
-      importedAtMs: transaction.importedAt,
-      importName: transaction.importName ?? '-',
-      importNameRaw: transaction.importName,
-    }))
+    const viewRows = data.transactions.map((transaction) => {
+      const importRecord = data.imports.find((importRecord) => importRecord.id === transaction.importId)
+      if (!importRecord) {
+        throw new Error(`Transaction references unknown import ${transaction.importId}`)
+      }
+      return {
+        id: transaction.id,
+        amount: transaction.amount,
+        description: transaction.description,
+        date: formatDate(transaction.date),
+        dateValue: transaction.date,
+        category: categoryName(transaction.categoryId),
+        categoryId: transaction.categoryId,
+        account: accountName(importRecord.accountId),
+        accountId: importRecord.accountId,
+        importedAt: formatDateTime(importRecord.importedAt),
+        importedAtMs: importRecord.importedAt,
+        importName: importRecord.name ?? '-',
+        importNameRaw: importRecord.name,
+        importId: importRecord.id,
+      }
+    })
 
     let filtered = applyAmountFilter(viewRows, amountFilter)
     filtered = applyDescriptionFilter(filtered, descriptionFilter)
@@ -279,9 +289,9 @@ const TransactionsTable = () => {
 
   const importNameOptions = useMemo(() => {
     const names = new Set<string>()
-    for (const transaction of data.transactions) {
-      if (transaction.importName !== null) {
-        names.add(transaction.importName)
+    for (const importRecord of data.imports) {
+      if (importRecord.name !== null) {
+        names.add(importRecord.name)
       }
     }
     return [
@@ -299,18 +309,6 @@ const TransactionsTable = () => {
     await db.transactions.bulkDelete(selectedIds)
     setRowSelection({})
     setConfirmingDelete(false)
-  }
-
-  const handleSetAccount = async (accountId: number | null) => {
-    if (selectedIds.length === 0) {
-      return
-    }
-    await db.transactions.toCollection().modify((transaction) => {
-      if (selectedIds.includes(transaction.id)) {
-        transaction.accountId = accountId
-      }
-    })
-    setIsSetAccountOpen(false)
   }
 
   return (
@@ -433,7 +431,6 @@ const TransactionsTable = () => {
       <TableBottomBar
         selectedCount={selectedIds.length}
         onDelete={() => setConfirmingDelete(true)}
-        onSetAccount={() => setIsSetAccountOpen(true)}
       />
       {confirmingDelete ? (
         <Modal title="Delete transactions" onClose={() => setConfirmingDelete(false)}>
@@ -446,16 +443,6 @@ const TransactionsTable = () => {
               Yes, delete
             </button>
           </div>
-        </Modal>
-      ) : null}
-      {isSetAccountOpen ? (
-        <Modal title="Set account" onClose={() => setIsSetAccountOpen(false)}>
-          <SetAccountForm
-            accounts={data.accounts}
-            currentAccountId={null}
-            onApply={handleSetAccount}
-            onClose={() => setIsSetAccountOpen(false)}
-          />
         </Modal>
       ) : null}
       {isDescriptionFilterOpen ? (

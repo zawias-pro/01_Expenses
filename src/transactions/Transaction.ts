@@ -3,10 +3,8 @@ type Transaction = {
   amount: number
   description: string
   categoryId: number | null
-  accountId: number | null
   date: string
-  importedAt: number
-  importName: string | null
+  importId: number
 }
 
 export type { Transaction }
