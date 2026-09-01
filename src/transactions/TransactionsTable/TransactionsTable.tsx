@@ -348,15 +348,16 @@ const TransactionsTable = () => {
   }
 
   return (
-    <div ref={scrollRef} className={styles.scroll}>
-      <table
-        className={styles.table}
-        style={{
-          width: '100%',
-          minWidth: `${tableWidth}px`,
-          height: `${rowVirtualizer.getTotalSize()}px`,
-        }}
-      >
+    <div className={styles.container}>
+      <div ref={scrollRef} className={styles.scroll}>
+        <table
+          className={styles.table}
+          style={{
+            width: '100%',
+            minWidth: `${tableWidth}px`,
+            height: `${rowVirtualizer.getTotalSize()}px`,
+          }}
+        >
         <thead className={styles.thead}>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id} style={{ display: 'flex', width: '100%', minWidth: `${tableWidth}px` }}>
@@ -510,7 +511,8 @@ const TransactionsTable = () => {
             })
           )}
         </tbody>
-      </table>
+        </table>
+      </div>
       <TableBottomBar
         selectedCount={selectedIds.length}
         onDelete={() => setConfirmingDelete(true)}
