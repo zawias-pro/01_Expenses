@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Modal } from '../../components/Modal/Modal.tsx'
+import { formatDate } from '../../core/formatDate.ts'
 import { db } from '../../db.ts'
 import { parseCsv, type ParsedRow } from './parseCsv.ts'
 import { presets } from './presets.ts'
@@ -8,8 +9,12 @@ import styles from './AddTransactions.module.css'
 
 const getDuplicateRows = async (preview: ParsedRow[]) => {
   const existing = await db.transactions.toArray()
-  const existingKeys = new Set(existing.map((transaction) => `${transaction.amount}\u0000${transaction.description}`))
-  return preview.filter((row) => existingKeys.has(`${row.amount}\u0000${row.description}`))
+  const existingKeys = new Set(
+    existing.map(
+      (transaction) => `${transaction.amount}\u0000${transaction.description}\u0000${transaction.date}`,
+    ),
+  )
+  return preview.filter((row) => existingKeys.has(`${row.amount}\u0000${row.description}\u0000${row.date}`))
 }
 
 const hasInvalidRows = (preview: ParsedRow[]) => {
@@ -36,6 +41,7 @@ const importRows = async (rows: ParsedRow[], accountId: number | null, importNam
       amount: row.amount as number,
       categoryId: null,
       accountId,
+      date: row.date as string,
       importName,
       importedAt,
     })),
@@ -47,12 +53,13 @@ const AddTransactions = () => {
   const [separator, setSeparator] = useState(';')
   const [descriptionColumn, setDescriptionColumn] = useState(1)
   const [amountColumn, setAmountColumn] = useState(2)
+  const [dateColumn, setDateColumn] = useState(3)
   const [accountId, setAccountId] = useState<number | null>(null)
   const [importName, setImportName] = useState('')
   const [importDecision, setImportDecision] = useState<{ rows: ParsedRow[]; duplicates: ParsedRow[] } | null>(null)
   const [nameError, setNameError] = useState('')
 
-  const preview = parseCsv(source, { delimiter: separator, descriptionColumn, amountColumn })
+  const preview = parseCsv(source, { delimiter: separator, descriptionColumn, amountColumn, dateColumn })
   const accounts = useLiveQuery(() => db.accounts.toArray(), [], [])
 
   const handleImport = async () => {
@@ -88,10 +95,12 @@ const AddTransactions = () => {
     if (!importDecision) {
       return
     }
-    const duplicateKeys = new Set(importDecision.duplicates.map((row) => `${row.amount}\u0000${row.description}`))
+    const duplicateKeys = new Set(
+      importDecision.duplicates.map((row) => `${row.amount}\u0000${row.description}\u0000${row.date}`),
+    )
     const remainingSource = importDecision.duplicates.map((row) => row.line).join('\n')
     await importRows(
-      importDecision.rows.filter((row) => !duplicateKeys.has(`${row.amount}\u0000${row.description}`)),
+      importDecision.rows.filter((row) => !duplicateKeys.has(`${row.amount}\u0000${row.description}\u0000${row.date}`)),
       accountId,
       importName === '' ? null : importName,
     )
@@ -136,6 +145,15 @@ const AddTransactions = () => {
               onChange={(event) => setAmountColumn(Number(event.target.value))}
             />
           </label>
+          <label className={styles.option}>
+            <span>Date column</span>
+            <input
+              type="number"
+              min={1}
+              value={dateColumn}
+              onChange={(event) => setDateColumn(Number(event.target.value))}
+            />
+          </label>
           <div className={styles.presets}>
             <span>Presets</span>
             {presets.map((preset) => (
@@ -157,12 +175,13 @@ const AddTransactions = () => {
               <tr>
                 <th>Description</th>
                 <th>Amount</th>
+                <th>Date</th>
               </tr>
             </thead>
             <tbody>
               {preview.length === 0 ? (
                 <tr>
-                  <td className={styles.empty} colSpan={2}>
+                  <td className={styles.empty} colSpan={3}>
                     No rows
                   </td>
                 </tr>
@@ -174,6 +193,7 @@ const AddTransactions = () => {
                   >
                     <td>{row.description}</td>
                     <td>{row.amount}</td>
+                    <td>{row.date !== null ? formatDate(row.date) : ''}</td>
                   </tr>
                 ))
               )}

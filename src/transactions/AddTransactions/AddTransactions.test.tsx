@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { db } from '../../db.ts'
+import { formatDate } from '../../core/formatDate.ts'
 import { AddTransactions } from './AddTransactions.tsx'
 
 const pasteCsv = (value: string) => {
@@ -19,12 +20,13 @@ describe('AddTransactions', () => {
   })
 
   it('renders a preview from pasted csv', () => {
-    pasteCsv('lunch;25\ncoffee;10,50')
+    pasteCsv('lunch;25;2026-01-01\ncoffee;10,50;2026-01-02')
 
     expect(screen.getByText('lunch')).toBeInTheDocument()
     expect(screen.getByText('25')).toBeInTheDocument()
     expect(screen.getByText('coffee')).toBeInTheDocument()
     expect(screen.getByText('10.5')).toBeInTheDocument()
+    expect(screen.getByText(formatDate('2026-01-01'))).toBeInTheDocument()
   })
 
   it('shows default option values', () => {
@@ -33,6 +35,7 @@ describe('AddTransactions', () => {
     expect(screen.getByDisplayValue(';')).toBeInTheDocument()
     expect(screen.getByDisplayValue('1')).toBeInTheDocument()
     expect(screen.getByDisplayValue('2')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('3')).toBeInTheDocument()
   })
 
   it('does not crash on messy input', () => {
@@ -48,7 +51,7 @@ describe('AddTransactions', () => {
   })
 
   it('shows the amount even when the description is missing', () => {
-    pasteCsv(';42.00')
+    pasteCsv(';42.00;2026-01-01')
 
     expect(screen.getByText('42')).toBeInTheDocument()
   })
@@ -59,7 +62,7 @@ describe('AddTransactions', () => {
     fireEvent.click(screen.getByText('Fill with Example 1'))
 
     const textarea = screen.getByPlaceholderText('Paste CSV here') as HTMLTextAreaElement
-    expect(textarea.value).toContain('TEST-0001;10')
+    expect(textarea.value).toContain('TEST-0001;10.00')
     expect(screen.getAllByRole('row')).toHaveLength(11)
   })
 
@@ -72,7 +75,7 @@ describe('AddTransactions', () => {
   })
 
   it('defaults to no account and imports with null accountId', async () => {
-    pasteCsv('lunch;25')
+    pasteCsv('lunch;25;2026-01-01')
 
     expect(screen.getByLabelText('Account')).toHaveValue('')
 
@@ -87,7 +90,7 @@ describe('AddTransactions', () => {
 
   it('imports with the selected account', async () => {
     const accountId = await db.accounts.add({ name: 'Revolut' })
-    pasteCsv('lunch;25')
+    pasteCsv('lunch;25;2026-01-01')
 
     await screen.findByRole('option', { name: 'Revolut' })
     fireEvent.change(screen.getByLabelText('Account'), { target: { value: String(accountId) } })
@@ -102,7 +105,7 @@ describe('AddTransactions', () => {
   })
 
   it('imports valid rows with a shared importedAt timestamp', async () => {
-    pasteCsv('lunch;25\ncoffee;10')
+    pasteCsv('lunch;25;2026-01-01\ncoffee;10;2026-01-02')
 
     fireEvent.click(screen.getByRole('button', { name: 'Import' }))
 
@@ -115,7 +118,7 @@ describe('AddTransactions', () => {
   })
 
   it('clears the textarea after a successful import', async () => {
-    pasteCsv('lunch;25')
+    pasteCsv('lunch;25;2026-01-01')
 
     fireEvent.click(screen.getByRole('button', { name: 'Import' }))
 
@@ -126,7 +129,7 @@ describe('AddTransactions', () => {
   })
 
   it('aborts and alerts when any row is invalid', async () => {
-    pasteCsv('lunch;25\nbad;abc')
+    pasteCsv('lunch;25;2026-01-01\nbad;abc;2026-01-02')
 
     fireEvent.click(screen.getByRole('button', { name: 'Import' }))
 
@@ -135,8 +138,8 @@ describe('AddTransactions', () => {
   })
 
   it('shows a modal listing duplicates and imports all when chosen', async () => {
-    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, importedAt: 0, accountId: null, importName: null })
-    pasteCsv('lunch;25')
+    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, date: '2026-01-01', importedAt: 0, accountId: null, importName: null })
+    pasteCsv('lunch;25;2026-01-01')
 
     fireEvent.click(screen.getByRole('button', { name: 'Import' }))
 
@@ -152,8 +155,8 @@ describe('AddTransactions', () => {
   })
 
   it('skips duplicates and imports the rest when chosen', async () => {
-    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, importedAt: 0, accountId: null, importName: null })
-    pasteCsv('lunch;25\ncoffee;10')
+    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, date: '2026-01-01', importedAt: 0, accountId: null, importName: null })
+    pasteCsv('lunch;25;2026-01-01\ncoffee;10;2026-01-02')
 
     fireEvent.click(screen.getByRole('button', { name: 'Import' }))
 
@@ -167,13 +170,13 @@ describe('AddTransactions', () => {
       expect(transactions.filter((t) => t.description === 'lunch')).toHaveLength(1)
     })
     const textarea = screen.getByPlaceholderText('Paste CSV here') as HTMLTextAreaElement
-    expect(textarea.value).toBe('lunch;25')
+    expect(textarea.value).toBe('lunch;25;2026-01-01')
     expect((screen.getByPlaceholderText('Paste CSV here') as HTMLTextAreaElement).value).not.toContain('coffee;10')
   })
 
   it('aborts the import when the modal is closed', async () => {
-    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, importedAt: 0, accountId: null, importName: null })
-    pasteCsv('lunch;25')
+    await db.transactions.add({ amount: 25, description: 'lunch', categoryId: null, date: '2026-01-01', importedAt: 0, accountId: null, importName: null })
+    pasteCsv('lunch;25;2026-01-01')
 
     fireEvent.click(screen.getByRole('button', { name: 'Import' }))
 
@@ -186,7 +189,7 @@ describe('AddTransactions', () => {
   })
 
   it('does not show the modal when there are no duplicates', async () => {
-    pasteCsv('coffee;10')
+    pasteCsv('coffee;10;2026-01-01')
 
     fireEvent.click(screen.getByRole('button', { name: 'Import' }))
 
@@ -197,7 +200,7 @@ describe('AddTransactions', () => {
   })
 
   it('stores null importName when the field is empty', async () => {
-    pasteCsv('lunch;25')
+    pasteCsv('lunch;25;2026-01-01')
 
     fireEvent.click(screen.getByRole('button', { name: 'Import' }))
 
@@ -209,7 +212,7 @@ describe('AddTransactions', () => {
   })
 
   it('stores the typed import name', async () => {
-    pasteCsv('lunch;25')
+    pasteCsv('lunch;25;2026-01-01')
 
     fireEvent.change(screen.getByLabelText('Import name'), { target: { value: 'january salaries' } })
     fireEvent.click(screen.getByRole('button', { name: 'Import' }))
@@ -222,8 +225,8 @@ describe('AddTransactions', () => {
   })
 
   it('rejects a duplicate import name case-insensitively', async () => {
-    await db.transactions.add({ id: 1, amount: 5, description: 'old', categoryId: null, accountId: null, importName: 'January', importedAt: 0 })
-    pasteCsv('lunch;25')
+    await db.transactions.add({ id: 1, amount: 5, description: 'old', categoryId: null, accountId: null, importName: 'January', date: new Date(0).toISOString(), importedAt: 0 })
+    pasteCsv('lunch;25;2026-01-01')
 
     fireEvent.change(screen.getByLabelText('Import name'), { target: { value: 'january' } })
     fireEvent.click(screen.getByRole('button', { name: 'Import' }))
@@ -234,7 +237,7 @@ describe('AddTransactions', () => {
   })
 
   it('allows the same import name when it differs only by case from an unnamed import', async () => {
-    pasteCsv('lunch;25')
+    pasteCsv('lunch;25;2026-01-01')
 
     fireEvent.change(screen.getByLabelText('Import name'), { target: { value: 'November' } })
     fireEvent.click(screen.getByRole('button', { name: 'Import' }))

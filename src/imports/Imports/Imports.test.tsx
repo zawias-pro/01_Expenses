@@ -21,10 +21,10 @@ describe('Imports', () => {
 
   it('groups transactions by import name and timestamp', async () => {
     await db.transactions.bulkAdd([
-      { id: 1, amount: 10, description: 'a', categoryId: null, accountId: null, importName: 'January', importedAt: 1000 },
-      { id: 2, amount: 20, description: 'b', categoryId: null, accountId: null, importName: 'January', importedAt: 1000 },
-      { id: 3, amount: 30, description: 'c', categoryId: null, accountId: null, importName: 'February', importedAt: 2000 },
-      { id: 4, amount: 40, description: 'd', categoryId: null, accountId: null, importName: null, importedAt: 3000 },
+      { id: 1, amount: 10, description: 'a', categoryId: null, accountId: null, importName: 'January', date: new Date(0).toISOString(), importedAt: 1000 },
+      { id: 2, amount: 20, description: 'b', categoryId: null, accountId: null, importName: 'January', date: new Date(0).toISOString(), importedAt: 1000 },
+      { id: 3, amount: 30, description: 'c', categoryId: null, accountId: null, importName: 'February', date: new Date(0).toISOString(), importedAt: 2000 },
+      { id: 4, amount: 40, description: 'd', categoryId: null, accountId: null, importName: null, date: new Date(0).toISOString(), importedAt: 3000 },
     ])
 
     render(<Imports />)
@@ -37,8 +37,8 @@ describe('Imports', () => {
   it('focuses an import: goes to table view, resets filters, sets importedAt range', async () => {
     const user = userEvent.setup()
     await db.transactions.bulkAdd([
-      { id: 1, amount: 10, description: 'a', categoryId: null, accountId: null, importName: 'January', importedAt: 1000 },
-      { id: 2, amount: 20, description: 'b', categoryId: null, accountId: null, importName: 'February', importedAt: 2000 },
+      { id: 1, amount: 10, description: 'a', categoryId: null, accountId: null, importName: 'January', date: new Date(0).toISOString(), importedAt: 1000 },
+      { id: 2, amount: 20, description: 'b', categoryId: null, accountId: null, importName: 'February', date: new Date(0).toISOString(), importedAt: 2000 },
     ])
 
     useAppStore.getState().setDescriptionFilter('foo')

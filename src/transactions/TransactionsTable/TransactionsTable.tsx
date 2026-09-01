@@ -12,6 +12,8 @@ import { sortFn_alphanumeric, sortFn_basic, sortFn_datetime, sortFn_text } from 
 import type { ColumnDef, SortingState } from '@tanstack/table-core'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useAppStore } from '../../appStore.ts'
+import { formatDate } from '../../core/formatDate.ts'
+import { formatDateTime } from '../../core/formatDateTime.ts'
 import { FilterButton } from '../../components/FilterButton/FilterButton.tsx'
 import { Modal } from '../../components/Modal/Modal.tsx'
 import { MultiSelectFilterForm } from '../../components/MultiSelectFilterForm/MultiSelectFilterForm.tsx'
@@ -37,6 +39,8 @@ type ViewRow = {
   id: number
   amount: number
   description: string
+  date: string
+  dateValue: string
   category: string
   categoryId: number | null
   account: string
@@ -119,9 +123,19 @@ const columns: ColumnDef<typeof features, ViewRow, any>[] = [
   columnHelper.accessor('id', { id: 'id', header: 'ID' }),
   columnHelper.accessor('amount', { id: 'amount', header: 'Amount' }),
   columnHelper.accessor('description', { id: 'description', header: 'Description' }),
+  columnHelper.accessor('dateValue', {
+    id: 'date',
+    header: 'Date',
+    cell: (info) => info.row.original.date,
+  }),
   columnHelper.accessor('category', { id: 'category', header: 'Category' }),
   columnHelper.accessor('account', { id: 'account', header: 'Account' }),
-  columnHelper.accessor('importedAt', { id: 'importedAt', header: 'Imported', sortFn: 'datetime' }),
+  columnHelper.accessor('importedAtMs', {
+    id: 'importedAt',
+    header: 'Imported',
+    sortFn: 'datetime',
+    cell: (info) => info.row.original.importedAt,
+  }),
   columnHelper.accessor('importName', { id: 'importName', header: 'Import name' }),
 ]
 
@@ -188,11 +202,13 @@ const TransactionsTable = () => {
       id: transaction.id,
       amount: transaction.amount,
       description: transaction.description,
+      date: formatDate(transaction.date),
+      dateValue: transaction.date,
       category: categoryName(transaction.categoryId),
       categoryId: transaction.categoryId,
       account: accountName(transaction.accountId),
       accountId: transaction.accountId,
-      importedAt: new Date(transaction.importedAt).toLocaleString(),
+      importedAt: formatDateTime(transaction.importedAt),
       importedAtMs: transaction.importedAt,
       importName: transaction.importName ?? '-',
       importNameRaw: transaction.importName,

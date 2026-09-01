@@ -4,6 +4,9 @@ import type { Category } from './categories/Category.ts'
 import type { Transaction } from './transactions/Transaction.ts'
 import { backfillAccountId } from './dbMigrations/backfillAccountId.ts'
 import { backfillImportName } from './dbMigrations/backfillImportName.ts'
+import { backfillDate } from './dbMigrations/backfillDate.ts'
+import { backfillDateIso } from './dbMigrations/backfillDateIso.ts'
+import { backfillDateOnly } from './dbMigrations/backfillDateOnly.ts'
 
 class ExpensesDB extends Dexie {
   accounts!: EntityTable<Account, 'id'>
@@ -35,6 +38,27 @@ class ExpensesDB extends Dexie {
         transactions: '++id, accountId',
       })
       .upgrade(backfillImportName)
+    this.version(5)
+      .stores({
+        accounts: '++id',
+        categories: '++id',
+        transactions: '++id, accountId',
+      })
+      .upgrade(backfillDate)
+    this.version(6)
+      .stores({
+        accounts: '++id',
+        categories: '++id',
+        transactions: '++id, accountId',
+      })
+      .upgrade(backfillDateIso)
+    this.version(7)
+      .stores({
+        accounts: '++id',
+        categories: '++id',
+        transactions: '++id, accountId',
+      })
+      .upgrade(backfillDateOnly)
   }
 }
 

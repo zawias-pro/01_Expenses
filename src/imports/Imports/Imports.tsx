@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useAppStore } from '../../appStore.ts'
+import { formatDateTime } from '../../core/formatDateTime.ts'
 import { db } from '../../db.ts'
 import type { Transaction } from '../../transactions/Transaction.ts'
 import styles from './Imports.module.css'
@@ -56,7 +57,7 @@ const Imports = () => {
             {groups.map((group) => (
               <tr key={`${group.importName}\u0000${group.importedAt}`}>
                 <td>{importLabel(group.importName)}</td>
-                <td>{new Date(group.importedAt).toLocaleString()}</td>
+                <td>{formatDateTime(group.importedAt)}</td>
                 <td>{group.transactions.length}</td>
                 <td>
                   <button type="button" onClick={() => focusImport(group.importedAt)}>
