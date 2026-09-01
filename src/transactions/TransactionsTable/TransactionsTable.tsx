@@ -1,6 +1,8 @@
 import { useMemo, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import {
+  columnResizingFeature,
+  columnSizingFeature,
   createColumnHelper,
   createSortedRowModel,
   rowSelectionFeature,
@@ -9,7 +11,7 @@ import {
   useTable,
 } from '@tanstack/react-table'
 import { sortFn_alphanumeric, sortFn_basic, sortFn_datetime, sortFn_text } from '@tanstack/table-core'
-import type { ColumnDef, SortingState } from '@tanstack/table-core'
+import type { ColumnDef, ColumnSizingState, SortingState } from '@tanstack/table-core'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useAppStore } from '../../appStore.ts'
 import { formatDate } from '../../core/formatDate.ts'
@@ -105,6 +107,8 @@ const applyDescriptionFilter = (rows: ViewRow[], pattern: string) => {
 const features = tableFeatures({
   rowSelectionFeature,
   rowSortingFeature,
+  columnSizingFeature,
+  columnResizingFeature,
   sortedRowModel: createSortedRowModel(),
   sortFns: {
     alphanumeric: sortFn_alphanumeric,
@@ -128,6 +132,7 @@ const TransactionsTable = () => {
 
   const [rowSelection, setRowSelection] = useState({})
   const [sorting, setSorting] = useState<SortingState>([])
+  const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({})
   const amountFilter = useAppStore((state) => state.amountFilter)
   const categoryFilter = useAppStore((state) => state.categoryFilter)
   const accountFilter = useAppStore((state) => state.accountFilter)
@@ -173,6 +178,7 @@ const TransactionsTable = () => {
     () => [
       columnHelper.display({
         id: 'select',
+        size: 40,
         header: ({ table }) => (
           <input
             type="checkbox"
@@ -189,11 +195,12 @@ const TransactionsTable = () => {
           />
         ),
       }),
-      columnHelper.accessor('id', { id: 'id', header: 'ID' }),
-      columnHelper.accessor('amount', { id: 'amount', header: 'Amount' }),
+      columnHelper.accessor('id', { id: 'id', header: 'ID', size: 60 }),
+      columnHelper.accessor('amount', { id: 'amount', header: 'Amount', size: 90 }),
       columnHelper.accessor('description', {
         id: 'description',
         header: 'Description',
+        size: 360,
         cell: (info) => (
           <span onMouseUp={handleDescriptionSelect}>{String(info.getValue())}</span>
         ),
@@ -201,18 +208,20 @@ const TransactionsTable = () => {
       columnHelper.accessor('dateValue', {
         id: 'date',
         header: 'Date',
+        size: 130,
         cell: (info) => info.row.original.date,
       }),
-      columnHelper.accessor('category', { id: 'category', header: 'Category' }),
-      columnHelper.accessor('account', { id: 'account', header: 'Account' }),
+      columnHelper.accessor('category', { id: 'category', header: 'Category', size: 110 }),
+      columnHelper.accessor('account', { id: 'account', header: 'Account', size: 130 }),
       columnHelper.accessor('importedAtMs', {
         id: 'importedAt',
         header: 'Imported',
         sortFn: 'datetime',
+        size: 170,
         cell: (info) => info.row.original.importedAt,
       }),
-      columnHelper.accessor('importName', { id: 'importName', header: 'Import name' }),
-      columnHelper.accessor('importId', { id: 'importId', header: 'Import' }),
+      columnHelper.accessor('importName', { id: 'importName', header: 'Import name', size: 120 }),
+      columnHelper.accessor('importId', { id: 'importId', header: 'Import', size: 60 }),
     ],
     [],
   )
@@ -282,11 +291,16 @@ const TransactionsTable = () => {
     state: {
       rowSelection,
       sorting,
+      columnSizing,
     },
+    columnResizeMode: 'onChange',
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
+    onColumnSizingChange: setColumnSizing,
     getRowId: (row) => String(row.id),
   })
+
+  const tableWidth = table.getTotalSize()
 
   // oxlint-disable-next-line react/incompatible-library -- useVirtualizer is the supported API
   const rowVirtualizer = useVirtualizer({
@@ -297,6 +311,8 @@ const TransactionsTable = () => {
   })
 
   const virtualRows = rowVirtualizer.getVirtualItems()
+
+  const cols = table.getHeaderGroups()[0]?.headers ?? []
 
   const categoryOptions = useMemo(
     () => [
@@ -369,121 +385,176 @@ const TransactionsTable = () => {
 
   return (
     <div ref={scrollRef} className={styles.scroll}>
-      <div className={styles.stickyHeader}>
-        <table className={styles.table}>
-          <thead>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <th key={header.id}>
+      <table
+        className={styles.table}
+        style={{
+          width: '100%',
+          minWidth: `${tableWidth}px`,
+          height: `${rowVirtualizer.getTotalSize()}px`,
+        }}
+      >
+        <thead className={styles.thead}>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <tr key={headerGroup.id} style={{ display: 'flex', width: '100%', minWidth: `${tableWidth}px` }}>
+              {headerGroup.headers.map((header) => (
+                <th
+                  key={header.id}
+                  style={{
+                    width: `${header.getSize()}px`,
+                    minWidth: `${header.getSize()}px`,
+                    maxWidth: `${header.getSize()}px`,
+                    flex: `0 0 ${header.getSize()}px`,
+                  }}
+                >
+                  <div className={styles.headerCell}>
                     {header.column.id === 'select' ? (
                       <table.FlexRender header={header} />
                     ) : (
-                      <div className={styles.headerCell}>
-                        <button
-                          type="button"
-                          className={styles.sortButton}
-                          onClick={header.column.getToggleSortingHandler()}
-                        >
-                          <table.FlexRender header={header} />
-                          {{
-                            asc: ' ▲',
-                            desc: ' ▼',
-                          }[header.column.getIsSorted() as string] ?? ''}
-                        </button>
-                        {header.column.id === 'description' ? (
-                          <FilterButton
-                            active={descriptionFilter !== ''}
-                            label="Filter"
-                            title="Filter by description"
-                            onClick={() => setIsDescriptionFilterOpen(true)}
-                          />
-                        ) : null}
-                        {header.column.id === 'amount' ? (
-                          <FilterButton
-                            active={amountFilterActive(amountFilter)}
-                            label="Filter"
-                            title="Filter by amount"
-                            onClick={() => setIsAmountFilterOpen(true)}
-                          />
-                        ) : null}
-                        {header.column.id === 'date' ? (
-                          <FilterButton
-                            active={dateFilter.from !== '' || dateFilter.to !== ''}
-                            label="Filter"
-                            title="Filter by date"
-                            onClick={() => setIsDateFilterOpen(true)}
-                          />
-                        ) : null}
-                        {header.column.id === 'category' ? (
-                          <FilterButton
-                            active={categoryFilter.size > 0}
-                            label="Filter"
-                            title="Filter by category"
-                            onClick={() => setIsCategoryFilterOpen(true)}
-                          />
-                        ) : null}
-                        {header.column.id === 'account' ? (
-                          <FilterButton
-                            active={accountFilter.size > 0}
-                            label="Filter"
-                            title="Filter by account"
-                            onClick={() => setIsAccountFilterOpen(true)}
-                          />
-                        ) : null}
-                        {header.column.id === 'importedAt' ? (
-                          <FilterButton
-                            active={importedAtFilterActive(importedAtFilter)}
-                            label="Filter"
-                            title="Filter by imported at"
-                            onClick={() => setIsImportedAtFilterOpen(true)}
-                          />
-                        ) : null}
-                        {header.column.id === 'importName' ? (
-                          <FilterButton
-                            active={importNameFilter.size > 0}
-                            label="Filter"
-                            title="Filter by import name"
-                            onClick={() => setIsImportNameFilterOpen(true)}
-                          />
-                        ) : null}
-                      </div>
+                      <button
+                        type="button"
+                        className={styles.sortButton}
+                        onClick={header.column.getToggleSortingHandler()}
+                      >
+                        <table.FlexRender header={header} />
+                        {{
+                          asc: ' ▲',
+                          desc: ' ▼',
+                        }[header.column.getIsSorted() as string] ?? ''}
+                      </button>
                     )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-        </table>
-      </div>
-      <div className={styles.body} style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
-        {rows.length === 0 ? (
-          <p>No transactions</p>
-        ) : (
-          <table className={styles.table}>
-            <tbody>
-              {virtualRows.map((virtualRow, index) => {
-                const row = table.getRowModel().rows[virtualRow.index]
-                return (
-                  <tr
-                    key={row.id}
-                    style={{
-                      height: `${virtualRow.size}px`,
-                      transform: `translateY(${virtualRow.start - index * virtualRow.size}px)`,
-                    }}
-                  >
-                    {row.getAllCells().map((cell) => (
-                      <td key={cell.id} title={String(cell.getValue())}>
+                    {header.column.id === 'description' ? (
+                      <FilterButton
+                        active={descriptionFilter !== ''}
+                        label="Filter"
+                        title="Filter by description"
+                        onClick={() => setIsDescriptionFilterOpen(true)}
+                      />
+                    ) : null}
+                    {header.column.id === 'amount' ? (
+                      <FilterButton
+                        active={amountFilterActive(amountFilter)}
+                        label="Filter"
+                        title="Filter by amount"
+                        onClick={() => setIsAmountFilterOpen(true)}
+                      />
+                    ) : null}
+                    {header.column.id === 'date' ? (
+                      <FilterButton
+                        active={dateFilter.from !== '' || dateFilter.to !== ''}
+                        label="Filter"
+                        title="Filter by date"
+                        onClick={() => setIsDateFilterOpen(true)}
+                      />
+                    ) : null}
+                    {header.column.id === 'category' ? (
+                      <FilterButton
+                        active={categoryFilter.size > 0}
+                        label="Filter"
+                        title="Filter by category"
+                        onClick={() => setIsCategoryFilterOpen(true)}
+                      />
+                    ) : null}
+                    {header.column.id === 'account' ? (
+                      <FilterButton
+                        active={accountFilter.size > 0}
+                        label="Filter"
+                        title="Filter by account"
+                        onClick={() => setIsAccountFilterOpen(true)}
+                      />
+                    ) : null}
+                    {header.column.id === 'importedAt' ? (
+                      <FilterButton
+                        active={importedAtFilterActive(importedAtFilter)}
+                        label="Filter"
+                        title="Filter by imported at"
+                        onClick={() => setIsImportedAtFilterOpen(true)}
+                      />
+                    ) : null}
+                    {header.column.id === 'importName' ? (
+                      <FilterButton
+                        active={importNameFilter.size > 0}
+                        label="Filter"
+                        title="Filter by import name"
+                        onClick={() => setIsImportNameFilterOpen(true)}
+                      />
+                    ) : null}
+                  </div>
+                  {header.column.getCanResize() ? (
+                    <div
+                      className={styles.resizeHandle}
+                      onMouseDown={(event) => {
+                        event.stopPropagation()
+                        header.getResizeHandler()(event)
+                      }}
+                      onTouchStart={header.getResizeHandler()}
+                    />
+                  ) : null}
+                </th>
+              ))}
+              <th
+                aria-hidden="true"
+                style={{
+                  flex: '1 0 0',
+                  minWidth: 0,
+                  borderBottom: '1px solid #ccc',
+                }}
+              />
+            </tr>
+          ))}
+        </thead>
+        <tbody className={styles.tbody}>
+          {rows.length === 0 ? (
+            <tr>
+              <td className={styles.empty} colSpan={cols.length}>
+                No transactions
+              </td>
+            </tr>
+          ) : (
+            virtualRows.map((virtualRow) => {
+              const row = table.getRowModel().rows[virtualRow.index]
+              return (
+                <tr
+                  key={row.id}
+                  className={styles.virtualRow}
+                  style={{
+                    position: 'absolute',
+                    top: `${virtualRow.start}px`,
+                    height: `${virtualRow.size}px`,
+                    width: '100%',
+                    minWidth: `${tableWidth}px`,
+                    display: 'flex',
+                  }}
+                >
+                  {row.getAllCells().map((cell) => (
+                    <td
+                      key={cell.id}
+                      style={{
+                        width: `${cell.column.getSize()}px`,
+                        minWidth: `${cell.column.getSize()}px`,
+                        maxWidth: `${cell.column.getSize()}px`,
+                        flex: `0 0 ${cell.column.getSize()}px`,
+                      }}
+                      title={String(cell.getValue())}
+                    >
+                      <div className={styles.cellContent}>
                         <table.FlexRender cell={cell} />
-                      </td>
-                    ))}
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        )}
-      </div>
+                      </div>
+                    </td>
+                  ))}
+                  <td
+                    aria-hidden="true"
+                    style={{
+                      flex: '1 0 0',
+                      minWidth: 0,
+                      borderBottom: '1px solid #ccc',
+                    }}
+                  />
+                </tr>
+              )
+            })
+          )}
+        </tbody>
+      </table>
       <TableBottomBar
         selectedCount={selectedIds.length}
         onDelete={() => setConfirmingDelete(true)}

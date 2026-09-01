@@ -4,11 +4,10 @@
   overflow: auto;
 }
 
-.stickyHeader {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: white;
+.headerCell {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .sortButton {
@@ -21,12 +20,6 @@
   flex: 1;
 }
 
-.headerCell {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
 .modalActions {
   display: flex;
   justify-content: flex-end;
@@ -34,16 +27,11 @@
   margin-top: 0.75rem;
 }
 
-.body {
-  position: relative;
-}
-
 .table {
   border-collapse: separate;
   border-spacing: 0;
   table-layout: fixed;
   width: 100%;
-  max-width: 100%;
 }
 
 .table th,
@@ -55,59 +43,67 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.table th:nth-child(1),
-.table td:nth-child(1) {
-  width: 5%;
-}
-
-.table th:nth-child(2),
-.table td:nth-child(2) {
-  width: 5%;
-}
-
-.table th:nth-child(3),
-.table td:nth-child(3) {
-  width: 9%;
-}
-
-.table th:nth-child(4),
-.table td:nth-child(4) {
-  width: 7%;
-}
-
-.table th:nth-child(5),
-.table td:nth-child(5) {
-  width: 32%;
-}
-
-.table th:nth-child(6),
-.table td:nth-child(6) {
-  width: 9%;
-}
-
-.table th:nth-child(7),
-.table td:nth-child(7) {
-  width: 9%;
-}
-
-.table th:nth-child(8),
-.table td:nth-child(8) {
-  width: 11%;
-}
-
-.table th:nth-child(9),
-.table td:nth-child(9) {
-  width: 6%;
-}
-
-.table th:nth-child(10),
-.table td:nth-child(10) {
-  width: 7%;
+  box-sizing: border-box;
 }
 
 .table th:last-child,
 .table td:last-child {
   border-right: 0;
+}
+
+.cellContent {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: white;
+}
+
+.thead th {
+  position: relative;
+}
+
+.tbody {
+  position: relative;
+}
+
+.virtualRow {
+  display: flex;
+}
+
+.virtualRow td {
+  height: inherit;
+  flex: 0 0 auto;
+}
+
+.empty {
+  font-style: italic;
+}
+
+.resizeHandle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  height: 100%;
+  width: 6px;
+  cursor: col-resize;
+  user-select: none;
+  touch-action: none;
+  z-index: 3;
+}
+
+.resizeHandle::after {
+  content: '';
+  position: absolute;
+  right: 2px;
+  top: 0;
+  height: 100%;
+  width: 1px;
+  background: #ccc;
 }
