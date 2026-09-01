@@ -56,12 +56,16 @@ const AddTransactions = () => {
   const [descriptionColumn, setDescriptionColumn] = useState(1)
   const [amountColumn, setAmountColumn] = useState(2)
   const [dateColumn, setDateColumn] = useState(3)
+  const [invertAmount, setInvertAmount] = useState(false)
   const [accountId, setAccountId] = useState<number | null>(null)
   const [importName, setImportName] = useState('')
   const [importDecision, setImportDecision] = useState<{ rows: ParsedRow[]; duplicates: ParsedRow[] } | null>(null)
   const [nameError, setNameError] = useState('')
 
-  const preview = parseCsv(source, { delimiter: separator, descriptionColumn, amountColumn, dateColumn })
+  const rawPreview = parseCsv(source, { delimiter: separator, descriptionColumn, amountColumn, dateColumn })
+  const preview = invertAmount
+    ? rawPreview.map((row) => (row.amount === null ? row : { ...row, amount: -row.amount }))
+    : rawPreview
   const accounts = useLiveQuery(() => db.accounts.toArray(), [], [])
 
   const handleImport = async () => {
@@ -154,6 +158,14 @@ const AddTransactions = () => {
               min={1}
               value={dateColumn}
               onChange={(event) => setDateColumn(Number(event.target.value))}
+            />
+          </label>
+          <label className={styles.option}>
+            <span>Invert amount</span>
+            <input
+              type="checkbox"
+              checked={invertAmount}
+              onChange={(event) => setInvertAmount(event.target.checked)}
             />
           </label>
           <div className={styles.presets}>

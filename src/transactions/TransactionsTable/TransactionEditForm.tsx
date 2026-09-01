@@ -78,13 +78,13 @@ const TransactionEditForm = ({ transaction, categories, onClose }: {
     onClose()
   }
 
-  const handleClear = async () => {
-    await db.transactions.update(transaction.id, {
-      customDate: null,
-      customCategoryId: null,
-      comment: null,
-    })
-    onClose()
+  const handleClear = () => {
+    setOverrideDate(false)
+    setOverrideCategory(false)
+    setCustomDate('')
+    setCustomCategoryId('')
+    setComment('')
+    setError('')
   }
 
   return (
