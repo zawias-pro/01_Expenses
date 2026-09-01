@@ -13,9 +13,8 @@ describe('Imports', () => {
       categoryFilter: new Set(),
       accountFilter: new Set(),
       descriptionFilter: '',
-      importedAtFilter: { from: '', to: '' },
       dateFilter: { from: '', to: '' },
-      importNameFilter: new Set(),
+      importFilter: new Set(),
     })
     await db.transactions.clear()
     await db.imports.clear()
@@ -113,9 +112,9 @@ describe('Imports', () => {
     expect(await db.imports.count()).toBe(1)
   })
 
-  it('focuses an import: goes to table view, resets filters, sets importedAt range', async () => {
+  it('focuses an import: goes to table view, resets filters, sets import filter', async () => {
     const user = userEvent.setup()
-    await seed({ name: 'January', importedAt: 1000 })
+    const importId = await seed({ name: 'January', importedAt: 1000 })
 
     useAppStore.getState().setDescriptionFilter('foo')
     useAppStore.getState().setCategoryFilter(new Set(['1']))
@@ -128,8 +127,7 @@ describe('Imports', () => {
     expect(state.view).toBe('table')
     expect(state.descriptionFilter).toBe('')
     expect(state.categoryFilter.size).toBe(0)
-    expect(state.importedAtFilter).toEqual({ from: expect.any(String), to: expect.any(String) })
-    expect(state.importedAtFilter.from).toBe(state.importedAtFilter.to)
+    expect(state.importFilter).toEqual(new Set([String(importId)]))
   })
 
   it('renames an import with a name and account', async () => {

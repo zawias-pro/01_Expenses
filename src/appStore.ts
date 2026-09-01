@@ -2,17 +2,9 @@ import { create } from 'zustand'
 import type { View } from './core/view.ts'
 import type { AmountFilter } from './transactions/TransactionsTable/AmountFilterForm.tsx'
 import type { DateFilter } from './transactions/TransactionsTable/DateFilterForm.tsx'
-import type { ImportedAtFilter } from './transactions/TransactionsTable/ImportedAtFilterForm.tsx'
 
 const emptyAmountFilter: AmountFilter = { min: '', max: '' }
-const emptyImportedAtFilter: ImportedAtFilter = { from: '', to: '' }
 const emptyDateFilter: DateFilter = { from: '', to: '' }
-
-const toLocalInputValue = (ms: number) => {
-  const date = new Date(ms)
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
-}
 
 type AppState = {
   view: View
@@ -25,14 +17,12 @@ type AppState = {
   setAccountFilter: (filter: Set<string>) => void
   descriptionFilter: string
   setDescriptionFilter: (filter: string) => void
-  importedAtFilter: ImportedAtFilter
-  setImportedAtFilter: (filter: ImportedAtFilter) => void
   dateFilter: DateFilter
   setDateFilter: (filter: DateFilter) => void
-  importNameFilter: Set<string>
-  setImportNameFilter: (filter: Set<string>) => void
+  importFilter: Set<string>
+  setImportFilter: (filter: Set<string>) => void
   resetTableFilters: () => void
-  focusImport: (importedAt: number) => void
+  focusImport: (importId: number) => void
 }
 
 const useAppStore = create<AppState>((set) => ({
@@ -46,24 +36,20 @@ const useAppStore = create<AppState>((set) => ({
   setAccountFilter: (accountFilter) => set({ accountFilter }),
   descriptionFilter: '',
   setDescriptionFilter: (descriptionFilter) => set({ descriptionFilter }),
-  importedAtFilter: emptyImportedAtFilter,
-  setImportedAtFilter: (importedAtFilter) => set({ importedAtFilter }),
   dateFilter: emptyDateFilter,
   setDateFilter: (dateFilter) => set({ dateFilter }),
-  importNameFilter: new Set(),
-  setImportNameFilter: (importNameFilter) => set({ importNameFilter }),
+  importFilter: new Set(),
+  setImportFilter: (importFilter) => set({ importFilter }),
   resetTableFilters: () =>
     set({
       amountFilter: emptyAmountFilter,
       categoryFilter: new Set(),
       accountFilter: new Set(),
       descriptionFilter: '',
-      importedAtFilter: emptyImportedAtFilter,
       dateFilter: emptyDateFilter,
-      importNameFilter: new Set(),
+      importFilter: new Set(),
     }),
-  focusImport: (importedAt) => {
-    const value = toLocalInputValue(importedAt)
+  focusImport: (importId) => {
     set({
       view: 'table',
       amountFilter: emptyAmountFilter,
@@ -71,8 +57,7 @@ const useAppStore = create<AppState>((set) => ({
       accountFilter: new Set(),
       descriptionFilter: '',
       dateFilter: emptyDateFilter,
-      importNameFilter: new Set(),
-      importedAtFilter: { from: value, to: value },
+      importFilter: new Set([String(importId)]),
     })
   },
 }))

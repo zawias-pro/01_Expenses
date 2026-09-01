@@ -81,7 +81,7 @@ const Imports = () => {
                 <td>{counts.get(importRecord.id) ?? 0}</td>
                 <td>{accountName(importRecord.accountId, data.accounts)}</td>
                 <td className={styles.actions}>
-                  <button type="button" onClick={() => focusImport(importRecord.importedAt)}>
+                  <button type="button" onClick={() => focusImport(importRecord.id)}>
                     Focus
                   </button>
                   <button type="button" onClick={() => setEditing(importRecord)}>

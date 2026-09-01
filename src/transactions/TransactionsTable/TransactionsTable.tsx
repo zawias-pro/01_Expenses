@@ -10,12 +10,11 @@ import {
   tableFeatures,
   useTable,
 } from '@tanstack/react-table'
-import { sortFn_alphanumeric, sortFn_basic, sortFn_datetime, sortFn_text } from '@tanstack/table-core'
+import { sortFn_alphanumeric, sortFn_basic, sortFn_text } from '@tanstack/table-core'
 import type { ColumnDef, ColumnSizingState, SortingState } from '@tanstack/table-core'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useAppStore } from '../../appStore.ts'
 import { formatDate } from '../../core/formatDate.ts'
-import { formatDateTime } from '../../core/formatDateTime.ts'
 import { FilterButton } from '../../components/FilterButton/FilterButton.tsx'
 import { Modal } from '../../components/Modal/Modal.tsx'
 import { MultiSelectFilterForm } from '../../components/MultiSelectFilterForm/MultiSelectFilterForm.tsx'
@@ -29,7 +28,6 @@ import { DateFilterForm, type DateFilter } from './DateFilterForm.tsx'
 import { DescriptionFilterForm } from './DescriptionFilterForm.tsx'
 import { descriptionMatches } from './descriptionMatches.ts'
 import { DescriptionMatcherForm } from './DescriptionMatcherForm/DescriptionMatcherForm.tsx'
-import { ImportedAtFilterForm, type ImportedAtFilter } from './ImportedAtFilterForm.tsx'
 import { TableBottomBar } from './TableBottomBar.tsx'
 import styles from './TransactionsTable.module.css'
 
@@ -50,11 +48,8 @@ type ViewRow = {
   categoryId: number | null
   account: string
   accountId: number | null
-  importedAt: string
-  importedAtMs: number
-  importName: string
-  importNameRaw: string | null
   importId: number
+  importLabel: string
 }
 
 const defaultData: TableData = { transactions: [], categories: [], accounts: [], imports: [] }
@@ -65,17 +60,6 @@ const applyAmountFilter = (rows: ViewRow[], filter: AmountFilter) => {
   const min = filter.min === '' ? Number.NEGATIVE_INFINITY : Number(filter.min)
   const max = filter.max === '' ? Number.POSITIVE_INFINITY : Number(filter.max)
   return rows.filter((row) => row.amount >= min && row.amount <= max)
-}
-
-const importedAtFilterActive = (filter: ImportedAtFilter) => filter.from !== '' || filter.to !== ''
-
-const datetimeLocalToMs = (value: string) => new Date(value).getTime()
-
-const applyImportedAtFilter = (rows: ViewRow[], filter: ImportedAtFilter) => {
-  const from = filter.from === '' ? Number.NEGATIVE_INFINITY : datetimeLocalToMs(filter.from)
-  const to = filter.to === '' ? Number.POSITIVE_INFINITY : datetimeLocalToMs(filter.to)
-  const effectiveTo = filter.from !== '' && filter.to !== '' && filter.from === filter.to ? to + 59_999 : to
-  return rows.filter((row) => row.importedAtMs >= from && row.importedAtMs <= effectiveTo)
 }
 
 const applyDateFilter = (rows: ViewRow[], filter: DateFilter) => {
@@ -113,7 +97,6 @@ const features = tableFeatures({
   sortFns: {
     alphanumeric: sortFn_alphanumeric,
     basic: sortFn_basic,
-    datetime: sortFn_datetime,
     text: sortFn_text,
   },
 })
@@ -137,24 +120,21 @@ const TransactionsTable = () => {
   const categoryFilter = useAppStore((state) => state.categoryFilter)
   const accountFilter = useAppStore((state) => state.accountFilter)
   const descriptionFilter = useAppStore((state) => state.descriptionFilter)
-  const importedAtFilter = useAppStore((state) => state.importedAtFilter)
   const dateFilter = useAppStore((state) => state.dateFilter)
-  const importNameFilter = useAppStore((state) => state.importNameFilter)
+  const importFilter = useAppStore((state) => state.importFilter)
   const setAmountFilter = useAppStore((state) => state.setAmountFilter)
   const setCategoryFilter = useAppStore((state) => state.setCategoryFilter)
   const setAccountFilter = useAppStore((state) => state.setAccountFilter)
   const setDescriptionFilter = useAppStore((state) => state.setDescriptionFilter)
-  const setImportedAtFilter = useAppStore((state) => state.setImportedAtFilter)
   const setDateFilter = useAppStore((state) => state.setDateFilter)
-  const setImportNameFilter = useAppStore((state) => state.setImportNameFilter)
+  const setImportFilter = useAppStore((state) => state.setImportFilter)
 
   const [isAmountFilterOpen, setIsAmountFilterOpen] = useState(false)
   const [isCategoryFilterOpen, setIsCategoryFilterOpen] = useState(false)
   const [isAccountFilterOpen, setIsAccountFilterOpen] = useState(false)
   const [isDescriptionFilterOpen, setIsDescriptionFilterOpen] = useState(false)
-  const [isImportedAtFilterOpen, setIsImportedAtFilterOpen] = useState(false)
   const [isDateFilterOpen, setIsDateFilterOpen] = useState(false)
-  const [isImportNameFilterOpen, setIsImportNameFilterOpen] = useState(false)
+  const [isImportFilterOpen, setIsImportFilterOpen] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [matcherDraft, setMatcherDraft] = useState<{ pattern: string; categoryName: string } | null>(null)
 
@@ -213,15 +193,7 @@ const TransactionsTable = () => {
       }),
       columnHelper.accessor('category', { id: 'category', header: 'Category', size: 110 }),
       columnHelper.accessor('account', { id: 'account', header: 'Account', size: 130 }),
-      columnHelper.accessor('importedAtMs', {
-        id: 'importedAt',
-        header: 'Imported',
-        sortFn: 'datetime',
-        size: 170,
-        cell: (info) => info.row.original.importedAt,
-      }),
-      columnHelper.accessor('importName', { id: 'importName', header: 'Import name', size: 120 }),
-      columnHelper.accessor('importId', { id: 'importId', header: 'Import', size: 60 }),
+      columnHelper.accessor('importLabel', { id: 'importId', header: 'Import', size: 140 }),
     ],
     [],
   )
@@ -266,23 +238,19 @@ const TransactionsTable = () => {
         categoryId: transaction.categoryId,
         account: accountName(importRecord.accountId),
         accountId: importRecord.accountId,
-        importedAt: formatDateTime(importRecord.importedAt),
-        importedAtMs: importRecord.importedAt,
-        importName: importRecord.name ?? '-',
-        importNameRaw: importRecord.name,
         importId: importRecord.id,
+        importLabel: importRecord.name ? `${importRecord.name} (${importRecord.id})` : String(importRecord.id),
       }
     })
 
     let filtered = applyAmountFilter(viewRows, amountFilter)
     filtered = applyDescriptionFilter(filtered, descriptionFilter)
-    filtered = applyImportedAtFilter(filtered, importedAtFilter)
     filtered = applyDateFilter(filtered, dateFilter)
     filtered = applyReferenceFilter(filtered, categoryFilter, (row) => keyForReference(row.categoryId))
     filtered = applyReferenceFilter(filtered, accountFilter, (row) => keyForReference(row.accountId))
-    filtered = applyReferenceFilter(filtered, importNameFilter, (row) => row.importNameRaw ?? 'none')
+    filtered = applyReferenceFilter(filtered, importFilter, (row) => String(row.importId))
     return filtered
-  }, [data, amountFilter, descriptionFilter, importedAtFilter, dateFilter, categoryFilter, accountFilter, importNameFilter])
+  }, [data, amountFilter, descriptionFilter, dateFilter, categoryFilter, accountFilter, importFilter])
 
   const table = useTable({
     features,
@@ -330,17 +298,13 @@ const TransactionsTable = () => {
     [data],
   )
 
-  const importNameOptions = useMemo(() => {
-    const names = new Set<string>()
-    for (const importRecord of data.imports) {
-      if (importRecord.name !== null) {
-        names.add(importRecord.name)
-      }
-    }
-    return [
-      ...[...names].map((name) => ({ value: name, label: name })),
-      { value: 'none', label: 'Unnamed import' },
-    ]
+  const importOptions = useMemo(() => {
+    return data.imports
+      .map((importRecord) => ({
+        value: String(importRecord.id),
+        label: importRecord.name ? `${importRecord.name} (${importRecord.id})` : String(importRecord.id),
+      }))
+      .sort((a, b) => Number(a.value) - Number(b.value))
   }, [data])
 
   const selectedIds = Object.keys(rowSelection).map(Number)
@@ -462,20 +426,12 @@ const TransactionsTable = () => {
                         onClick={() => setIsAccountFilterOpen(true)}
                       />
                     ) : null}
-                    {header.column.id === 'importedAt' ? (
+                    {header.column.id === 'importId' ? (
                       <FilterButton
-                        active={importedAtFilterActive(importedAtFilter)}
+                        active={importFilter.size > 0}
                         label="Filter"
-                        title="Filter by imported at"
-                        onClick={() => setIsImportedAtFilterOpen(true)}
-                      />
-                    ) : null}
-                    {header.column.id === 'importName' ? (
-                      <FilterButton
-                        active={importNameFilter.size > 0}
-                        label="Filter"
-                        title="Filter by import name"
-                        onClick={() => setIsImportNameFilterOpen(true)}
+                        title="Filter by import"
+                        onClick={() => setIsImportFilterOpen(true)}
                       />
                     ) : null}
                   </div>
@@ -610,15 +566,6 @@ const TransactionsTable = () => {
           />
         </Modal>
       ) : null}
-      {isImportedAtFilterOpen ? (
-        <Modal title="Filter by imported at" onClose={() => setIsImportedAtFilterOpen(false)}>
-          <ImportedAtFilterForm
-            filter={importedAtFilter}
-            onApply={setImportedAtFilter}
-            onClose={() => setIsImportedAtFilterOpen(false)}
-          />
-        </Modal>
-      ) : null}
       {isDateFilterOpen ? (
         <Modal title="Filter by date" onClose={() => setIsDateFilterOpen(false)}>
           <DateFilterForm
@@ -628,13 +575,13 @@ const TransactionsTable = () => {
           />
         </Modal>
       ) : null}
-      {isImportNameFilterOpen ? (
-        <Modal title="Filter by import name" onClose={() => setIsImportNameFilterOpen(false)}>
+      {isImportFilterOpen ? (
+        <Modal title="Filter by import" onClose={() => setIsImportFilterOpen(false)}>
           <MultiSelectFilterForm
-            options={importNameOptions}
-            selection={importNameFilter}
-            onApply={setImportNameFilter}
-            onClose={() => setIsImportNameFilterOpen(false)}
+            options={importOptions}
+            selection={importFilter}
+            onApply={setImportFilter}
+            onClose={() => setIsImportFilterOpen(false)}
           />
         </Modal>
       ) : null}

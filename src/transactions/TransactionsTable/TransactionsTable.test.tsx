@@ -11,9 +11,8 @@ const resetFilters = () => {
     categoryFilter: new Set(),
     accountFilter: new Set(),
     descriptionFilter: '',
-    importedAtFilter: { from: '', to: '' },
     dateFilter: { from: '', to: '' },
-    importNameFilter: new Set(),
+    importFilter: new Set(),
   })
 }
 
@@ -148,7 +147,7 @@ describe('TransactionsTable', () => {
     expect(screen.queryByText('Coffee')).not.toBeInTheDocument()
   })
 
-  it('filters by import name including unnamed', async () => {
+  it('filters by import including unnamed', async () => {
     const user = userEvent.setup()
     const namedImportId = await seedImport({ name: 'January', importedAt: 1000 })
     const unnamedImportId = await seedImport({ name: null, importedAt: 2000 })
@@ -158,24 +157,22 @@ describe('TransactionsTable', () => {
     render(<TransactionsTable />)
     expect(await screen.findByText('jan')).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: 'Filter by import name' }))
+    await user.click(screen.getByRole('button', { name: 'Filter by import' }))
     await screen.findByRole('dialog')
-    await user.click(screen.getByLabelText('Unnamed import'))
+    await user.click(screen.getByLabelText(String(unnamedImportId)))
     await user.click(screen.getByRole('button', { name: 'Apply' }))
 
     expect(await screen.findByText('unnamed')).toBeInTheDocument()
     expect(screen.queryByText('jan')).not.toBeInTheDocument()
   })
 
-  it('filters by imported at via the store (focus)', async () => {
-    const importedAt = new Date(2026, 0, 5, 10, 30, 12, 500).getTime()
-    const otherImportedAt = new Date(2026, 1, 5, 10, 30).getTime()
-    const janImportId = await seedImport({ name: 'January', importedAt })
-    const febImportId = await seedImport({ name: 'February', importedAt: otherImportedAt })
+  it('filters by import via the store (focus)', async () => {
+    const janImportId = await seedImport({ name: 'January', importedAt: 1000 })
+    const febImportId = await seedImport({ name: 'February', importedAt: 2000 })
     await seedTx(1, 10, 'sel', { importId: janImportId })
     await seedTx(2, 20, 'oth', { importId: febImportId })
 
-    useAppStore.getState().focusImport(importedAt)
+    useAppStore.getState().focusImport(janImportId)
     render(<TransactionsTable />)
 
     expect(await screen.findByText('sel')).toBeInTheDocument()
