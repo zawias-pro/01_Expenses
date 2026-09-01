@@ -40,6 +40,19 @@ describe('Modal', () => {
     expect(onClose).not.toHaveBeenCalled()
   })
 
+  it('hides the close button and ignores Escape when not closable', () => {
+    const onClose = vi.fn()
+    render(
+      <Modal title="T" onClose={onClose} closable={false}>
+        x
+      </Modal>,
+    )
+
+    expect(screen.queryByLabelText('Close')).not.toBeInTheDocument()
+    fireEvent.keyDown(window, { key: 'Escape' })
+    expect(onClose).not.toHaveBeenCalled()
+  })
+
   it('does not call onClose when clicking inside the dialog', () => {
     const onClose = vi.fn()
     render(

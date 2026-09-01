@@ -2,12 +2,16 @@ import { useEffect } from 'react'
 import type { ReactNode } from 'react'
 import styles from './Modal.module.css'
 
-const Modal = ({ title, onClose, children }: {
+const Modal = ({ title, onClose, closable = true, children }: {
   title: string
   onClose: () => void
+  closable?: boolean
   children: ReactNode
 }) => {
   useEffect(() => {
+    if (!closable) {
+      return
+    }
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         onClose()
@@ -15,7 +19,7 @@ const Modal = ({ title, onClose, children }: {
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [onClose])
+  }, [onClose, closable])
 
   return (
     <div className={styles.overlay}>
@@ -27,14 +31,16 @@ const Modal = ({ title, onClose, children }: {
       >
         <header className={styles.header}>
           <h2>{title}</h2>
-          <button
-            type="button"
-            className={styles.closeButton}
-            onClick={onClose}
-            aria-label="Close"
-          >
-            ×
-          </button>
+          {closable ? (
+            <button
+              type="button"
+              className={styles.closeButton}
+              onClick={onClose}
+              aria-label="Close"
+            >
+              ×
+            </button>
+          ) : null}
         </header>
         <div className={styles.body}>{children}</div>
       </div>

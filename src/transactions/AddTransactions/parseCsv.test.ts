@@ -77,6 +77,12 @@ describe('parseCsv', () => {
     ])
   })
 
+  it('accepts amounts with surrounding currency text', () => {
+    expect(parseCsv('lunch;-1234,56 PLN;2026-01-01', baseOptions)).toEqual([
+      { description: 'lunch', amountText: '-1234,56 PLN', amount: -1234.56, dateText: '2026-01-01', date: '2026-01-01', line: 'lunch;-1234,56 PLN;2026-01-01', error: undefined },
+    ])
+  })
+
   it('does not crash on messy input', () => {
     expect(() => parseCsv('a;b;"unterminated\n;;;', baseOptions)).not.toThrow()
   })

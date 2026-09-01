@@ -17,13 +17,19 @@ type ParsedRow = {
   error?: string
 }
 
+const sanitizeAmount = (amountText: string) => amountText.replace(/[^0-9.,-]/g, '')
+
 const parseAmount = (amountText: string) => {
-  const amount = Number(amountText)
+  const sanitized = sanitizeAmount(amountText)
+  if (sanitized === '') {
+    return NaN
+  }
+  const amount = Number(sanitized)
   if (Number.isFinite(amount)) {
     return amount
   }
-  if (amountText.includes(',')) {
-    const commaAmount = Number(amountText.replace(',', '.'))
+  if (sanitized.includes(',')) {
+    const commaAmount = Number(sanitized.replace(',', '.'))
     if (Number.isFinite(commaAmount)) {
       return commaAmount
     }
