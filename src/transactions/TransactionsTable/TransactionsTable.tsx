@@ -26,6 +26,7 @@ import { AmountFilterForm, type AmountFilter } from './AmountFilterForm.tsx'
 import { DateFilterForm, type DateFilter } from './DateFilterForm.tsx'
 import { DescriptionFilterForm } from './DescriptionFilterForm.tsx'
 import { descriptionMatches } from './descriptionMatches.ts'
+import { DescriptionMatcherForm } from './DescriptionMatcherForm/DescriptionMatcherForm.tsx'
 import { ImportedAtFilterForm, type ImportedAtFilter } from './ImportedAtFilterForm.tsx'
 import { TableBottomBar } from './TableBottomBar.tsx'
 import styles from './TransactionsTable.module.css'
@@ -114,45 +115,6 @@ const features = tableFeatures({
 })
 const columnHelper = createColumnHelper<typeof features, ViewRow>()
 
-const columns: ColumnDef<typeof features, ViewRow, any>[] = [
-  columnHelper.display({
-    id: 'select',
-    header: ({ table }) => (
-      <input
-        type="checkbox"
-        checked={table.getIsAllRowsSelected()}
-        title="Select all"
-        onChange={table.getToggleAllRowsSelectedHandler()}
-      />
-    ),
-    cell: ({ row }) => (
-      <input
-        type="checkbox"
-        checked={row.getIsSelected()}
-        onChange={row.getToggleSelectedHandler()}
-      />
-    ),
-  }),
-  columnHelper.accessor('id', { id: 'id', header: 'ID' }),
-  columnHelper.accessor('amount', { id: 'amount', header: 'Amount' }),
-  columnHelper.accessor('description', { id: 'description', header: 'Description' }),
-  columnHelper.accessor('dateValue', {
-    id: 'date',
-    header: 'Date',
-    cell: (info) => info.row.original.date,
-  }),
-  columnHelper.accessor('category', { id: 'category', header: 'Category' }),
-  columnHelper.accessor('account', { id: 'account', header: 'Account' }),
-  columnHelper.accessor('importedAtMs', {
-    id: 'importedAt',
-    header: 'Imported',
-    sortFn: 'datetime',
-    cell: (info) => info.row.original.importedAt,
-  }),
-  columnHelper.accessor('importName', { id: 'importName', header: 'Import name' }),
-  columnHelper.accessor('importId', { id: 'importId', header: 'Import' }),
-]
-
 const TransactionsTable = () => {
   const data = useLiveQuery(async () => {
     const [transactions, categories, accounts, imports] = await Promise.all([
@@ -189,6 +151,71 @@ const TransactionsTable = () => {
   const [isDateFilterOpen, setIsDateFilterOpen] = useState(false)
   const [isImportNameFilterOpen, setIsImportNameFilterOpen] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [matcherDraft, setMatcherDraft] = useState<{ pattern: string; categoryName: string } | null>(null)
+
+  const handleDescriptionSelect = (event: React.MouseEvent) => {
+    const selection = window.getSelection()
+    if (!selection || selection.isCollapsed) {
+      return
+    }
+    const text = selection.toString().trim()
+    if (text === '') {
+      return
+    }
+    const range = selection.getRangeAt(0)
+    if (!event.currentTarget.contains(range.commonAncestorContainer)) {
+      return
+    }
+    setMatcherDraft({ pattern: `*${text.toLowerCase()}*`, categoryName: text })
+  }
+
+  const columns = useMemo<ColumnDef<typeof features, ViewRow, any>[]>(
+    () => [
+      columnHelper.display({
+        id: 'select',
+        header: ({ table }) => (
+          <input
+            type="checkbox"
+            checked={table.getIsAllRowsSelected()}
+            title="Select all"
+            onChange={table.getToggleAllRowsSelectedHandler()}
+          />
+        ),
+        cell: ({ row }) => (
+          <input
+            type="checkbox"
+            checked={row.getIsSelected()}
+            onChange={row.getToggleSelectedHandler()}
+          />
+        ),
+      }),
+      columnHelper.accessor('id', { id: 'id', header: 'ID' }),
+      columnHelper.accessor('amount', { id: 'amount', header: 'Amount' }),
+      columnHelper.accessor('description', {
+        id: 'description',
+        header: 'Description',
+        cell: (info) => (
+          <span onMouseUp={handleDescriptionSelect}>{String(info.getValue())}</span>
+        ),
+      }),
+      columnHelper.accessor('dateValue', {
+        id: 'date',
+        header: 'Date',
+        cell: (info) => info.row.original.date,
+      }),
+      columnHelper.accessor('category', { id: 'category', header: 'Category' }),
+      columnHelper.accessor('account', { id: 'account', header: 'Account' }),
+      columnHelper.accessor('importedAtMs', {
+        id: 'importedAt',
+        header: 'Imported',
+        sortFn: 'datetime',
+        cell: (info) => info.row.original.importedAt,
+      }),
+      columnHelper.accessor('importName', { id: 'importName', header: 'Import name' }),
+      columnHelper.accessor('importId', { id: 'importId', header: 'Import' }),
+    ],
+    [],
+  )
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -309,6 +336,35 @@ const TransactionsTable = () => {
     await db.transactions.bulkDelete(selectedIds)
     setRowSelection({})
     setConfirmingDelete(false)
+  }
+
+  const handleMatcherSave = async (
+    target: { categoryId: number } | { newName: string },
+    pattern: string,
+  ) => {
+    if ('categoryId' in target) {
+      const category = await db.categories.get(target.categoryId)
+      if (!category) {
+        return `Category ${target.categoryId} does not exist`
+      }
+      const patterns = category.matcher
+        .split(';')
+        .map((part) => part.trim())
+        .filter((part) => part !== '')
+      if (!patterns.includes(pattern)) {
+        patterns.push(pattern)
+        await db.categories.update(category.id, { matcher: patterns.join(';') })
+      }
+      return ''
+    }
+
+    const name = target.newName.trim().toLowerCase()
+    const existing = await db.categories.toArray()
+    if (existing.some((category) => category.name.toLowerCase() === name)) {
+      return 'Category with this name already exists'
+    }
+    await db.categories.add({ name: target.newName.trim(), matcher: pattern })
+    return ''
   }
 
   return (
@@ -508,6 +564,17 @@ const TransactionsTable = () => {
             selection={importNameFilter}
             onApply={setImportNameFilter}
             onClose={() => setIsImportNameFilterOpen(false)}
+          />
+        </Modal>
+      ) : null}
+      {matcherDraft ? (
+        <Modal title="Create matcher" onClose={() => setMatcherDraft(null)}>
+          <DescriptionMatcherForm
+            pattern={matcherDraft.pattern}
+            categoryName={matcherDraft.categoryName}
+            categories={data.categories}
+            onSave={handleMatcherSave}
+            onClose={() => setMatcherDraft(null)}
           />
         </Modal>
       ) : null}
