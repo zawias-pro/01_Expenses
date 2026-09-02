@@ -6,6 +6,7 @@ import { AddTransactions } from '../transactions/AddTransactions/AddTransactions
 import { Imports } from '../imports/Imports/Imports.tsx'
 import { Accounts } from '../accounts/Accounts/Accounts.tsx'
 import { Categories } from '../categories/Categories/Categories.tsx'
+import { Backup } from '../backup/Backup.tsx'
 import styles from './App.module.css'
 
 const App = () => {
@@ -22,6 +23,7 @@ const App = () => {
           {view === 'accounts' ? <Accounts /> : null}
           {view === 'imports' ? <Imports /> : null}
           {view === 'categories' ? <Categories /> : null}
+          {view === 'backup' ? <Backup /> : null}
         </main>
       </div>
     </div>

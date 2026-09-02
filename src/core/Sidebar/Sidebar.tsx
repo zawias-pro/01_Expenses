@@ -9,6 +9,7 @@ const items: { view: View; label: string }[] = [
   { view: 'imports', label: 'Imports' },
   { view: 'categories', label: 'Categories' },
   { view: 'accounts', label: 'Accounts' },
+  { view: 'backup', label: 'Backup' },
 ]
 
 const Sidebar = () => {
