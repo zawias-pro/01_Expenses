@@ -10,6 +10,7 @@ const items: { view: View; label: string }[] = [
   { view: 'categories', label: 'Categories' },
   { view: 'accounts', label: 'Accounts' },
   { view: 'backup', label: 'Backup' },
+  { view: 'statistics', label: 'Statistics' },
 ]
 
 const Sidebar = () => {
