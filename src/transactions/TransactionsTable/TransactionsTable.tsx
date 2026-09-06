@@ -56,6 +56,7 @@ type ViewRow = {
   changed: string
   customDate: string | null
   customCategoryId: number | null
+  ignored: boolean
 }
 
 const defaultData: TableData = { transactions: [], categories: [], accounts: [], imports: [] }
@@ -254,6 +255,7 @@ const TransactionsTable = () => {
       const customDate = transaction.customDate ?? null
       const customCategoryId = transaction.customCategoryId ?? null
       const commentRaw = transaction.comment ?? null
+      const ignored = transaction.ignored ?? false
       const effectiveDateValue = customDate ?? transaction.date
       const effectiveCategoryId = customCategoryId !== null ? customCategoryId : transaction.categoryId
       const changed = customDate !== null || customCategoryId !== null || commentRaw !== null ? 'yes' : 'no'
@@ -276,6 +278,7 @@ const TransactionsTable = () => {
         changed,
         customDate,
         customCategoryId,
+        ignored,
       }
     })
 
@@ -361,6 +364,14 @@ const TransactionsTable = () => {
     await db.transactions.bulkDelete(selectedIds)
     setRowSelection({})
     setConfirmingDelete(false)
+  }
+
+  const handleIgnore = async () => {
+    if (selectedIds.length === 0) {
+      return
+    }
+    await db.transactions.where('id').anyOf(selectedIds).modify({ ignored: true })
+    setRowSelection({})
   }
 
   const handleMatcherSave = async (
@@ -525,7 +536,7 @@ const TransactionsTable = () => {
               return (
                 <tr
                   key={row.id}
-                  className={styles.virtualRow}
+                  className={`${styles.virtualRow} ${row.original.ignored ? styles.ignored : ''}`}
                   style={{
                     position: 'absolute',
                     top: `${virtualRow.start}px`,
@@ -569,6 +580,7 @@ const TransactionsTable = () => {
       <TableBottomBar
         selectedCount={selectedIds.length}
         onDelete={() => setConfirmingDelete(true)}
+        onIgnore={() => void handleIgnore()}
       />
       {confirmingDelete ? (
         <Modal title="Delete transactions" onClose={() => setConfirmingDelete(false)}>

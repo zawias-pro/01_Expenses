@@ -31,6 +31,7 @@ const TransactionEditForm = ({ transaction, categories, onClose }: {
   })()
   const [customCategoryId, setCustomCategoryId] = useState(initialCustomCategoryId)
   const [comment, setComment] = useState(transaction.comment ?? '')
+  const [ignored, setIgnored] = useState(transaction.ignored ?? false)
   const [error, setError] = useState('')
 
   const handleSave = async () => {
@@ -74,6 +75,7 @@ const TransactionEditForm = ({ transaction, categories, onClose }: {
       customDate: normalizedDate,
       customCategoryId: normalizedCategoryId,
       comment: normalizedComment,
+      ignored,
     })
     onClose()
   }
@@ -84,6 +86,7 @@ const TransactionEditForm = ({ transaction, categories, onClose }: {
     setCustomDate('')
     setCustomCategoryId('')
     setComment('')
+    setIgnored(false)
     setError('')
   }
 
@@ -146,6 +149,10 @@ const TransactionEditForm = ({ transaction, categories, onClose }: {
           rows={3}
           placeholder="Empty means no comment"
         />
+      </label>
+      <label className={styles.checkbox}>
+        <input type="checkbox" checked={ignored} onChange={(event) => setIgnored(event.target.checked)} />
+        <span>Ignored</span>
       </label>
       {error ? <p className={styles.error}>{error}</p> : null}
       <div className={styles.actions}>

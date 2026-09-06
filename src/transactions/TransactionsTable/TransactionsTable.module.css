@@ -89,6 +89,11 @@
   flex: 0 0 auto;
 }
 
+.ignored {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
 .empty {
   font-style: italic;
 }

@@ -8,6 +8,7 @@ type Transaction = {
   customDate?: string | null
   customCategoryId?: number | null
   comment?: string | null
+  ignored?: boolean
 }
 
 export type { Transaction }

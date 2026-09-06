@@ -18,7 +18,8 @@ describe('TopBar', () => {
 
     render(<TopBar />)
 
-    expect(await screen.findByText('Transactions: 1')).toBeInTheDocument()
+    expect(await screen.findByText('Transactions: 1 (1 unclassified)')).toBeInTheDocument()
+    expect(await screen.findByText('Amount: 10,00 (10,00 unclassified)')).toBeInTheDocument()
     expect(await screen.findByText('Categories: 1')).toBeInTheDocument()
   })
 

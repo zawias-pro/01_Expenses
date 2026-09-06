@@ -46,6 +46,7 @@ const Statistics = () => {
   const periods = useMemo(() => {
     const set = new Set<string>()
     for (const tx of data.transactions) {
+      if (tx.ignored) continue
       const effectiveDate = (tx.customDate ?? tx.date) as string
       if (!effectiveDate) continue
       set.add(getPeriodKey(effectiveDate, periodType))
@@ -68,6 +69,7 @@ const Statistics = () => {
     }
 
     for (const tx of data.transactions) {
+      if (tx.ignored) continue
       const effectiveDate = (tx.customDate ?? tx.date) as string
       if (getPeriodKey(effectiveDate, periodType) !== effectivePeriod) continue
       const effectiveCategoryId = (tx.customCategoryId ?? null) !== null ? (tx.customCategoryId as number) : tx.categoryId

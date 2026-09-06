@@ -38,6 +38,7 @@ const Categories = () => {
 
   const txCounts = new Map<number, number>()
   for (const transaction of data.transactions) {
+    if (transaction.ignored) continue
     const effectiveId = (transaction.customCategoryId ?? null) !== null ? (transaction.customCategoryId as number) : transaction.categoryId
     if (effectiveId !== null) {
       txCounts.set(effectiveId, (txCounts.get(effectiveId) ?? 0) + 1)
