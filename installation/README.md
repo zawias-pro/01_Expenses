@@ -36,15 +36,14 @@ Configure Caddy for the domain that points to this server:
 
 ```caddyfile
 expenses.example.com {
-    reverse_proxy 127.0.0.1:8080
+    reverse_proxy 01-expenses_frontend_1:8080
 }
 ```
 
 Reload Caddy, then open `https://expenses.example.com`.
 
-The frontend binds only to `127.0.0.1:8080`, so Caddy is the public entry point.
-If that host port is already in use, change the host side of the mapping in
-`compose.yml` and update the Caddy upstream.
+The frontend is not published on a host port. Caddy must be connected to the
+same Podman network as the frontend and is the only public entry point.
 
 Because data is stored in browser IndexedDB, the server does not contain a
 central copy of application data. Each browser profile must use the built-in
